@@ -12,7 +12,6 @@ admin:
     - line 2
     - line 3
 
-
 link:
     peer: ocelot.
     host: polaris3.thibland.net
@@ -30,3 +29,5 @@ cservice:
     ident: qbot
     host: CServe.mjav.xyz
     realname: The Q Bot
+    modes: +ioqBS
+    staticchan: "#qbot"

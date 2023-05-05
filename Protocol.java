@@ -15,13 +15,11 @@ public class Protocol extends Exception {
     private Config config;
     private ServerNode server;
 
-    //private static ArrayList<UserNode> userList = new ArrayList<UserNode>();
-    //private static ArrayList<ServerNode> serverList = new ArrayList<ServerNode>();
     //private static ArrayList<ChanNode> chanList = new ArrayList<ChanNode>();
     
     private Map<String, ServerNode> serverList = new HashMap<String, ServerNode>();
     private Map<String, UserNode> userList = new HashMap<String, UserNode>();
-    
+
     private ArrayList<String> protocolProps = new ArrayList<String>();
     
     String myPeerServerId;
@@ -39,6 +37,18 @@ public class Protocol extends Exception {
     
     public void write(Client client, String str) /*throws Exception*/ {
         client.write(str);
+    }
+
+    public Map<String, ServerNode> getServerList() {
+        return this.serverList;
+    }
+
+    public Map<String, UserNode> getUserList() {
+        return this.userList;
+    }
+
+    public String getPeerId() {
+        return this.myPeerServerId;
     }
 
   public void getResponse(String raw) throws Exception {
@@ -73,7 +83,7 @@ public class Protocol extends Exception {
         String message2;
 
         // Test for output performance
-        if (toEntity.equals(config.getServerId() + config.getCServUniq()) && message.equals(":help")) {
+        if (toEntity.equals(config.getServerId() + config.getCServeUniq()) && message.equals(":help")) {
             message2 = "The following commands are available to you.";
             response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
             message2 =  "For more information on a specific command, type HELP <command>:";

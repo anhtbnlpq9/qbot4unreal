@@ -33,19 +33,7 @@ public class Qbot {
         tlsClient.write(":" + config.getServerId() + " " + "EOS");
 
         try { Thread.sleep(5000); } catch (Exception e) { e.printStackTrace(); }
-
-        unixTime = Instant.now().getEpochSecond();
-        tlsClient.write(":" + config.getServerId() + " " + "UID Q 1 " + Instant.now().getEpochSecond() + " theqbot CServe " + config.getServerId() + "AAAAAA * +BqioS * * * :The Q Bot");
         
-
-        unixTime = Instant.now().getEpochSecond();
-        tlsClient.write(":" + config.getServerId() + " " + "SJOIN " + Instant.now().getEpochSecond() + " #mjav + :@" + config.getServerId() + "AAAAAA");
-
-//try { Thread.sleep(1000); } catch (Exception e) { e.printStackTrace(); }
-        unixTime = Instant.now().getEpochSecond();
-        tlsClient.write("MODE #mjav +o Q");
-
-
- 
+        tlsClient.launchCService(); 
     }    
 }

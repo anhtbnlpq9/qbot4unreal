@@ -28,6 +28,8 @@ public class Config {
     public String cserviceIdent;
     public String cserviceHost;
     public String cserviceReal;
+    public String cserviceModes;
+    public String cserviceStaticChan;
 
     public Config(String configFile) {
 
@@ -57,12 +59,14 @@ public class Config {
         linkPassword = (String)  conflink.get("password");
         linkPort     = (Integer) conflink.get("port"); 
         
-        cserviceNick    = (String) confcservice.get("nick");
-        cserviceUniq    = (String) confcservice.get("uniq");
-        cserviceIdent   = (String) confcservice.get("ident");
-        cserviceHost    = (String) confcservice.get("host");
-        cserviceReal    = (String) confcservice.get("realname");
-
+        cserviceNick         = (String) confcservice.get("nick");
+        cserviceUniq         = (String) confcservice.get("uniq");
+        cserviceIdent        = (String) confcservice.get("ident");
+        cserviceHost         = (String) confcservice.get("host");
+        cserviceReal         = (String) confcservice.get("realname");
+        cserviceModes        = (String) confcservice.get("modes");
+        cserviceStaticChan   = (String) confcservice.get("staticchan");
+        
         System.out.println("* Config:\n"
                         + "  --> Me name             = " + serverName  + "\n"
                         + "  --> Me SID              = " + serverId + "\n"
@@ -76,16 +80,6 @@ public class Config {
         //UserNode cservice = new UserNode(cserviceNick, cserviceUniq, );
     }
 
-/*
-    public UserNode(String userNick,
-                    String userIdent,
-                    String userHost,
-                    String userRealHost,
-                    String userRealName,
-                    String userUniq)*/
-
-
-    
     public String getServerName() {
         return this.serverName;
     }
@@ -118,20 +112,32 @@ public class Config {
         return this.serverName + "," + this.serverProtocolVersion + "," + this.serverVersionFlags + "," + this.serverFullVersionText;
     }
 
-
-    public String getCServUniq() {
+    public String getCServeUniq() {
         return this.cserviceUniq;
     }
 
+    public String getCServeNick() {
+        return this.cserviceNick;
+    }
 
-    /*public String cserviceNick;
-    public String cserviceUniq;
-    public String cserviceIdent;
-    public String cserviceHost;
-    public String cserviceReal;*/
+    public String getCServeIdent() {
+        return this.cserviceIdent;
+    }
+    
+    public String getCServeHost() {
+        return this.cserviceHost;
+    }
 
+    public String getCServeRealName() {
+        return this.cserviceReal;
+    }
 
+    public String getCServeModes() {
+        return this.cserviceModes;
+    }
 
-
+    public String getCServeStaticChan() {
+        return this.cserviceStaticChan;
+    }
 
 }

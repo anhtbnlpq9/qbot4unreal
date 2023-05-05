@@ -36,7 +36,7 @@ public class UserNode {
 
     public ServerNode userServer;
 
-    public Integer userTS;
+    public long userTS;
 
     public ArrayList<String> userChanList = new ArrayList<String>();
 
@@ -49,7 +49,7 @@ public class UserNode {
  
     public UserNode(String userNick, String userIdent, String userHost,
                     String userRealHost, String userRealName, String userUniq,
-                    Integer userTS, String userModes) {
+                    long userTS, String userModes) {
         this.userNick = userNick;
         this.userIdent = userIdent;
         this.userRealHost = userRealHost;
@@ -150,7 +150,7 @@ public class UserNode {
     public Boolean getUserNickRegistered() {
         return this.userNickRegistered;
     }
-    public Integer getUserTS() {
+    public long getUserTS() {
         return this.userTS;
     }
 }

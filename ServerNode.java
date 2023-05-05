@@ -58,4 +58,8 @@ public class ServerNode {
     public String getServerName() {
         return this.serverName;
     }
+
+    public Boolean getServerEOS() {
+        return this.serverIsEOS;
+    }
 }

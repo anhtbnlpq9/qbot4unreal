@@ -8,11 +8,18 @@ import java.io.OutputStreamWriter;
 import java.lang.String;
 import java.lang.Thread;
 import java.lang.Exception;
+
 import java.math.BigInteger;
+
+import java.time.Instant;
 
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.security.cert.Certificate;
 
@@ -34,16 +41,16 @@ public class Client implements Runnable {
     private BufferedReader in;
     public BufferedWriter out;
     private boolean clientReady = false;
- 
+    private Protocol protocol;
+
+    long unixTime;
 
     public Client(Config config) {
         this.config = config;
         System.setProperty("javax.net.ssl.trustStore", "/home/thib/.keystore");
         System.setProperty("javax.net.ssl.trustStorePassword","123456");
-
         System.setProperty("javax.net.ssl.keyStore", "/home/thib/.keystore");
         System.setProperty("javax.net.ssl.keyStorePassword","123456");
-        
     }
 
     public Client getClientRef() {
@@ -60,7 +67,7 @@ public class Client implements Runnable {
 
             System.out.println("* Connected");
 
-            Protocol protocol = new Protocol(config);
+            protocol = new Protocol(config);
             protocol.setClientRef(this);
 
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -70,16 +77,53 @@ public class Client implements Runnable {
 
             String str;
             while ((str = in.readLine()) != null) {
-                //System.out.println("<<< " + str);
+                System.out.println("<<< " + str);
                 protocol.getResponse(str);
             }
-
         }
         catch (Exception e) { e.printStackTrace(); }
     }
+    
+    public void launchCService() {
+        
+        Map<String, ServerNode> serverList = protocol.getServerList();
+        Map<String, UserNode> userList = protocol.getUserList();
+        
+        while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
+            System.out.println("* Wait for final EOS");
+            try {
+                Thread.sleep(500);
+            }
+            catch (Exception e) { e.printStackTrace(); }
+        }
+
+
+        unixTime = Instant.now().getEpochSecond();
+        this.write(":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName());
+        // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
+        UserNode user = new UserNode(config.getCServeNick(), 
+                                 config.getCServeIdent(), 
+                                 config.getCServeHost(),
+                                 config.getCServeHost(),
+                                 config.getCServeRealName(),
+                                 config.getCServeUniq(),
+                                 unixTime,
+                                 config.getCServeModes());
+
+        userList.put(config.getCServeUniq(), user);
+
+        unixTime = Instant.now().getEpochSecond();
+        this.write(":" + config.getServerId() + " " + "SJOIN " + unixTime + " " + config.getCServeStaticChan() + " + :" + config.getServerId() + config.getCServeUniq());
+
+
+        unixTime = Instant.now().getEpochSecond();
+        this.write("MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
+
+    }
+
     public void write(String str) {
 		try {
-            //System.out.println(">>> " + str);
+            System.out.println(">>> " + str);
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 			out.write(str + "\n");
 			out.flush();
