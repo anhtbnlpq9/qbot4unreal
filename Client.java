@@ -57,7 +57,7 @@ public class Client implements Runnable {
     public void run() {
         try {
             SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            clientSocket = ssf.createSocket(config.getLinkPeerHost(), 6900);
+            clientSocket = ssf.createSocket(config.getLinkPeerHost(), config.getLinkPeerPort());
             
             SSLSession session = ((SSLSocket) clientSocket).getSession();
             Certificate[] cchain = session.getPeerCertificates();

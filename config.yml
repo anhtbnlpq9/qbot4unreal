@@ -3,8 +3,8 @@ me:
     name: cheetah.
     description: jThIRC
     sid: 5PC
-    #protocolversion:
-    #versionflags:
+    protocolversion: ""
+    versionflags: ""
     fullversiontext: jThIRC
     
 admin:
@@ -16,9 +16,18 @@ admin:
 link:
     peer: ocelot.
     host: polaris3.thibland.net
+    port: 6900
     incoming: incoming.host.or.ip
     # Auth by cert => we set password to *
-    password:
+    password: "*"
 
 set:
     network: Mjav
+
+cservice:
+    nick: Q
+    uniq: AAAAAA
+    ident: qbot
+    host: CServe.mjav.xyz
+    realname: The Q Bot
+    
