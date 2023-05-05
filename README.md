@@ -9,4 +9,5 @@ Project made in Java to help me to get back into it.
 ## How to use
 
 % javac *.java
+
 % java QBot
