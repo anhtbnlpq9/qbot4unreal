@@ -6,7 +6,7 @@ import java.util.Properties;
 import org.yaml.snakeyaml.Yaml;
 
 public class Config {
-    
+
     public InputStream inputStream = null; 
 
     public String serverName;
@@ -18,10 +18,10 @@ public class Config {
 
     public String[] adminInformation;
     
-    public String linkPeer;
-    public String linkHost;
+    public String  linkPeer;
+    public String  linkHost;
     public Integer linkPort;
-    public String linkPassword;    
+    public String  linkPassword;    
 
     public String cserviceNick;
     public String cserviceUniq;
@@ -29,9 +29,8 @@ public class Config {
     public String cserviceHost;
     public String cserviceReal;
 
-
     public Config(String configFile) {
-        
+
         this.inputStream = inputStream;
 
         try {
@@ -42,7 +41,10 @@ public class Config {
         Yaml yaml = new Yaml();
         Map<String, Object> data = yaml.load(inputStream);
         
-        LinkedHashMap confme = (LinkedHashMap) data.get("me");
+        LinkedHashMap confme       = (LinkedHashMap) data.get("me");
+        LinkedHashMap conflink     = (LinkedHashMap) data.get("link");
+        LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");   
+        
         serverName              = (String) confme.get("name");
         serverId                = (String) confme.get("sid");
         serverDescription       = (String) confme.get("description");
@@ -50,19 +52,16 @@ public class Config {
         serverVersionFlags      = (String) confme.get("versionflags");
         serverFullVersionText   = (String) confme.get("fullversiontext");
 
-        LinkedHashMap conflink = (LinkedHashMap) data.get("link");
-        linkPeer     = (String) conflink.get("peer");
-        linkHost     = (String) conflink.get("host");
-        linkPort     = (Integer) conflink.get("port");
-        linkPassword = (String) conflink.get("password");
-
-        LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");        
-        cserviceNick    = (String) conflink.get("nick");
-        cserviceUniq    = (String) conflink.get("uniq");
-        cserviceIdent   = (String) conflink.get("ident");
-        cserviceHost    = (String) conflink.get("host");
-        cserviceReal    = (String) conflink.get("realname");
-
+        linkPeer     = (String)  conflink.get("peer");
+        linkHost     = (String)  conflink.get("host");
+        linkPassword = (String)  conflink.get("password");
+        linkPort     = (Integer) conflink.get("port"); 
+        
+        cserviceNick    = (String) confcservice.get("nick");
+        cserviceUniq    = (String) confcservice.get("uniq");
+        cserviceIdent   = (String) confcservice.get("ident");
+        cserviceHost    = (String) confcservice.get("host");
+        cserviceReal    = (String) confcservice.get("realname");
 
         System.out.println("* Config:\n"
                         + "  --> Me name             = " + serverName  + "\n"
@@ -73,7 +72,19 @@ public class Config {
                         + "  --> Me fullversiontext  = " + serverFullVersionText + "\n"
                         + "  --> Link peer name      = " + linkPeer + "\n"
                         + "  --> Link Peer host      = " + linkHost + "\n");
+                        
+        //UserNode cservice = new UserNode(cserviceNick, cserviceUniq, );
     }
+
+/*
+    public UserNode(String userNick,
+                    String userIdent,
+                    String userHost,
+                    String userRealHost,
+                    String userRealName,
+                    String userUniq)*/
+
+
     
     public String getServerName() {
         return this.serverName;
@@ -102,8 +113,25 @@ public class Config {
     public String getLinkPassword() {
         return this.linkPassword;
     }
+    
     public String getEAUTH() {
         return this.serverName + "," + this.serverProtocolVersion + "," + this.serverVersionFlags + "," + this.serverFullVersionText;
     }
-    
+
+
+    public String getCServUniq() {
+        return this.cserviceUniq;
+    }
+
+
+    /*public String cserviceNick;
+    public String cserviceUniq;
+    public String cserviceIdent;
+    public String cserviceHost;
+    public String cserviceReal;*/
+
+
+
+
+
 }

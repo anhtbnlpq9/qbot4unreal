@@ -58,21 +58,9 @@ public class Client implements Runnable {
             SSLSession session = ((SSLSocket) clientSocket).getSession();
             Certificate[] cchain = session.getPeerCertificates();
 
-            /*System.out.println("The Certificates used by peer");
-            for (int i = 0; i < cchain.length; i++) {
-                System.out.println((cchain[i]).getEncoded());
-            }
-            System.out.println("Peer host is " + session.getPeerHost());
-            System.out.println("Cipher is " + session.getCipherSuite());
-            System.out.println("Protocol is " + session.getProtocol());
-            System.out.println("ID is " + new BigInteger(session.getId()));
-            System.out.println("Session created in " + session.getCreationTime());
-            System.out.println("Session accessed in "
-                    + session.getLastAccessedTime());*/
-
             System.out.println("* Connected");
 
-            Protocol protocol = new Protocol();
+            Protocol protocol = new Protocol(config);
             protocol.setClientRef(this);
 
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -80,25 +68,11 @@ public class Client implements Runnable {
             System.out.println("* Client is ready");
             this.clientReady = true;
 
-
             String str;
             while ((str = in.readLine()) != null) {
                 System.out.println("<<< " + str);
                 protocol.getResponse(str);
             }
-
-            /*boolean isChatOver = false;
-            while(!isChatOver) {
-                if(in.ready()) {
-                    Thread.sleep(5000);
-                }
-                String nextChat = in.readLine();
-                System.out.println("server says : " + nextChat);
-                if("bye".equalsIgnoreCase(nextChat.trim())) {
-                    System.out.println("**************************************Closing Session.*********************************************");
-                    isChatOver = true;
-                }
-            }*/
 
         }
         catch (Exception e) { e.printStackTrace(); }
