@@ -1,0 +1,24 @@
+# Connect config
+me:
+    name: cheetah.
+    description: jThIRC
+    sid: 5PC
+    #protocolversion:
+    #versionflags:
+    fullversiontext: jThIRC
+    
+admin:
+    - line 1
+    - line 2
+    - line 3
+
+
+link:
+    peer: ocelot.
+    host: polaris3.thibland.net
+    incoming: incoming.host.or.ip
+    # Auth by cert => we set password to *
+    password:
+
+set:
+    network: Mjav
