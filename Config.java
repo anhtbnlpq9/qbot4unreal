@@ -40,15 +40,9 @@ public class Config {
         catch (FileNotFoundException e) { e.printStackTrace(); }
 
         Yaml yaml = new Yaml();
-
         Map<String, Object> data = yaml.load(inputStream);
-
-        //System.out.println(data);
-        //System.out.println(data.get("me"));
-        
         
         LinkedHashMap confme = (LinkedHashMap) data.get("me");
-        
         serverName              = (String) confme.get("name");
         serverId                = (String) confme.get("sid");
         serverDescription       = (String) confme.get("description");
@@ -57,9 +51,9 @@ public class Config {
         serverFullVersionText   = (String) confme.get("fullversiontext");
 
         LinkedHashMap conflink = (LinkedHashMap) data.get("link");
-        linkPeer = (String) conflink.get("peer");
-        linkHost = (String) conflink.get("host");
-        linkPort = (Integer) conflink.get("port");
+        linkPeer     = (String) conflink.get("peer");
+        linkHost     = (String) conflink.get("host");
+        linkPort     = (Integer) conflink.get("port");
         linkPassword = (String) conflink.get("password");
 
         LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");        
@@ -71,14 +65,14 @@ public class Config {
 
 
         System.out.println("* Config:\n"
-        + "  --> Me name             = " + serverName  + "\n"
-        + "  --> Me SID              = " + serverId + "\n"
-        + "  --> Me Description      = " + serverDescription + "\n"
-        + "  --> Me protocolversion  = " + serverProtocolVersion  + "\n"
-        + "  --> Me versionflags     = " + serverVersionFlags + "\n"
-        + "  --> Me fullversiontext  = " + serverFullVersionText + "\n"
-        + "  --> Link peer name      = " + linkPeer + "\n"
-        + "  --> Link Peer host      = " + linkHost + "\n");
+                        + "  --> Me name             = " + serverName  + "\n"
+                        + "  --> Me SID              = " + serverId + "\n"
+                        + "  --> Me Description      = " + serverDescription + "\n"
+                        + "  --> Me protocolversion  = " + serverProtocolVersion  + "\n"
+                        + "  --> Me versionflags     = " + serverVersionFlags + "\n"
+                        + "  --> Me fullversiontext  = " + serverFullVersionText + "\n"
+                        + "  --> Link peer name      = " + linkPeer + "\n"
+                        + "  --> Link Peer host      = " + linkHost + "\n");
     }
     
     public String getServerName() {
@@ -100,9 +94,11 @@ public class Config {
     public String getLinkPeerHost() {
         return this.linkHost;
     }
+    
     public Integer getLinkPeerPort() {
         return this.linkPort;
     }
+    
     public String getLinkPassword() {
         return this.linkPassword;
     }

@@ -5,24 +5,23 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
 
-
 import java.util.ArrayList;
-
 
 public class Protocol extends Exception {
     
     private Client client;
     
     public void Protocol() {
+        
     }
     
     public void setClientRef(Client client) {
         this.client = client;
     }
     
-  public void write(Client client, String str) /*throws Exception*/ {
-      client.write(str);
-  }
+    public void write(Client client, String str) /*throws Exception*/ {
+        client.write(str);
+    }
 
   public void getResponse(String raw) throws Exception {
 

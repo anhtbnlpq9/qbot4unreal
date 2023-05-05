@@ -1,45 +1,13 @@
-//package org.yaml.snakeyaml;
-import java.net.* ;
 import java.io.* ;
-import java.util.Map;
-import java.util.Date;
-import java.util.Calendar;
 import java.time.Instant;
-//import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Properties;
-
-//import org.yaml.snakeyaml.TypeDescription;
-import org.yaml.snakeyaml.Yaml;
-//import org.yaml.snakeyaml.constructor.Constructor;
 
 public class Qbot {
 
     public static void main(String[] args) {
-        
-        
+
         System.out.println("* Loading config");
-        //InputStream inputStream = null;
         Config config = new Config("./config.yml");
-        
-        /*Yaml yaml = new Yaml();
-
-        Map<String, Object> data = yaml.load(inputStream);
-
-        System.out.println(data);
-        System.out.println(data.get("me"));
-        LinkedHashMap me = (LinkedHashMap) data.get("me");
-        System.out.println(me.get("name"));*/
-        
-       
-
-	    //Properties properties = System.getProperties();
-	    //properties.forEach((k, v) -> System.out.println(k + ":" + v)); // Java 8
-
-
-
-
-
 
         System.out.println("* Start client socket");
         Client tlsClient = new Client(config);
@@ -53,6 +21,7 @@ public class Qbot {
             }
             catch (Exception e) { e.printStackTrace(); }
         }
+        
         long unixTime;
         System.out.println("* Sending initial");
         tlsClient.write(":" + config.getServerId() + " " + "PASS" + " :" + config.getLinkPassword());
