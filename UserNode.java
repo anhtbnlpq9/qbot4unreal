@@ -49,7 +49,7 @@ public class UserNode {
  
     public UserNode(String userNick, String userIdent, String userHost,
                     String userRealHost, String userRealName, String userUniq,
-                    Integer userTS) {
+                    Integer userTS, String userModes) {
         this.userNick = userNick;
         this.userIdent = userIdent;
         this.userRealHost = userRealHost;

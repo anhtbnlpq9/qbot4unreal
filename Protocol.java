@@ -13,12 +13,14 @@ public class Protocol extends Exception {
     
     private Client client;
     private Config config;
+    private ServerNode server;
 
     //private static ArrayList<UserNode> userList = new ArrayList<UserNode>();
     //private static ArrayList<ServerNode> serverList = new ArrayList<ServerNode>();
     //private static ArrayList<ChanNode> chanList = new ArrayList<ChanNode>();
     
     private Map<String, ServerNode> serverList = new HashMap<String, ServerNode>();
+    private Map<String, UserNode> userList = new HashMap<String, UserNode>();
     
     private ArrayList<String> protocolProps = new ArrayList<String>();
     
@@ -30,7 +32,6 @@ public class Protocol extends Exception {
     public Protocol(Config config) {
         this.config = config;
     }
-
 
     public void setClientRef(Client client) {
         this.client = client;
@@ -172,7 +173,7 @@ public class Protocol extends Exception {
         String hop = command[1];
         String sid = command[2];
         String desc = (command[3].split(":"))[1];
-        ServerNode server = new ServerNode(name, hop, sid, desc);
+        server = new ServerNode(name, hop, sid, desc);
         serverList.put(sid, server);
         
         System.out.println("@@@ " + fromEnt + " introduced new server " + name + " / " + hop + " / " + sid + " / " + desc);
@@ -180,13 +181,24 @@ public class Protocol extends Exception {
     
     else if (command[1].equals("EOS")) {
         //<<< :5PX EOS
-        //<<< :5PX SINFO 1683275149 6000 diopqrstwxzBDGHIRSTWZ beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ * :UnrealIRCd-6.1.0
 
         fromEnt = (command[0].split(":"))[1];
 
-        ServerNode servereos = serverList.get(fromEnt);
-        System.out.println("@@@ " + fromEnt + " " + servereos.getServerName() + " reached EOS ");
-        servereos.setEOS(true);
+        ServerNode server = serverList.get(fromEnt);
+        System.out.println("@@@ " + fromEnt + " " + server.getServerName() + " reached EOS ");
+        server.setEOS(true);
+    }
+
+    else if (command[1].equals("SINFO")) {
+        //<<< :5PX SINFO 1683275149 6000 diopqrstwxzBDGHIRSTWZ beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ * :UnrealIRCd-6.1.0
+
+        //fromEnt = (command[0].split(":"))[1];
+        
+        //command = (command[2]).split(" ", 4);
+        //server = serverList.get(fromEnt);
+        //System.out.println("@@@ update server info for " + fromEnt + " " + server.getServerName());
+        
+        //server.setTS(command[0]);
     }
 
     else if (command[0].equals("PROTOCTL")) {
@@ -198,37 +210,52 @@ public class Protocol extends Exception {
         int propsCount = raw.split(" ", 20).length;
         
         for (int i=1; i < propsCount; i++) {
-            System.out.println("PPP " + prop[i]);
+            //System.out.println("PPP " + prop[i]);
             protocolProps.add(prop[i]);
             if (prop[i].startsWith("SID")) {
                 myPeerServerId = (prop[i].split("="))[1];
-                ServerNode server = new ServerNode((prop[i].split("="))[1]);
+                server = new ServerNode((prop[i].split("="))[1]);
                 serverList.put((prop[i].split("="))[1], server);
                 System.out.println("@@@ " + (prop[i].split("="))[1] + " introduced itself");
             }
         }
-
-
     }
 
     else if (command[0].equals("SERVER")) {
         //<<< SERVER ocelot. 1 :U6000-Fhn6OoEmM-5P0 Mjav Network IRC server
         String[] string = raw.split(" ", 4);
-        ServerNode peer = serverList.get(myPeerServerId);
-        //System.out.println("@@@ " + fromEnt + " " + servereos.getServerName() + " reached EOS ");
-        peer.setServerName(string[1]);
-        peer.setServerDistance(string[2]);
-        peer.setServerDescription((string[3].split(":"))[1]);
-
+        ServerNode server = serverList.get(myPeerServerId);
+        server.setServerName(string[1]);
+        server.setServerDistance(string[2]);
+        server.setServerDescription((string[3].split(":"))[1]);
     }
 
+    else if (command[1].equals("UID")) {
+        // :XXX UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
+
+        fromEnt = (command[0].split(":"))[1];
+        
+        command = command[2].split(" ", 12);
+
+        UserNode user = new UserNode( command[0],    // nick
+                                    command[3],      // ident
+                                    command[8],      // vhost
+                                    command[4],      // realhost
+                                    (command[11].split(":"))[1],   // gecos
+                                    command[5],      // unique id
+                                    Integer.parseInt(command[2]),   // TS
+                                    command[7]    // modes
+                                 );
+
+        userList.put(command[5], user);
+        System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
+
+    }
     else {
         if (command[0].equals("PING")) {
             response = "PONG " + command[1];
             write(client, response);
         }
     }
-
-
   }
 }

@@ -70,7 +70,7 @@ public class Client implements Runnable {
 
             String str;
             while ((str = in.readLine()) != null) {
-                System.out.println("<<< " + str);
+                //System.out.println("<<< " + str);
                 protocol.getResponse(str);
             }
 
@@ -79,7 +79,7 @@ public class Client implements Runnable {
     }
     public void write(String str) {
 		try {
-            System.out.println(">>> " + str);
+            //System.out.println(">>> " + str);
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 			out.write(str + "\n");
 			out.flush();
