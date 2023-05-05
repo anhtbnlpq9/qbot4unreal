@@ -1,0 +1,5 @@
+# Ignore compiled files
+*.class
+
+# Ignore SnakeYAML
+org/
