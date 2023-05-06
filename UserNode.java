@@ -1,28 +1,30 @@
-
+/**
+ * UserNode class
+ *
+ * Class to store network users:
+ * - nick
+ * - old nick (to handle nick changes)
+ * - user/ident
+ * - host, real host
+ * - realname
+ * - uniq id
+ * - modes
+ * - channels membership
+ * - server
+ * - certfp
+ * - account
+ * - auth status
+ * - register status (for nick ownerships)
+ * - timestamp
+ *
+ * @author me
+ */ 
+ 
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 
 public class UserNode {
     
-    /*
-     * User:
-     * - nick
-     * - old nick (to handle nick changes)
-     * - user/ident
-     * - host
-     * - real host
-     * - realname
-     * - uniq id
-     * - modes
-     * - channels
-     * - server
-     * - certfp
-     * - account
-     * - auth status
-     * - register status (for nick ownerships)
-     * - timestamp
-     */
-
     public String userNick;
     public String userOldNick;
     public String userIdent;

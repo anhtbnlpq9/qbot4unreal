@@ -1,17 +1,19 @@
-
-
+/**
+ * ServerNode class
+ *
+ * Class to store network servers:
+ * - name
+ * - id
+ * - description
+ * - timestamp
+ * - distance
+ * - is peer
+ * - is EOS
+ *
+ * @author me
+ */ 
+ 
 public class ServerNode {
-    
-    /*
-     * Server:
-     * - name
-     * - id
-     * - description
-     * - timestamp
-     * - distance
-     * - is peer
-     * - is EOS
-     */
 
     public String serverName;
     public String serverId;

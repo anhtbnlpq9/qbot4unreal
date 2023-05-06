@@ -1,6 +1,3 @@
-import java.io.* ;
-import java.time.Instant;
-import java.util.Properties;
 
 public class Qbot {
 

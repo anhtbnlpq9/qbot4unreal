@@ -1,5 +1,3 @@
-import java.lang.String;
-import java.lang.Exception;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
