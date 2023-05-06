@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+
 public class Protocol extends Exception {
     
     private Client client;
     private Config config;
     private ServerNode server;
+    private CService cservice;
 
     //private static ArrayList<ChanNode> chanList = new ArrayList<ChanNode>();
     
@@ -31,11 +33,42 @@ public class Protocol extends Exception {
         this.config = config;
     }
 
+
     public void setClientRef(Client client) {
         this.client = client;
     }
     
+    public void setCService(CService cservice) {
+        this.cservice = cservice;
+    }
+    
     public void write(Client client, String str) /*throws Exception*/ {
+        client.write(str);
+    }
+
+    public void sendPrivmsg(Client client, String from, String to, String msg) /*throws Exception*/ {
+        String str = ":" + from + " PRIVMSG " + to + " :" + msg;
+        client.write(str);
+    }
+    public void sendNotice(Client client, String from, String to, String msg) /*throws Exception*/ {
+        String str = ":" + from + " NOTICE " + to + " :" + msg;
+        client.write(str);
+    }
+    public void chanJoin(Client client, String who, String chan) /*throws Exception*/ {
+        String str = ":" + who + " JOIN " + chan;
+        client.write(str);
+    }
+    public void chanPart(Client client, String who, String chan) /*throws Exception*/ {
+        String str = ":" + who + " PART " + chan;
+        client.write(str);
+    }
+    public void setMode(Client client, String who, String target, String parameters) /*throws Exception*/ {
+        String str = ":" + who + " MODE " + target + " " + parameters;
+        client.write(str);
+    }
+    public void setMode(Client client, String target, String parameters) /*throws Exception*/ {
+        String who = config.getServerId();
+        String str = ":" + who + " MODE " + target + " " + parameters;
         client.write(str);
     }
 
@@ -50,6 +83,7 @@ public class Protocol extends Exception {
     public String getPeerId() {
         return this.myPeerServerId;
     }
+   
 
   public void getResponse(String raw) throws Exception {
 
@@ -77,97 +111,12 @@ public class Protocol extends Exception {
         command = (command[2]).split(" ", 2);
         String toEntity   =  command[0];
         String message    =  command[1];
-        
-        //System.out.println("from=" + fromEntity + " to=" + toEntity + " message="+message + "---" + config.getServerId() + config.getCServUniq());
-
-        String message2;
 
         // Test for output performance
-        if (toEntity.equals(config.getServerId() + config.getCServeUniq()) && message.equals(":help")) {
-            message2 = "The following commands are available to you.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "For more information on a specific command, type HELP <command>:";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "ADDUSER Adds one or more users to a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "AUTHHISTORY View auth history for an account.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "AUTOLIMIT Shows or changes the autolimit threshold on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "BANCLEAR Removes all bans from a channel including persistent bans.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "BANDEL Removes a single ban from a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "BANLIST Displays all persistent bans on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "BANTIMER Shows or changes the time after which bans are removed.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CHANFLAGS Shows or changes the flags on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CHANLEV Shows or modifies user access on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CHANMODE Shows which modes are forced or denied on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CHANOPHISTORY Displays a list of who has been opped on a channel recently with account names.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CHANSTAT Displays channel activity statistics.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CLEARCHAN Removes all modes from a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "CLEARTOPIC Clears the topic on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "DEOPALL Deops all users on channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "DEVOICEALL Devoices all users on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2; write(client, response);
-            message2 =  "EMAIL Change your email address.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "GIVEOWNER Gives total control over a channel to another user.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "HELP Displays help on a specific command.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "INVITE Invites you to a channel or channels.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "NEWPASS Change your password.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "OP Ops you or other users on channel(s).";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "PERMBAN Permanently bans a hostmask on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "RECOVER Recovers a channel (same as deopall, unbanall, clearchan).";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "REMOVEUSER Removes one or more users from a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "REQUESTOWNER Requests ownership of a channel on which there are no owners.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "SETTOPIC Changes the topic on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "SHOWCOMMANDS Lists available commands.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "TEMPBAN Bans a hostmask on a channel for a specified time period.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "UNBANALL Removes all bans from a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "UNBANMASK Removes bans matching a particular mask from a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "UNBANME Removes any bans affecting you from a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "USERFLAGS Shows or changes user flags.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "USERS Displays a list of users on the channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "VERSION Show Version.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "VOICE Voices you or other users on channel(s).";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "WELCOME Shows or changes the welcome message on a channel.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "WHOAMI Displays information about you.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "WHOIS Displays information about a user.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
-            message2 =  "End of list.";
-            response = ":" + toEntity + " NOTICE " + fromEntity + " " + message2;write(client, response);
+        if (toEntity.equals(config.getServerId() + config.getCServeUniq())) {
+            // Stripping message
+            message = (message.split(":",2))[1];
+            cservice.handleMessage(fromEntity, message);
         }
     }
 
@@ -186,7 +135,7 @@ public class Protocol extends Exception {
         server = new ServerNode(name, hop, sid, desc);
         serverList.put(sid, server);
         
-        System.out.println("@@@ " + fromEnt + " introduced new server " + name + " / " + hop + " / " + sid + " / " + desc);
+        //System.out.println("@@@ " + fromEnt + " introduced new server " + name + " / " + hop + " / " + sid + " / " + desc);
     }
     
     else if (command[1].equals("EOS")) {
@@ -195,7 +144,7 @@ public class Protocol extends Exception {
         fromEnt = (command[0].split(":"))[1];
 
         ServerNode server = serverList.get(fromEnt);
-        System.out.println("@@@ " + fromEnt + " " + server.getServerName() + " reached EOS ");
+        //System.out.println("@@@ " + fromEnt + " " + server.getServerName() + " reached EOS ");
         server.setEOS(true);
     }
 
@@ -225,10 +174,12 @@ public class Protocol extends Exception {
             if (prop[i].startsWith("SID")) {
                 myPeerServerId = (prop[i].split("="))[1];
                 server = new ServerNode((prop[i].split("="))[1]);
+                server.setPeer(true);
                 serverList.put((prop[i].split("="))[1], server);
-                System.out.println("@@@ " + (prop[i].split("="))[1] + " introduced itself");
+                //System.out.println("@@@ " + (prop[i].split("="))[1] + " introduced itself");
             }
         }
+        serverList.get(config.getServerId()).setServerPeerResponded(true);
     }
 
     else if (command[0].equals("SERVER")) {
@@ -238,6 +189,8 @@ public class Protocol extends Exception {
         server.setServerName(string[1]);
         server.setServerDistance(string[2]);
         server.setServerDescription((string[3].split(":"))[1]);
+        
+        serverList.get(config.getServerId()).setServerPeerResponded(true);
     }
 
     else if (command[1].equals("UID")) {
@@ -256,9 +209,9 @@ public class Protocol extends Exception {
                                     Integer.parseInt(command[2]),   // TS
                                     command[7]    // modes
                                  );
-
+        user.setUserServer(serverList.get(fromEnt));
         userList.put(command[5], user);
-        System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
+        //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
 
     }
     else {

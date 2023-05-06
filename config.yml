@@ -27,7 +27,7 @@ cservice:
     nick: Q
     uniq: AAAAAA
     ident: qbot
-    host: CServe.mjav.xyz
+    host: CServe
     realname: The Q Bot
     modes: +ioqBS
     staticchan: "#qbot"

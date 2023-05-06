@@ -62,6 +62,7 @@ public class UserNode {
         this.userRealName = userRealName;
         this.userUniq = userUniq;
         this.userTS = userTS;
+        this.userModes = userModes;
         
     } 
 
@@ -114,6 +115,9 @@ public class UserNode {
         this.userTS = userTS;
     }
 
+    public String getUserNick() {
+        return this.userNick;
+    }
     public String getUserIdent() {
         return this.userIdent;
     }

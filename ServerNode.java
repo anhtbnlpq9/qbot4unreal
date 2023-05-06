@@ -19,6 +19,9 @@ public class ServerNode {
     public String serverTS;
     public String serverDistance;
     
+    // Only used for me (detect that server peer has responded => it exists in serverList)
+    public Boolean serverPeerResponded = null;
+    
     public Boolean serverIsPeer = false;
     public Boolean serverIsEOS  = false;
 
@@ -43,6 +46,10 @@ public class ServerNode {
         this.serverIsEOS = eos;
     }
 
+    public void setPeer(Boolean peer) {
+        this.serverIsPeer = peer;
+    }
+
     public void setServerName(String name) {
         this.serverName = name;
     } 
@@ -55,11 +62,26 @@ public class ServerNode {
         this.serverDistance = dist;
     }  
 
+    public void setServerPeerResponded(Boolean serverPeerResponded) {
+        this.serverPeerResponded = serverPeerResponded;
+    }
+    
     public String getServerName() {
         return this.serverName;
+    }
+
+    public String getServerId() {
+        return this.serverId;
+    }
+
+    public Boolean getServerPeer() {
+        return this.serverIsPeer;
     }
 
     public Boolean getServerEOS() {
         return this.serverIsEOS;
     }
+    public Boolean getServerPeerResponded() {
+        return this.serverPeerResponded;
+    }    
 }

@@ -28,7 +28,6 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import javax.security.cert.X509Certificate;
@@ -42,6 +41,7 @@ public class Client implements Runnable {
     public BufferedWriter out;
     private boolean clientReady = false;
     private Protocol protocol;
+    CService cservice = new CService(this, protocol);
 
     long unixTime;
 
@@ -77,18 +77,26 @@ public class Client implements Runnable {
 
             String str;
             while ((str = in.readLine()) != null) {
-                System.out.println("<<< " + str);
+                //System.out.println("<<< " + str);
                 protocol.getResponse(str);
             }
         }
         catch (Exception e) { e.printStackTrace(); }
     }
-    
+
     public void launchCService() {
         
         Map<String, ServerNode> serverList = protocol.getServerList();
         Map<String, UserNode> userList = protocol.getUserList();
-        
+
+        while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
+            System.out.println("* Wait for peer to register");
+            try {
+                Thread.sleep(500);
+            }
+            catch (Exception e) { e.printStackTrace(); }
+        }
+
         while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
             System.out.println("* Wait for final EOS");
             try {
@@ -98,32 +106,30 @@ public class Client implements Runnable {
         }
 
 
-        unixTime = Instant.now().getEpochSecond();
-        this.write(":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName());
-        // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
-        UserNode user = new UserNode(config.getCServeNick(), 
-                                 config.getCServeIdent(), 
-                                 config.getCServeHost(),
-                                 config.getCServeHost(),
-                                 config.getCServeRealName(),
-                                 config.getCServeUniq(),
-                                 unixTime,
-                                 config.getCServeModes());
+        cservice.runCService(config, protocol, userList, serverList);
 
-        userList.put(config.getCServeUniq(), user);
+    }
+    
+    public void sendIdent() {
+        Map<String, ServerNode> serverList = protocol.getServerList();
 
-        unixTime = Instant.now().getEpochSecond();
-        this.write(":" + config.getServerId() + " " + "SJOIN " + unixTime + " " + config.getCServeStaticChan() + " + :" + config.getServerId() + config.getCServeUniq());
+        this.write(":" + config.getServerId() + " " + "PASS" + " :" + config.getLinkPassword());
+        this.write(":" + config.getServerId() + " " + "PROTOCTL NICKv2 VHP UMODE2 NICKIP SJOIN SJOIN2 SJ3 NOQUIT TKLEXT MLOCK SID MTAGS");
+        this.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getEAUTH());
+        this.write(":" + config.getServerId() + " " + "PROTOCTL SID=" + config.getServerId());
+        this.write(":" + config.getServerId() + " " + "SERVER" + " " + config.getServerName() + " 1 :" + config.getServerDescription());
+        this.write(":" + config.getServerId() + " " + "EOS");        
 
-
-        unixTime = Instant.now().getEpochSecond();
-        this.write("MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
-
+        ServerNode server = new ServerNode(config.getServerName(), "0", config.getServerId(), config.getServerDescription());
+        server.setEOS(true);
+        server.setServerPeerResponded(false);
+        serverList.put(config.getServerId(), server);
+        
     }
 
     public void write(String str) {
 		try {
-            System.out.println(">>> " + str);
+            //System.out.println(">>> " + str);
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 			out.write(str + "\n");
 			out.flush();

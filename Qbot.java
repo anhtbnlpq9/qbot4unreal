@@ -5,35 +5,42 @@ import java.util.Properties;
 public class Qbot {
 
     public static void main(String[] args) {
+        System.out.println(   "            _..---...,\"\"-._     ,/}/)      \n"
+                            + "         .''        ,      ``..'(/-<       \n"
+                            + "        /   _      {      )         \\      \n"
+                            + "       ;   _ `.     `.   <         a(      \n"
+                            + "     ,'   ( \\  )      `.  \\ __.._ .: y     \n"
+                            + "    (  <\\_-) )'-.____...\\  `._   //-'      \n"
+                            + "     `. `-' /-._)))      `-._)))           \n"
+                            + "       `...'                               \n"
+                            + "     _       _   ___                     _\n"
+                            + " ___| |_ ___| |_| | |_ _ ___ ___ ___ ___| |\n"
+                            + "| . | . | . |  _|_  | | |   |  _| -_| .'| |\n"
+                            + "|_  |___|___|_|   |_|___|_|_|_| |___|__,|_|\n"
+                            + "  |_|                                      \n"
+                            + "                  ~~~                      \n"
+                );
 
-        System.out.println("* Loading config");
+        System.out.println("* Loading conf");
         Config config = new Config("./config.yml");
 
-        System.out.println("* Start client socket");
+        System.out.println("* Starting client socket");
         Client tlsClient = new Client(config);
         Thread thread = new Thread(tlsClient);
         thread.start();
 
         while (tlsClient.getReady() == false) {
             try {
-                //System.out.println("* Not ready");
                 Thread.sleep(1000);
             }
             catch (Exception e) { e.printStackTrace(); }
         }
-        
-        long unixTime;
-        System.out.println("* Sending initial");
-        tlsClient.write(":" + config.getServerId() + " " + "PASS" + " :" + config.getLinkPassword());
-        tlsClient.write(":" + config.getServerId() + " " + "PROTOCTL NICKv2 VHP UMODE2 NICKIP SJOIN SJOIN2 SJ3 NOQUIT TKLEXT MLOCK SID MTAGS");
-        tlsClient.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getEAUTH());
-        tlsClient.write(":" + config.getServerId() + " " + "PROTOCTL SID=" + config.getServerId());
-        tlsClient.write(":" + config.getServerId() + " " + "SERVER" + " " + config.getServerName() + " 1 :" + config.getServerDescription());
 
-        tlsClient.write(":" + config.getServerId() + " " + "EOS");
-
-        try { Thread.sleep(5000); } catch (Exception e) { e.printStackTrace(); }
         
+        tlsClient.sendIdent();
+        System.out.println("* Sent server ident");
+        //try { Thread.sleep(5000); } catch (Exception e) { e.printStackTrace(); }
         tlsClient.launchCService(); 
+        System.out.println("* Started CService");
     }    
 }
