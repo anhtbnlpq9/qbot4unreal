@@ -93,7 +93,7 @@ public class Client implements Runnable {
         while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
             System.out.println("* Wait for peer to register");
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             }
             catch (Exception e) { e.printStackTrace(); }
         }
@@ -101,7 +101,7 @@ public class Client implements Runnable {
         while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
             System.out.println("* Wait for final EOS");
             try {
-                Thread.sleep(500);
+                Thread.sleep(2000);
             }
             catch (Exception e) { e.printStackTrace(); }
         }
