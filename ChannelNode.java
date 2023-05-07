@@ -18,12 +18,13 @@ public class ChannelNode {
     public Boolean channelRegistered;
     public UserNode channelOwner;
     public String chanlev;
+    public Integer chanUserCount;
 
     public long channelTS;
     
     public Map<String, UserNode> chanUserList = new HashMap<String, UserNode>();
     //public Map<String, ChannelMode> channelModes = new HashMap<String, ChannelMode>();
-    public Map<String, String> channelModes = new HashMap<String, String>();
+    public Map<String, String> channelModes = new HashMap<String, String>(); // Map mode - parameter
     
     public ArrayList<String> banList = new ArrayList<String>();
     public ArrayList<String> exceptList = new ArrayList<String>();
@@ -123,8 +124,17 @@ public class ChannelNode {
     public String getChanlev() {
         return this.chanlev;
     }
+    public String getChanName() {
+        return this.channelName;
+    }
     public Long getChanTS() {
         return this.channelTS;
     }
 
+    public Integer getChanUserCount() {
+        return this.chanUserCount;
+    }
+    public void setChanUserCount(int count) {
+        this.chanUserCount = count;
+    }
 }

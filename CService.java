@@ -254,34 +254,40 @@ public class CService {
                 protocol.sendNotice(client, myUniq, fromNick, "End of list.");
             }
 
-            else if (str.equalsIgnoreCase("chanlist")) {
+            else if (str.toUpperCase().startsWith("CHANLIST")) {
                 protocol.sendNotice(client, myUniq, fromNick, "List of channels:");
                 
                 /*for (Map.Entry<A, B> e : myMap.entrySet()) {
                     A key    = e.getKey();
                     B value  = e.getValue();
                 }*/
+                String filterInput, filter;
+                if ((str.split(" ", 2)).length > 1) {
+                    filterInput = ((str.split(" ", 2))[1]).replaceAll("[^A-Za-z0-9]", ""); 
+                }
+                else filterInput = "";
+                filter = ".*" + filterInput + ".*"; 
+                
                 channelList.forEach( (chan, node) -> {
-                    //String modes = "";
-                    //String params = "";
 
-                    /*node.getModes().forEach( (mode, param) -> {
-                        modes = modes.concat(mode);
-                        params.concat(" " + param);
-                    });*/
-                    Date date = new Date((node.getChanTS())*1000L);
-                    SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-                    jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    String chanTSdate = jdf.format(date);
+                    if (chan.matches("(?i)" + filter)) {
+                        
+                        Date date = new Date((node.getChanTS())*1000L);
+                        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+                        jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        String chanTSdate = jdf.format(date);
 
-                    protocol.sendNotice(client, myUniq, fromNick, " + " + chan + " / Created: " + chanTSdate + " / Modes: " + node.getModes());
-                    protocol.sendNotice(client, myUniq, fromNick, " |- ban list: " + node.getBanList().toString() );
-                    protocol.sendNotice(client, myUniq, fromNick, " |- except list: " + node.getExceptList().toString() );
-                    protocol.sendNotice(client, myUniq, fromNick, " `- invite list: " + node.getInviteList().toString() );
+                        protocol.sendNotice(client, myUniq, fromNick, " + " + chan + " / Created: " + chanTSdate + " / Modes: " + node.getModes() + " / User count: " + node.getChanUserCount());
+                        protocol.sendNotice(client, myUniq, fromNick, " |- ban list: " + node.getBanList().toString() );
+                        protocol.sendNotice(client, myUniq, fromNick, " |- except list: " + node.getExceptList().toString() );
+                        protocol.sendNotice(client, myUniq, fromNick, " `- invite list: " + node.getInviteList().toString() );
+
+                    }
                 });
-
                 protocol.sendNotice(client, myUniq, fromNick, "There are " + channelList.size() + " channels on the network.");
                 protocol.sendNotice(client, myUniq, fromNick, "End of list.");
+
+                
             }
  
             else if (str.toUpperCase().startsWith("IRCWHOIS ")) {
@@ -307,7 +313,7 @@ public class CService {
                         //userChannels
                         
                         user.getValue().getUserChanModes().forEach( (key, value) -> {
-                            protocol.sendNotice(client, myUniq, fromNick, " |- on (" + value + ")"+ key);
+                            protocol.sendNotice(client, myUniq, fromNick, " |- on " + key + " :: "+ value);
                         });
 
 

@@ -113,6 +113,18 @@ public class UserNode {
         userChanList.put(channel, chanObj);
         userChanModes.put(channel, mode);
     }
+
+    public void delUserFromChan(String channel) /*throws Exception*/ {
+        //if (this.userChanList.contains(channel)) {
+        //    throw new Exception("Cannot add the user inside a channel they already are in"); 
+        //}
+        //else {
+        //    this.userChanList.add(channel);
+        //}
+        userChanList.remove(channel);
+        userChanModes.remove(channel);
+    }
+
     public void setUserAuthed(Boolean state) {
         this.userAuthed = state;
     }
@@ -122,12 +134,13 @@ public class UserNode {
     public void setUserTS(Integer userTS) {
         this.userTS = userTS;
     }
-    public void addChan(String chan) {
-        //this.userChanList.put(chan, ...);
-    }
+
 
     public String getUserNick() {
         return this.userNick;
+    }
+    public String getUserOldNick() {
+        return this.userOldNick;
     }
     public String getUserIdent() {
         return this.userIdent;
