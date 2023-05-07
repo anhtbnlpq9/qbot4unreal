@@ -29,7 +29,7 @@ I kinda like the Q bot (I find it just as enough for channel management).
 I also kinda like the features of UnrealIRCd (very modular, also has some
 interesting security features).
 I don't like the services provided by Anope/Atheme (too many features,
-too many nicks) and ircu (too few of anything - it is just a basic ircd).
+too many nicks) and ircu (too few of anything).
 
 So the idea is to render the Q bot for UnrealIRCd networks, and also adding features
 that would not be possible with ircu (SASL for example).
