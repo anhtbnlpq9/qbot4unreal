@@ -36,6 +36,12 @@ public class Config {
     public String cserviceModes;
     public String cserviceStaticChan;
 
+   /**
+    * Constructor for the class
+    * ...
+    * 
+    * @param configFile Configuration file name
+    */
     public Config(String configFile) {
 
         this.inputStream = inputStream;
@@ -119,6 +125,7 @@ public class Config {
 
     public String getCServeUniq() {
         return this.cserviceUniq;
+        //return this.serverId+this.cserviceUniq;
     }
 
     public String getCServeNick() {

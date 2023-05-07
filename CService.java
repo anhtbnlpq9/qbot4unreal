@@ -2,13 +2,19 @@
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Date;
 
 import java.time.Instant;
+
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+
 
 public class CService {
     
     Map<String, ServerNode> serverList;
     Map<String, UserNode> userList;
+    Map<String, ChannelNode> channelList;
     
     String myUniq;
     
@@ -37,9 +43,11 @@ public class CService {
         this.userList = userList;
     }         
  
-    public void runCService(Config config, Protocol protocol, Map<String, UserNode> userList, Map<String, ServerNode> serverList) {
+    public void runCService(Config config, Protocol protocol, Map<String, UserNode> userList, Map<String, ServerNode> serverList, Map<String, ChannelNode> channelList) {
         this.userList = userList;
         this.serverList = serverList;
+        this.channelList = channelList;
+        
         unixTime = Instant.now().getEpochSecond();
         client.write(":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName());
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
@@ -219,12 +227,11 @@ public class CService {
                     A key    = e.getKey();
                     B value  = e.getValue();
                 }*/
-                int counter=0;
+
                 for (Map.Entry<String, UserNode> user : userList.entrySet()) {
-                    protocol.sendNotice(client, myUniq, fromNick, " * " + user.getValue().getUserUniq() + " " + user.getValue().getUserNick() + "!" + user.getValue().getUserIdent() + "@" + user.getValue().getUserHost() + " (" + user.getValue().getUserRealHost() + ") " + user.getValue().getUserModes());
-                    counter++;
+                    protocol.sendNotice(client, myUniq, fromNick, " * " + user.getValue().getUserUniq() + " " + user.getValue().getUserNick() + "!" + user.getValue().getUserIdent() + "@" + user.getValue().getUserHost() + " [" + user.getValue().getUserRealHost() + "] " + user.getValue().getUserModes() + " * " + user.getValue().getUserRealName());
                 }
-                protocol.sendNotice(client, myUniq, fromNick, "There are " + counter + " users on the network.");
+                protocol.sendNotice(client, myUniq, fromNick, "There are " + userList.size() + " users on the network.");
                 protocol.sendNotice(client, myUniq, fromNick, "End of list.");
             }
 
@@ -235,58 +242,87 @@ public class CService {
                     A key    = e.getKey();
                     B value  = e.getValue();
                 }*/
-                
-                int counter=0;
+
                 for (Map.Entry<String, ServerNode> server : serverList.entrySet()) {
                     String serverPeerStatus = "";
                     if (server.getValue().getServerPeer()==true) { serverPeerStatus = "@";  }
                     String serverEOS = "no";
                     if (server.getValue().getServerEOS()==true) { serverEOS = "yes";  }
-                    protocol.sendNotice(client, myUniq, fromNick, " * " + serverPeerStatus + server.getValue().getServerId() + " " + server.getValue().getServerName() + " EOS:" + serverEOS);
-                    counter++;
+                    protocol.sendNotice(client, myUniq, fromNick, " * " + serverPeerStatus + server.getValue().getServerName() + " (" + server.getValue().getServerId() + ") /  EOS:" + serverEOS);
                 }
-                protocol.sendNotice(client, myUniq, fromNick, "There are " + counter + " servers on the network.");
+                protocol.sendNotice(client, myUniq, fromNick, "There are " + serverList.size() + " servers on the network.");
                 protocol.sendNotice(client, myUniq, fromNick, "End of list.");
             }
-            
+
+            else if (str.equalsIgnoreCase("chanlist")) {
+                protocol.sendNotice(client, myUniq, fromNick, "List of channels:");
+                
+                /*for (Map.Entry<A, B> e : myMap.entrySet()) {
+                    A key    = e.getKey();
+                    B value  = e.getValue();
+                }*/
+                channelList.forEach( (chan, node) -> {
+                    //String modes = "";
+                    //String params = "";
+
+                    /*node.getModes().forEach( (mode, param) -> {
+                        modes = modes.concat(mode);
+                        params.concat(" " + param);
+                    });*/
+                    Date date = new Date((node.getChanTS())*1000L);
+                    SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+                    jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    String chanTSdate = jdf.format(date);
+
+                    protocol.sendNotice(client, myUniq, fromNick, " + " + chan + " / Created: " + chanTSdate + " / Modes: " + node.getModes());
+                    protocol.sendNotice(client, myUniq, fromNick, " |- ban list: " + node.getBanList().toString() );
+                    protocol.sendNotice(client, myUniq, fromNick, " |- except list: " + node.getExceptList().toString() );
+                    protocol.sendNotice(client, myUniq, fromNick, " `- invite list: " + node.getInviteList().toString() );
+                });
+
+                protocol.sendNotice(client, myUniq, fromNick, "There are " + channelList.size() + " channels on the network.");
+                protocol.sendNotice(client, myUniq, fromNick, "End of list.");
+            }
+ 
             else if (str.toUpperCase().startsWith("IRCWHOIS ")) {
                 String nick = (str.split(" ", 2))[1];
                 int foundNick=0;
                 for (Map.Entry<String, UserNode> user : userList.entrySet()) {
                     if ((user.getValue().getUserNick()).toUpperCase().equals(nick.toUpperCase())) {
                         foundNick=1;
-                        protocol.sendNotice(client, myUniq, fromNick, nick + " (" + user.getValue().getUserUniq() + ") is " + user.getValue().getUserIdent() + "@" + user.getValue().getUserHost() + " * " + user.getValue().getUserRealName());
-                        protocol.sendNotice(client, myUniq, fromNick, nick + " is connecting from @" + user.getValue().getUserRealHost());
-                        protocol.sendNotice(client, myUniq, fromNick, nick + " is using modes " + user.getValue().getUserModes());
-                        protocol.sendNotice(client, myUniq, fromNick, nick + " is using server " + (user.getValue().getUserServer()).getServerName() + " (" + (user.getValue().getUserServer()).getServerId() + ")");
-                        //protocol.sendNotice(client, myUniq, fromNick, nick + " has TS " + (String)user.getValue().getUserTS());
+                        
+                        Date date = new Date((user.getValue().getUserTS())*1000L);
+                        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+                        jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        String userTSdate = jdf.format(date);
+
+                        protocol.sendNotice(client, myUniq, fromNick, " + " + user.getValue().getUserNick() + " (" + user.getValue().getUserUniq() + ") is " + user.getValue().getUserIdent() + "@" + user.getValue().getUserHost() + " * " + user.getValue().getUserRealName());
+                        protocol.sendNotice(client, myUniq, fromNick, " |- is connecting from " + user.getValue().getUserRealHost());
+                        protocol.sendNotice(client, myUniq, fromNick, " |- is using modes " + user.getValue().getUserModes());
+                        protocol.sendNotice(client, myUniq, fromNick, " |- is using server " + (user.getValue().getUserServer()).getServerName() + " (" + (user.getValue().getUserServer()).getServerId() + ")");
+                        protocol.sendNotice(client, myUniq, fromNick, " |- signed on " + userTSdate );
+
+                        //String userChannels = "";
+                        //Map<String, String> userChannels = user.getValue().getUserServer()).getUserChanModes();
+                        //userChannels
+                        
+                        user.getValue().getUserChanModes().forEach( (key, value) -> {
+                            protocol.sendNotice(client, myUniq, fromNick, " |- on (" + value + ")"+ key);
+                        });
+
+
+
+                        
+                        //protocol.sendNotice(client, myUniq, fromNick, " `- on " + user.getValue().getUserChanModes());
                     }
                 }
                 if (foundNick == 0) {
                     protocol.sendNotice(client, myUniq, fromNick, "No such nick.");
                 }
                 else {
-                    protocol.sendNotice(client, myUniq, fromNick, "End of WHOIS.");
+                    protocol.sendNotice(client, myUniq, fromNick, "End of IRCWHOIS.");
                 }
             }
-
-
-/* [17:16:56] AnhTay is anh@user/AnhTay * Tôi Là Anh
-[17:16:56] AnhTay is using modes +ioptwxzHTW bcdfjkoqsBCOS
-[17:16:56] AnhTay is connecting from anh@2001:bc8:3057:f02:4e1c:3752:6901:591c 2001:bc8:3057:f02:4e1c:3752:6901:591c
-[17:16:56] AnhTay on #qbot @#Civilization #mjav #Opers/services #Opers 
-[17:16:56] AnhTay using sandcat. Mjav Network IRC server
-[17:16:56] AnhTay is an IRC Operator (anhtay) [netadmin]
-[17:16:56] AnhTay is using a Secure Connection [TLSv1.3-TLS_CHACHA20_POLY1305_SHA256]
-[17:16:56] AnhTay is in security-groups: known-users,registered-users,trustedPeople,users-anhtay,tls-and-known-users,tls-users
-[17:16:56] AnhTay is using an IP with a reputation score of 10000
-[17:16:56] AnhTay FR set by is connecting from France
-[17:16:56] AnhTay has client certificate fingerprint 2ba3a87c6d4cd870f40ebc207b26a060b044f16395883169fe161a7c4c9a9b13
-[17:16:56] AnhTay is logged in as AnhTay
-[17:16:56] AnhTay has been idle 10secs, signed on Fri May 05 08:26:48 2023 */
-
-
-
 
             else { // Unknown command
                 message = "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.";

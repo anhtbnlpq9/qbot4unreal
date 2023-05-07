@@ -39,6 +39,8 @@ public class Client implements Runnable {
     private boolean clientReady = false;
     private Protocol protocol;
     CService cservice = new CService(this, protocol);
+    
+    Thread thread;
 
     long unixTime;
 
@@ -77,6 +79,7 @@ public class Client implements Runnable {
                 //System.out.println("<<< " + str);
                 protocol.getResponse(str);
             }
+            throw new Exception("Connection has been closed.");
         }
         catch (Exception e) { e.printStackTrace(); }
     }
@@ -85,11 +88,12 @@ public class Client implements Runnable {
         
         Map<String, ServerNode> serverList = protocol.getServerList();
         Map<String, UserNode> userList = protocol.getUserList();
+        Map<String, ChannelNode> channelList = protocol.getChanList();
 
         while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
             System.out.println("* Wait for peer to register");
             try {
-                Thread.sleep(500);
+                Thread.sleep(1000);
             }
             catch (Exception e) { e.printStackTrace(); }
         }
@@ -103,7 +107,7 @@ public class Client implements Runnable {
         }
 
 
-        cservice.runCService(config, protocol, userList, serverList);
+        cservice.runCService(config, protocol, userList, serverList, channelList);
 
     }
     
@@ -140,5 +144,9 @@ public class Client implements Runnable {
     
     public boolean getReady() {
         return this.clientReady;
+    }
+    
+    public void setThread(Thread thread) {
+        this.thread = thread;
     }
 }

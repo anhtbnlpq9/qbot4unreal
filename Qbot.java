@@ -2,7 +2,8 @@
 public class Qbot {
 
     public static void main(String[] args) {
-        System.out.println(   "            _..---...,\"\"-._     ,/}/)      \n"
+        System.out.println(   "                                           \n"
+                            + "            _..---...,\"\"-._     ,/}/)      \n"
                             + "         .''        ,      ``..'(/-<       \n"
                             + "        /   _      {      )         \\      \n"
                             + "       ;   _ `.     `.   <         a(      \n"
@@ -10,7 +11,7 @@ public class Qbot {
                             + "    (  <\\_-) )'-.____...\\  `._   //-'      \n"
                             + "     `. `-' /-._)))      `-._)))           \n"
                             + "       `...'                               \n"
-                            + "     _       _   ___                     _\n"
+                            + "     _       _   ___                     _ \n"
                             + " ___| |_ ___| |_| | |_ _ ___ ___ ___ ___| |\n"
                             + "| . | . | . |  _|_  | | |   |  _| -_| .'| |\n"
                             + "|_  |___|___|_|   |_|___|_|_|_| |___|__,|_|\n"
@@ -25,6 +26,8 @@ public class Qbot {
         Client tlsClient = new Client(config);
         Thread thread = new Thread(tlsClient);
         thread.start();
+        
+        tlsClient.setThread(thread);
 
         while (tlsClient.getReady() == false) {
             try {

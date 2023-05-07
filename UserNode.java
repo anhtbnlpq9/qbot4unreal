@@ -22,6 +22,8 @@
  
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserNode {
     
@@ -40,7 +42,9 @@ public class UserNode {
 
     public long userTS;
 
-    public ArrayList<String> userChanList = new ArrayList<String>();
+    //public ArrayList<String> userChanList = new ArrayList<String>();
+    public Map<String, ChannelNode> userChanList = new HashMap<String, ChannelNode>();
+    public Map<String, String> userChanModes = new HashMap<String, String>();
 
     public Boolean userAuthed;
     public Boolean userNickRegistered;
@@ -99,13 +103,15 @@ public class UserNode {
     public void setUserAccount(String account) {
         this.userAccount = account;
     }
-    public void addUserChan(String channel) throws Exception {
-        if (this.userChanList.contains(channel)) {
-            throw new Exception("Cannot add the user inside a channel they already are in"); 
-        }
-        else {
-            this.userChanList.add(channel);
-        }
+    public void addUserToChan(String channel, ChannelNode chanObj, String mode) /*throws Exception*/ {
+        //if (this.userChanList.contains(channel)) {
+        //    throw new Exception("Cannot add the user inside a channel they already are in"); 
+        //}
+        //else {
+        //    this.userChanList.add(channel);
+        //}
+        userChanList.put(channel, chanObj);
+        userChanModes.put(channel, mode);
     }
     public void setUserAuthed(Boolean state) {
         this.userAuthed = state;
@@ -115,6 +121,9 @@ public class UserNode {
     }
     public void setUserTS(Integer userTS) {
         this.userTS = userTS;
+    }
+    public void addChan(String chan) {
+        //this.userChanList.put(chan, ...);
     }
 
     public String getUserNick() {
@@ -147,8 +156,11 @@ public class UserNode {
     public String getUserAccount() {
         return this.userAccount;
     }
-    public ArrayList<String> getUserChan() {
+    public Map<String, ChannelNode> getUserChanList() {
         return this.userChanList;
+    }
+    public Map<String, String> getUserChanModes() {
+        return this.userChanModes;
     }
     public Boolean getUserAuthed() {
         return this.userAuthed;
