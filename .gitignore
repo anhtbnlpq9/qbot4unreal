@@ -4,3 +4,4 @@
 # Ignore SnakeYAML
 org/
 services.log.20230504
+db/
