@@ -20,7 +20,7 @@ public class Qbot {
                 );
 
         System.out.println("* Loading conf");
-        Config config = new Config("./config.yml");
+        Config config = new Config("./conf/config.yml");
 
         System.out.println("* Starting client socket");
         Client tlsClient = new Client(config);
