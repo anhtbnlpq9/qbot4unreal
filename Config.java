@@ -79,14 +79,14 @@ public class Config {
         cserviceStaticChan   = (String) confcservice.get("staticchan");
         
         System.out.println("* Config:\n"
-                        + "  --> Me name             = " + serverName  + "\n"
-                        + "  --> Me SID              = " + serverId + "\n"
-                        + "  --> Me Description      = " + serverDescription + "\n"
-                        + "  --> Me protocolversion  = " + serverProtocolVersion  + "\n"
-                        + "  --> Me versionflags     = " + serverVersionFlags + "\n"
-                        + "  --> Me fullversiontext  = " + serverFullVersionText + "\n"
-                        + "  --> Link peer name      = " + linkPeer + "\n"
-                        + "  --> Link Peer host      = " + linkHost + "\n");
+                        + "  +- Me name             = " + serverName  + "\n"
+                        + "  |---  sid              = " + serverId + "\n"
+                        + "  |---  description      = " + serverDescription + "\n"
+                        + "  |---  protocolversion  = " + serverProtocolVersion  + "\n"
+                        + "  |---  versionflags     = " + serverVersionFlags + "\n"
+                        + "  |---  fullversiontext  = " + serverFullVersionText + "\n"
+                        + "  +- Link peer name      = " + linkPeer + "\n"
+                        + "  `--- peer host         = " + linkHost + "\n");
                         
         //UserNode cservice = new UserNode(cserviceNick, cserviceUniq, );
     }
