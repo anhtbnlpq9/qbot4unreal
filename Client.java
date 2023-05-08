@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import java.lang.Exception;
@@ -10,24 +9,15 @@ import java.lang.String;
 import java.lang.Thread;
 
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 
-import java.security.cert.Certificate;
+//import java.security.cert.Certificate;
 
-import java.time.Instant;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.net.SocketFactory;
 
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
+//import javax.net.ssl.SSLSession;
+//import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-
-import javax.security.cert.X509Certificate;
 
 public class Client implements Runnable {
     
@@ -61,8 +51,8 @@ public class Client implements Runnable {
             SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
             clientSocket = ssf.createSocket(config.getLinkPeerHost(), config.getLinkPeerPort());
             
-            SSLSession session = ((SSLSocket) clientSocket).getSession();
-            Certificate[] cchain = session.getPeerCertificates();
+            //SSLSession session = ((SSLSocket) clientSocket).getSession();
+            //Certificate[] cchain = session.getPeerCertificates();
 
             System.out.println("* Connected");
 
@@ -91,7 +81,7 @@ public class Client implements Runnable {
         Map<String, ChannelNode> channelList = protocol.getChanList();
 
         while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
-            System.out.println("* Wait for peer to register");
+            System.out.println("* Waiting for peer to register");
             try {
                 Thread.sleep(2000);
             }
@@ -99,12 +89,14 @@ public class Client implements Runnable {
         }
 
         while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
-            System.out.println("* Wait for final EOS");
+            System.out.println("* Waiting for the final EOS");
             try {
                 Thread.sleep(2000);
             }
             catch (Exception e) { e.printStackTrace(); }
         }
+
+        System.out.println("* Peer has registered and we have EOS");
 
 
         cservice.runCService(config, protocol, userList, serverList, channelList);
