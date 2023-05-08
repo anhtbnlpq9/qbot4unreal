@@ -20,8 +20,6 @@
  * @author me
  */ 
  
-import java.util.LinkedHashMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,6 +121,17 @@ public class UserNode {
         //}
         userChanList.remove(channel);
         userChanModes.remove(channel);
+    }
+
+    public String getUserChanMode(String chan) {
+        return this.userChanModes.get(chan);
+    }
+    public void addUserChanMode(String chan, String modes) {
+        this.userChanModes.replace(chan, this.userChanModes.get(chan) + modes);
+    }
+
+    public void delUserChanMode(String chan, String modes) {
+        this.userChanModes.replace(chan, this.userChanModes.get(chan).replaceAll("[" + modes + "]", ""));
     }
 
     public void setUserAuthed(Boolean state) {

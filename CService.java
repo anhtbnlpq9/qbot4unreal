@@ -1,7 +1,5 @@
 
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Date;
 
 import java.time.Instant;
@@ -47,6 +45,8 @@ public class CService {
         this.userList = userList;
         this.serverList = serverList;
         this.channelList = channelList;
+
+        myUniq = config.getServerId()+config.getCServeUniq();
         
         unixTime = Instant.now().getEpochSecond();
         client.write(":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName());
@@ -56,12 +56,13 @@ public class CService {
                                      config.getCServeHost(),
                                      config.getCServeHost(),
                                      config.getCServeRealName(),
-                                     config.getServerId()+config.getCServeUniq(),
+                                     myUniq,
                                      unixTime,
                                      config.getCServeModes());
+
         user.setUserServer(serverList.get(config.getServerId()));
-        userList.put(config.getCServeUniq(), user);
-        myUniq = config.getServerId()+config.getCServeUniq();
+        userList.put(myUniq, user);
+        
         
         unixTime = Instant.now().getEpochSecond();
         //client.write(":" + config.getServerId() + " " + "SJOIN " + unixTime + " " + config.getCServeStaticChan() + " + :" + config.getServerId() + config.getCServeUniq());
@@ -72,7 +73,10 @@ public class CService {
         ////this.write("MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
         
         protocol.chanJoin(client, myUniq, config.getCServeStaticChan());
-        protocol.setMode(client, config.getCServeStaticChan(), "+o Q");
+        try {
+            protocol.setMode(client, config.getCServeStaticChan(), "+o", config.getCServeNick());
+        }
+        catch (Exception e) { e.printStackTrace(); }
         
         
         cServiceReady = true;

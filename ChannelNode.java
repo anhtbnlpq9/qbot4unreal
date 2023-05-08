@@ -6,7 +6,6 @@
  * @author me
  */ 
 
-import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +67,11 @@ public class ChannelNode {
         this.channelModes.replace(mode, param);
     }
 
-    public void rmMode(String mode, String param) {
+    public void delMode(String mode) {
+        this.channelModes.remove(mode);
+    }
+
+    public void delMode(String mode, String param) {
         this.channelModes.remove(mode);
     }
 
@@ -92,6 +95,16 @@ public class ChannelNode {
     }
     public void addInviteList(String str) {
         this.inviteList.add(str);
+    }
+
+    public void delBanList(String str) {
+        this.banList.remove(str);
+    }
+    public void delExceptList(String str) {
+        this.exceptList.remove(str);
+    }
+    public void delInviteList(String str) {
+        this.inviteList.remove(str);
     }
 
     public ArrayList<String> getBanList() {
