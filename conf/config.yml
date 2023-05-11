@@ -13,8 +13,9 @@ admin:
     - line 3
 
 link:
-    peer: ocelot.
-    host: polaris3.thibland.net
+    #peer: ocelot.
+    #host: polaris3.thibland.net
+    host: 192.168.10.1
     port: 6900
     incoming: incoming.host.or.ip
     # Auth by cert => we set password to *
@@ -30,4 +31,4 @@ cservice:
     host: CServe
     realname: The Q Bot
     modes: +ioqBS
-    staticchan: "#qbot"
+    staticchan: "#qbotstatic"

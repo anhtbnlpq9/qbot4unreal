@@ -44,7 +44,7 @@ public class Config {
     */
     public Config(String configFile) {
 
-        this.inputStream = inputStream;
+        //this.inputStream = inputStream;
 
         try {
             inputStream = new FileInputStream(new File(configFile));
