@@ -28,14 +28,17 @@ public class Client implements Runnable {
     public BufferedWriter out;
     private boolean clientReady = false;
     private Protocol protocol;
-    CService cservice = new CService(this, protocol);
+    private SqliteDb sqliteDb;
+    CService cservice;
     
     Thread thread;
 
     long unixTime;
 
-    public Client(Config config) {
+    public Client(Config config, SqliteDb sqliteDb) {
         this.config = config;
+        this.sqliteDb = sqliteDb;
+        
         System.setProperty("javax.net.ssl.trustStore", "/home/thib/.keystore");
         System.setProperty("javax.net.ssl.trustStorePassword","123456");
         System.setProperty("javax.net.ssl.keyStore", "/home/thib/.keystore");
@@ -79,6 +82,8 @@ public class Client implements Runnable {
         Map<String, ServerNode> serverList = protocol.getServerList();
         Map<String, UserNode> userList = protocol.getUserList();
         Map<String, ChannelNode> channelList = protocol.getChanList();
+
+        cservice = new CService(this, protocol, sqliteDb);
 
         while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
             System.out.println("* Waiting for peer to register");

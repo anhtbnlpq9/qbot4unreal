@@ -28,11 +28,15 @@ public class Qbot {
         System.out.println("* Loading conf");
         Config config = new Config("./conf/config.yml");
 
+        System.out.println("* Opening database");
+        SqliteDb sqliteDb = new SqliteDb();
+        sqliteDb.getRegChan();
+
         System.out.println("* Starting client socket");
-        Client tlsClient = new Client(config);
+        Client tlsClient = new Client(config, sqliteDb);
         Thread thread = new Thread(tlsClient);
         thread.start();
-        
+
         tlsClient.setThread(thread);
 
         while (tlsClient.getReady() == false) {
@@ -48,6 +52,5 @@ public class Qbot {
         //try { Thread.sleep(5000); } catch (Exception e) { e.printStackTrace(); }
         System.out.println("* Starting CService");
         tlsClient.launchCService(); 
-
     }    
 }
