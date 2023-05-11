@@ -25,16 +25,17 @@ import java.util.Map;
 
 public class UserNode {
     
-    public String userNick;
-    public String userOldNick;
-    public String userIdent;
-    public String userHost;
-    public String userRealHost;
-    public String userRealName;
-    public String userUniq;
-    public String userModes;
-    public String userCertFP;
-    public String userAccount;
+    public String userNick = "";
+    public String userOldNick = "";
+    public String userIdent = "";
+    public String userHost = "";
+    public String userRealHost = "";
+    public String userRealName = "";
+    public String userUniq = "" ;
+    public String userModes = "";
+    public String userCertFP = "";
+    public String userAccount = "";
+    public String userAccountId = "";
 
     public ServerNode userServer;
 
@@ -43,9 +44,10 @@ public class UserNode {
     //public ArrayList<String> userChanList = new ArrayList<String>();
     public Map<String, ChannelNode> userChanList = new HashMap<String, ChannelNode>();
     public Map<String, String> userChanModes = new HashMap<String, String>();
+    public Map<String, String> userChanlev = new HashMap<String, String>();
 
-    public Boolean userAuthed;
-    public Boolean userNickRegistered;
+    public Boolean userAuthed = false;
+    public Boolean userNickRegistered = false;
 
     public UserNode() {
         
@@ -74,6 +76,9 @@ public class UserNode {
         this.userOldNick = this.userNick;
         this.userNick = nick;
     }
+    public void setUserAccountId(String accountId) {
+        this.userAccountId = accountId;
+    }
     public void setUserIdent(String ident) {
         this.userIdent = ident;
     }
@@ -100,6 +105,10 @@ public class UserNode {
     }
     public void setUserAccount(String account) {
         this.userAccount = account;
+    }
+    public Boolean getUserAuth() {
+        if (this.userAuthed == true) { return true; }
+        else { return false; }
     }
     public void addUserToChan(String channel, ChannelNode chanObj, String mode) /*throws Exception*/ {
         //if (this.userChanList.contains(channel)) {
@@ -148,6 +157,12 @@ public class UserNode {
     public String getUserNick() {
         return this.userNick;
     }
+    public String getUserAccountId() {
+        return this.userAccountId;
+    }
+    public String setUserAccountId() {
+        return this.userAccountId;
+    }
     public String getUserOldNick() {
         return this.userOldNick;
     }
@@ -192,5 +207,9 @@ public class UserNode {
     }
     public long getUserTS() {
         return this.userTS;
+    }
+    public Boolean isOper() {
+        if (this.userModes.matches("(.*)o(.*)") == true) return true;
+        else return false;
     }
 }
