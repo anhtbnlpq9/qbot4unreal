@@ -45,6 +45,7 @@ public class CService {
         this.userList = userList;
         this.serverList = serverList;
         this.channelList = channelList;
+        this.config = config;
 
         myUniq = config.getServerId()+config.getCServeUniq();
         
@@ -72,6 +73,12 @@ public class CService {
         //client.write(":" + config.getServerId() + " MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
         ////this.write("MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
         
+        for (String regChannel: sqliteDb.getRegChan()) {
+            protocol.chanJoin(client, myUniq, regChannel);
+            try { protocol.setMode(client, regChannel, "+o", config.getCServeNick()); }
+            catch (Exception e) { e.printStackTrace(); }
+        }
+
         protocol.chanJoin(client, myUniq, config.getCServeStaticChan());
         try {
             protocol.setMode(client, config.getCServeStaticChan(), "+o", config.getCServeNick());

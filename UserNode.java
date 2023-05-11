@@ -53,9 +53,10 @@ public class UserNode {
         
     }
  
-    public UserNode(String userNick, String userIdent, String userHost,
+    public UserNode(String userNick,     String userIdent,    String userHost,
                     String userRealHost, String userRealName, String userUniq,
-                    long userTS, String userModes) {
+                    long userTS,         String userModes) {
+                        
         this.userNick = userNick;
         this.userIdent = userIdent;
         this.userRealHost = userRealHost;
@@ -140,7 +141,12 @@ public class UserNode {
     }
 
     public void delUserChanMode(String chan, String modes) {
+
+        //this.userChanModes.forEach( (key, value) -> { System.out.println("AAB userChanModes map = " + key + " -> " + value); });
+        
         this.userChanModes.replace(chan, this.userChanModes.get(chan).replaceAll("[" + modes + "]", ""));
+
+        //this.userChanModes.forEach( (key, value) -> { System.out.println("AAC userChanModes map = " + key + " -> " + value); });
     }
 
     public void setUserAuthed(Boolean state) {
@@ -153,7 +159,50 @@ public class UserNode {
         this.userTS = userTS;
     }
 
+    public void setUserChanlev(Map<String, String> userChanlev) {
+        this.userChanlev = userChanlev;
+    }
+    public void setUserChanlev(String channel, String chanlev) {
+        System.out.println("BAK chanlev="+chanlev);
+        boolean plusMode = false;
+        for(int i=0; i < chanlev.length(); i++) {
+            if (chanlev.charAt(i) == '+') {
+                System.out.println("BAL chanlev+");
+                plusMode = true;
+            }
+            else if (chanlev.charAt(i) == '-') {
+                System.out.println("BAO chanlev-");
+                plusMode = false;
+            }
+            else {
 
+                if (plusMode == true) {
+                    System.out.println("BAM chanlev+");
+                    if (this.userChanlev.containsKey(channel) == false) {
+                        System.out.println("BAP new chanlev");
+                        this.userChanlev.put(channel, String.valueOf(chanlev.charAt(i)));
+                    }
+                    else {
+                        System.out.println("BAQ existing chanlev");
+                        this.userChanlev.replace(channel, this.userChanlev.get(channel) + chanlev.charAt(i));
+                    }
+                }
+                else {
+                    System.out.println("BAN chanlev-");
+                    this.userChanlev.replace(channel, this.userChanlev.get(channel).replaceAll(String.valueOf(chanlev.charAt(i)), ""));
+                }
+            }
+        }
+    }
+    public void unSetUserChanlev(String channel) {
+        this.userChanlev.remove(channel);
+    }
+    public Map<String, String> getUserChanlev() {
+        return this.userChanlev;
+    }
+    public String getUserChanlev(String channel) {
+        return this.userChanlev.get(channel);
+    }
     public String getUserNick() {
         return this.userNick;
     }
