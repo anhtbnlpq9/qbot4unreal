@@ -14,27 +14,27 @@ public class Config {
 
     public InputStream inputStream = null; 
 
-    public String serverName;
-    public String serverId;
-    public String serverDescription;
-    public String serverProtocolVersion;
-    public String serverVersionFlags;
-    public String serverFullVersionText;
+    private String serverName;
+    private String serverId;
+    private String serverDescription;
+    private String serverProtocolVersion;
+    private String serverVersionFlags;
+    private String serverFullVersionText;
 
-    public String[] adminInformation;
+    private String[] adminInformation;
     
-    public String  linkPeer;
-    public String  linkHost;
-    public Integer linkPort;
-    public String  linkPassword;    
+    private String  linkPeer;
+    private String  linkHost;
+    private Integer linkPort;
+    private String  linkPassword;    
 
-    public String cserviceNick;
-    public String cserviceUniq;
-    public String cserviceIdent;
-    public String cserviceHost;
-    public String cserviceReal;
-    public String cserviceModes;
-    public String cserviceStaticChan;
+    private String cserviceNick;
+    private String cserviceUniq;
+    private String cserviceIdent;
+    private String cserviceHost;
+    private String cserviceReal;
+    private String cserviceModes;
+    private String cserviceStaticChan;
 
    /**
     * Constructor for the class
@@ -43,9 +43,6 @@ public class Config {
     * @param configFile Configuration file name
     */
     public Config(String configFile) {
-
-        //this.inputStream = inputStream;
-
         try {
             inputStream = new FileInputStream(new File(configFile));
         }
