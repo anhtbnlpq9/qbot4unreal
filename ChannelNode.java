@@ -7,8 +7,11 @@
  */ 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
  
 public class ChannelNode {
     
@@ -16,7 +19,7 @@ public class ChannelNode {
     public String channelTopic;
     public Boolean channelRegistered;
     public UserNode channelOwner;
-    public String chanlev;
+    public Map<String, String> chanChanlev; // Map username -> chanlev
     public Integer chanUserCount=0;
 
     public long channelTS;
@@ -115,7 +118,6 @@ public class ChannelNode {
     public void addInviteList(String str) {
         this.inviteList.add(str);
     }
-
     public void delBanList(String str) {
         this.banList.remove(str);
     }
@@ -125,7 +127,6 @@ public class ChannelNode {
     public void delInviteList(String str) {
         this.inviteList.remove(str);
     }
-
     public ArrayList<String> getBanList() {
         return this.banList;
     }
@@ -135,15 +136,12 @@ public class ChannelNode {
     public ArrayList<String> getInviteList() {
         return this.inviteList;
     }
-
-
     public Map<String, String> getModes() {
         return this.channelModes;
     }
     public String getMode(String mode) {
         return this.channelModes.get(mode);
     }
-
     public String getTopic() {
         return this.channelTopic;
     }
@@ -153,8 +151,8 @@ public class ChannelNode {
     public UserNode getOwner() {
         return this.channelOwner;
     }
-    public String getChanlev() {
-        return this.chanlev;
+    public Map<String, String> getChanlev() {
+        return this.chanChanlev;
     }
     public String getChanName() {
         return this.channelName;
@@ -162,7 +160,6 @@ public class ChannelNode {
     public Long getChanTS() {
         return this.channelTS;
     }
-
     public Integer getChanUserCount() {
         return this.chanUserCount;
     }

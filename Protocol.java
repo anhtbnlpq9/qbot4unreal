@@ -12,6 +12,7 @@ public class Protocol extends Exception {
     private Config config;
     private ServerNode server;
     private CService cservice;
+    private SqliteDb sqliteDb;
     
     private Map<String, ServerNode> serverList = new HashMap<String, ServerNode>();
     private Map<String, UserNode> userList = new HashMap<String, UserNode>();
@@ -22,12 +23,14 @@ public class Protocol extends Exception {
     
     String myPeerServerId;
     long unixTime;
+    String foundNickLookUpCi;
 
     public Protocol() {
         
     }  
-    public Protocol(Config config) {
+    public Protocol(Config config, SqliteDb sqliteDb) {
         this.config = config;
+        this.sqliteDb = sqliteDb;
     }
 
     public void addNickLookupTable(String nick, String sid) {
@@ -39,7 +42,15 @@ public class Protocol extends Exception {
     public String getNickLookupTable(String nick) {
         return userNickSidLookup.get(nick);
     }
-
+    public String getNickLookupTableCi(String nick) {
+        foundNickLookUpCi = "";
+        userNickSidLookup.forEach( (userNick, userSid) -> {
+            if (userNick.toLowerCase().equals(nick.toLowerCase())) { 
+                foundNickLookUpCi = userSid; 
+            }
+        });
+        return foundNickLookUpCi;
+    }
     public void setClientRef(Client client) {
         this.client = client;
     }
@@ -59,7 +70,8 @@ public class Protocol extends Exception {
     }
     public void chanJoin(Client client, String who, String chan) /*throws Exception*/ {
         String str = ":" + who + " JOIN " + chan;
-        int chanUserCount;
+        int chanUserCount=0;
+
         if (channelList.containsKey(chan)) {
             chanUserCount = channelList.get(chan).getChanUserCount();
         }
@@ -71,7 +83,7 @@ public class Protocol extends Exception {
 
         userList.get(who).addUserToChan(chan, channelList.get(chan), "");
 
-        channelList.get(chan).setChanUserCount(1);
+        //channelList.get(chan).setChanUserCount(chanUserCount+1);
         client.write(str);
     }
     public void chanPart(Client client, String who, String chan) /*throws Exception*/ {
@@ -456,6 +468,7 @@ public class Protocol extends Exception {
             user.setUserServer(serverList.get(fromEnt));
             userList.put(command[5], user);
             //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
+            userNickSidLookup.put(command[0], command[5]);
 
         }
         else if (command[1].equals("SJOIN")) {
@@ -529,30 +542,32 @@ public class Protocol extends Exception {
                         break;
                     }
                     else {
+
                         // Handle the ban/except/invite lists
                         if ( sjoinParam[i].replaceFirst(":", "").startsWith("&") || sjoinParam[i].replaceFirst(":", "").startsWith("\"") || sjoinParam[i].replaceFirst(":", "").startsWith("'") ) {
 
-                                if ( sjoinParam[i].replaceFirst(":", "").startsWith("&") ) { // bans
-                                    chanBanList.add(sjoinParam[i].replaceFirst(":", "").substring(1));
-                                }
-                                else if ( sjoinParam[i].replaceFirst(":", "").startsWith("\"") )  { // excepts
-                                    chanExceptList.add(sjoinParam[i].replaceFirst(":", "").substring(1));
-                                }
-                                else if ( sjoinParam[i].replaceFirst(":", "").startsWith("'") ) { // invites    
-                                    chanInviteList.add(sjoinParam[i].replaceFirst(":", "").substring(1));                           
-                                }
-                                else {
-                                    
-                                }
+                            if ( sjoinParam[i].replaceFirst(":", "").startsWith("&") ) { // bans
+                                chanBanList.add(sjoinParam[i].replaceFirst(":", "").substring(1));
+                            }
+                            else if ( sjoinParam[i].replaceFirst(":", "").startsWith("\"") )  { // excepts
+                                chanExceptList.add(sjoinParam[i].replaceFirst(":", "").substring(1));
+                            }
+                            else if ( sjoinParam[i].replaceFirst(":", "").startsWith("'") ) { // invites    
+                                chanInviteList.add(sjoinParam[i].replaceFirst(":", "").substring(1));                           
+                            }
+                            else {
+                                
+                            }
                         }
 
                         // Handle the user modes for 1 user
                         else {
+
                             chanUserMode.put( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , "");
                             //System.out.println("initial put for " + channelName + " (" + sjoinParam[i].replaceAll("[^A-Za-z0-9]","") + ") -> null");
                             for( int pos=0; pos < sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").length() ; pos++ ) {
                                 //System.out.println("before chan=" + channelName + " mode=" + sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos) + " user=" + sjoinParam[i].replaceFirst(":", "").replaceAll("[^A-Za-z0-9]",""));
-                                
+
                                 if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("+") ) {
                                     chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "v");
                                 }
@@ -568,7 +583,7 @@ public class Protocol extends Exception {
                                 else if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("*") ) {
                                     chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "q");
                                 }
-                                else {
+                                else { // when the user joins without any mode => send to CServe
                                     
                                 }
                             }
@@ -582,7 +597,18 @@ public class Protocol extends Exception {
                     chanModeList.put( String.valueOf(m) , "");
                 }
             }
+        
             
+            chanUserMode.remove("");
+            chanUserCount = chanUserMode.size();
+
+            //chanUserMode.forEach( (key, value) -> { System.out.println("BBN chanUserMode chan=" + channelName + " " + userList.get(key).getUserNick() + " -> " + value); });
+
+            if (chanUserMode.size() == 0) { chanUserCount = 0; }
+            else { chanUserCount = chanUserMode.size(); }
+
+            //System.out.println("BBO chanUserCount chan="+ channelName + " count=" + chanUserCount);
+
             if ( ! channelList.containsKey(channelName) ) {
             
                 ChannelNode chan = new ChannelNode( channelName, channelTS, chanModeList, chanBanList, chanExceptList, chanInviteList );
@@ -593,12 +619,6 @@ public class Protocol extends Exception {
                 //System.out.println("BBP chanUserCount newchan="+ channelName + " count=" + chanUserCount);
             }
             
-            chanUserMode.remove("");
-            chanUserCount = chanUserMode.size();
-            if (chanUserMode.size() == 0) { chanUserCount = 0; }
-            else { chanUserCount = chanUserMode.size(); }
-
-            
             if(channelList.get(channelName).getChanUserCount() > 0) { channelList.get(channelName).setChanUserCount(channelList.get(channelName).getChanUserCount()+1); }
             else { channelList.get(channelName).setChanUserCount(chanUserCount); }
 
@@ -607,8 +627,13 @@ public class Protocol extends Exception {
                 if (! user.equals("")) {
                     userList.get(user).addUserToChan(channelName, channelList.get(channelName), modes);
                 }
+                if (modes.isEmpty()) {
+                    try {
+                        cservice.handleJoin(userList.get(user), channelList.get(channelName));
+                    }
+                    catch (Exception e) { /* System.out.println("* Ignoring CServe JOIN command as CServe not connected yet."); */ }
+                }
             });
-            
             
         }
         else if (command[1].equals("MODE")) {
@@ -755,9 +780,12 @@ public class Protocol extends Exception {
                             userList.get(userNickSidLookup.get(modeList[indexParam])).addUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
                             //System.out.println("MMG channel " + channelName + " user mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
                         }
-                        else { 
+                        else {
                             userList.get(userNickSidLookup.get(modeList[indexParam])).delUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
                             //System.out.println("MMH channel " + channelName + " user mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
+                            if (userList.get(userNickSidLookup.get(modeList[indexParam])).getUserNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == 'o') {
+                                this.setMode(client, channelName, "+o", config.getCServeNick());
+                            }
                         }
                         indexParam++;
                         
@@ -824,11 +852,9 @@ public class Protocol extends Exception {
             fromEnt = (command[0].split(":"))[1];
             
             UserNode userToRemove = userList.get(fromEnt);
+            userNickSidLookup.remove(userToRemove.getUserNick());
             userToRemove = null;
             userList.remove(fromEnt);
-
-
-
         }
         else if (command[1].equals("NICK")) {
             // :XXXXXXXXX NICK ...

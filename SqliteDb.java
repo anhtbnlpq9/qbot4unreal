@@ -20,7 +20,6 @@ public class SqliteDb {
         //System.out.println("* Opened database successfully");
 
     }
-
     public ArrayList<String> getRegChan(){
         Statement statement = null;
         String sql = null;
@@ -70,6 +69,8 @@ public class SqliteDb {
                 userAccountId = resultSet.getInt("uid");
             }
             unixTime = Instant.now().getEpochSecond();
+            statement.close();
+
             statement = connection.createStatement();
             sql = "INSERT INTO channels (name, owner, regTS) VALUES ('" + channel + "', '" + userAccountId.toString() + "', '" + unixTime.toString() + "');";
             statement.executeUpdate(sql);
@@ -80,7 +81,6 @@ public class SqliteDb {
             throw new Exception("Error while registering the channel."); 
         }
     }
-
     public void delRegChan(String channel) throws Exception {
         Statement statement = null;
         String sql = null;
@@ -89,7 +89,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             sql = "SELECT name FROM channels WHERE name='" + channel + "';";
-            System.out.println(sql);
+            //System.out.println(sql);
             resultSet = statement.executeQuery(sql);
         }
         catch (Exception e) { e.printStackTrace(); }
@@ -101,7 +101,18 @@ public class SqliteDb {
 
         try {
             statement = connection.createStatement();
-            sql = "DELETE FROM channels WHERE name='" + channel + "';";
+            sql = "DELETE FROM chanlev WHERE channelId IN (SELECT channelId FROM chanlev INNER JOIN channels ON chanlev.channelId=channels.cid WHERE channels.name='" + channel + "');";
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Error while dropping the channel."); 
+        }
+        statement.close();
+
+        try {
+            statement = connection.createStatement();
+            sql = "DELETE FROM channels WHERE name='" + channel + "');";
             statement.executeUpdate(sql);
         }
         catch (Exception e) { 
@@ -110,7 +121,6 @@ public class SqliteDb {
         }
         statement.close();
     }
-
     public void addUser(String username, String email, String passwordHash, String salt) throws Exception {
         Statement statement = null;
         String sql = null;
@@ -174,7 +184,6 @@ public class SqliteDb {
 
         return user;
     }
-
     public Map<String, String> getUserChanlev(String username) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -204,6 +213,71 @@ public class SqliteDb {
         statement.close();
         return userChanlev;
     }
+    public String getUserChanlev(String username, String channel) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        String userChanlev = "";
+        Integer userId           = 0;
+        Integer chanId          = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT uid FROM users WHERE name='" + username + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            userId = resultSet.getInt("uid");
+            //System.out.println("BBB db userId=" + userId);
+
+            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            chanId = resultSet.getInt("cid");
+            //System.out.println("BBC db chanId=" + chanId);
+
+            sql = "SELECT chanlev FROM chanlev WHERE userId = '" + userId + "' AND channelId = '" + chanId + "';";
+            //System.out.println("BBD db chanlev=" + sql);
+            resultSet = statement.executeQuery(sql);
+            while(resultSet.next()) {
+                userChanlev = resultSet.getString("chanlev");
+            }
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not get user " + username + " chanlev."); }
+        statement.close();
+        //System.out.println("BBE db chanlev=" + userChanlev);
+        return userChanlev;
+    }
+    public Map<String, String> getChanChanlev(String channel) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Map<String, String> chanChanlev = new HashMap<String, String>();
+        String chanlev;
+        String username;
+        Integer chanId           = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            chanId = resultSet.getInt("cid");
+
+            sql = "SELECT name, chanlev FROM users LEFT JOIN chanlev ON (chanlev.userId = users.uid) WHERE chanlev.channelId = " + chanId + ";";
+            //System.out.println("BCD sql=" + sql);
+            resultSet = statement.executeQuery(sql);
+            while(resultSet.next()) {
+                username = resultSet.getString("name");
+                chanlev = resultSet.getString("chanlev");
+                chanChanlev.put(username, chanlev);
+            }
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not get channel " + channel + " chanlev."); }
+        statement.close();
+        return chanChanlev;
+    }
     public void setUserChanlev(String username, String channel, String chanlev) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -225,35 +299,33 @@ public class SqliteDb {
             resultSet.next();
             channelId = resultSet.getInt("cid");
 
-            sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
+            //sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
+            sql = "SELECT chanlev FROM chanlev WHERE channelId='"+ channelId +"' AND userId = " + userId + ";";
             resultSet = statement.executeQuery(sql);
 
-
             if(resultSet.next() == false) {
-                System.out.println("BAD user chanlev does not exist => creating it");
-
                 if (chanlev.isEmpty() == false) {
+                    //System.out.println("BAD user chanlev does not exist => creating it");
                     sql = "INSERT INTO chanlev (channelId, userId, chanlev) VALUES ('" + channelId + "', '" + userId + "', '" + chanlev + "');";
                     //System.out.println(sql);
                     statement.executeUpdate(sql);
                 }
                 else {
-                    System.out.println("BAG user chanlev does not exist => doing nothing");
+                    //System.out.println("BAG user chanlev does not exist => doing nothing");
                     return;
                 }
-
             }
             else {
                 
                 if (chanlev.isEmpty() == false) {
-                    System.out.println("BAE user chanlev exists => updating it");
-                    sql = "UPDATE chanlev SET channelId='" + channelId + "', userId='" + userId +"', chanlev='" + chanlev +"';";
+                    //System.out.println("BAE user chanlev exists => updating it");
+                    sql = "UPDATE chanlev SET chanlev='" + chanlev + "' WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                     //System.out.println(sql);
                     statement.executeUpdate(sql);
                 }
                 else {
-                    System.out.println("BAF user chanlev exists => deleting it");
-                    sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "', userId='" + userId +"';";
+                    //System.out.println("BAF user chanlev exists => deleting it");
+                    sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                     //System.out.println(sql);
                     statement.executeUpdate(sql);
                 }
@@ -289,11 +361,11 @@ public class SqliteDb {
 
 
             if(resultSet.next() == false) {
-                System.out.println("BAH user chanlev does not exist => doing nothing");
+                //System.out.println("BAH user chanlev does not exist => doing nothing");
                 return;
             }
             else {
-                System.out.println("BAI user chanlev exists => deleting it");
+                //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                 //System.out.println(sql);
                 statement.executeUpdate(sql);
@@ -308,7 +380,6 @@ public class SqliteDb {
         String sql               = null;
         ResultSet resultSet      = null;
 
-        Integer userId           = 0;
         Integer channelId        = 0;
 
         try { 
@@ -324,11 +395,11 @@ public class SqliteDb {
 
 
             if(resultSet.next() == false) {
-                System.out.println("BAH user chanlev does not exist => doing nothing");
+                //System.out.println("BAH user chanlev does not exist => doing nothing");
                 return;
             }
             else {
-                System.out.println("BAI user chanlev exists => deleting it");
+                //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "';";
                 //System.out.println(sql);
                 statement.executeUpdate(sql);
@@ -338,5 +409,4 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset " + channel + " chanlev."); }
 
     }
-
 }

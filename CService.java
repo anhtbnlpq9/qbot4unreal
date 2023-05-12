@@ -1,21 +1,23 @@
 
 import java.util.Map;
 import java.util.Date;
-import java.util.ArrayList;
+import java.util.HashMap;
+//import java.util.ArrayList;
 
 import java.time.Instant;
 
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-import java.security.NoSuchAlgorithmException;
+//import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
+//import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.Arrays;
+import java.util.ArrayList;
+//import java.util.Arrays;
 import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -23,6 +25,10 @@ import javax.crypto.spec.PBEKeySpec;
 public class CService {
     
     Map<String, ServerNode> serverList;
+
+    /**
+     * {@link String} userSid -> {@link UserNode} user
+     */
     Map<String, UserNode> userList;
     Map<String, ChannelNode> channelList;
     //Map<String, String> userChanlev;
@@ -38,6 +44,10 @@ public class CService {
 
     String bufferMode = "";
     String bufferParam = "";
+    String userChanlevFilter = "";
+    String fromNick;
+    String userAccount= "";
+    String channel = "";
 
     long unixTime;
     
@@ -50,7 +60,6 @@ public class CService {
     public CService(Client client) {
         this.client = client;
     }        
-
     /**
      * @param client
      * @param protocol
@@ -61,7 +70,6 @@ public class CService {
         this.protocol = protocol;
         this.sqliteDb = sqliteDb;
     }
-
     /**
      * @param client
      * @param protocol
@@ -123,18 +131,16 @@ public class CService {
         this.protocol = protocol;
         protocol.setCService(this);
     }
-
     public void setClient(Client client) {
         this.client = client;
     }
-
     public Boolean isReady() {
         return this.cServiceReady;
     }
-
-    public void handleMessage(String fromNick, String str) {
+    public void handleMessage(String fromNickRaw, String str) {
         String message, message2;
         String response;
+        fromNick = fromNickRaw;
         
 
         if (str.toUpperCase().startsWith("HELP ALL")) {                    Help.getHelp("commands", "ALL").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
@@ -153,7 +159,8 @@ public class CService {
             if (userList.get(fromNick).getUserAuthed() == false) {  Help.getHelp("levels", "0-UNAUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
             else if (userList.get(fromNick).getUserAuthed() == true) { Help.getHelp("levels", "10-AUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
             else if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
-        }            
+        }
+
         else if (str.equalsIgnoreCase("USERLIST")) {
             protocol.sendNotice(client, myUniq, fromNick, "List of users:");
             
@@ -237,7 +244,7 @@ public class CService {
             else {
                 int foundNick=0;
                 for (Map.Entry<String, UserNode> user : userList.entrySet()) {
-                    if ((user.getValue().getUserNick()).toUpperCase().equals(nick.toUpperCase())) {
+                    if ((user.getValue().getUserNick()).toLowerCase().equals(nick.toLowerCase())) {
                         foundNick=1;
                         
                         Date date = new Date((user.getValue().getUserTS())*1000L);
@@ -289,13 +296,12 @@ public class CService {
                 }
             }
         }
-        else if (str.toUpperCase().matches("HELLO[ ]{0,1}.*")) { // REGISTER <password> <email>
+        else if (str.toUpperCase().matches("HELLO[ ]{0,1}.*")) { // HELLO <password> <email>
             String password;
             String email;
             
             String[] command = str.split(" ",4);
-
-            if (userList.get(fromNick).getUserAuth() == true) { 
+            if (userList.get(fromNick).getUserAuthed() == true) { 
                 protocol.sendNotice(client, myUniq, fromNick, "You are already authed."); 
                 return;                 
             }
@@ -306,11 +312,11 @@ public class CService {
             catch (ArrayIndexOutOfBoundsException e) { protocol.sendNotice(client, myUniq, fromNick, "Invalid command. Command is HELLO <password> <email>."); return; }
 
             if (email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+")==false) {
-                protocol.sendNotice(client, myUniq, fromNick, "REGISTER: Invalid email address.");
+                protocol.sendNotice(client, myUniq, fromNick, "HELLO: Invalid email address.");
                 return;
             }
             if (password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,64}$")==false) {
-                protocol.sendNotice(client, myUniq, fromNick, "REGISTER: Password must contain at least 8 (at most 64) characters with at least one of the following types: lowercase, uppercase, number, symbol.");
+                protocol.sendNotice(client, myUniq, fromNick, "HELLO: Password must contain at least 8 (at most 64) characters with at least one of the following types: lowercase, uppercase, number, symbol.");
                 return;
             }
             String pwHash = null;
@@ -330,24 +336,24 @@ public class CService {
             catch (Exception e) { e.printStackTrace();}
 
             try { 
-                sqliteDb.addUser(userList.get(fromNick).getUserNick(), email, pwHash, pwSalt); 
+                sqliteDb.addUser(userList.get(fromNick).getUserNick().toLowerCase(), email, pwHash, pwSalt); 
             }
             catch (Exception e) { 
                 protocol.sendNotice(client, myUniq, fromNick, "An account with that name already exists."); 
                 return;
             }
 
-            protocol.sendNotice(client, myUniq, fromNick, "Your account has been created.");
+            protocol.sendNotice(client, myUniq, fromNick, "Your account has been created with username \"" + userList.get(fromNick).getUserNick().toLowerCase() + "\". You can now auth using AUTH " + userList.get(fromNick).getUserNick().toLowerCase() + " <password>");
 
         }
         else if (str.toUpperCase().startsWith("AUTH ")) { // AUTH <username> <password>
             String password;
             String username;
-            String userId;
+
             Map<String, String> userChanlev;
             
             String[] command = str.split(" ",4);
-            if (userList.get(fromNick).getUserAuth() == true) { 
+            if (userList.get(fromNick).getUserAuthed() == true) { 
                 protocol.sendNotice(client, myUniq, fromNick, "You are already authed."); 
                 return;                 
             }
@@ -365,6 +371,7 @@ public class CService {
             String pwHash = null;
 
             Map<String, String> userToAuth;
+            username = username.toLowerCase();
             try {
                 userToAuth = sqliteDb.getUser(username);
                 userChanlev = sqliteDb.getUserChanlev(username);
@@ -387,16 +394,23 @@ public class CService {
 
             if (userToAuth.get("password").equals(pwHash)) {
                 userList.get(fromNick).setUserAccount(username);
+                
                 userList.get(fromNick).setUserAuthed(true);
                 userList.get(fromNick).setUserAccountId(userToAuth.get("userId"));
                 
                 userList.get(fromNick).setUserChanlev(userChanlev);
                 protocol.sendNotice(client, myUniq, fromNick, "Auth successful."); 
+
+                // Now we apply the modes of the user's chanlev as it was joining the channels
+                userList.get(fromNick).getUserChanList().forEach( (chanName, chanObj) -> {
+                    this.handleJoin(userList.get(fromNick), chanObj);
+                });
+
             }
             else { protocol.sendNotice(client, myUniq, fromNick, "User account not found or incorrect password."); }
         }
         else if (str.toUpperCase().startsWith("LOGOUT")) { // LOGOUT
-            if (userList.get(fromNick).getUserAuth() == false) { 
+            if (userList.get(fromNick).getUserAuthed() == false) { 
                 protocol.sendNotice(client, myUniq, fromNick, "You are not authed."); 
             }
             else {
@@ -405,55 +419,35 @@ public class CService {
                 protocol.sendNotice(client, myUniq, fromNick, "Logout successful.");
             }         
         }
-        else if (str.toUpperCase().startsWith("SHOWCOMMANDS")) {
-            protocol.sendNotice(client, myUniq, fromNick, "The following commands are available to you."); 
-            protocol.sendNotice(client, myUniq, fromNick, "For more information on a specific command, type HELP <command>:"); 
-            if (userList.get(fromNick).getUserAuth() == false) { 
-                protocol.sendNotice(client, myUniq, fromNick, "AUTH                 Authenticates you on the bot.");
-                //protocol.sendNotice(client, myUniq, fromNick, "CHALLENGE            Returns a challenge for use in challengeauth."); 
-                //protocol.sendNotice(client, myUniq, fromNick, "CHALLENGEAUTH        Authenticates you on the bot using challenge response."); 
-                protocol.sendNotice(client, myUniq, fromNick, "HELLO                Creates a new user account."); 
-                //protocol.sendNotice(client, myUniq, fromNick, "HELP                 Displays help on a specific command."); 
-                //protocol.sendNotice(client, myUniq, fromNick, "REQUESTPASSWORD      Requests the current password by email."); 
-                //protocol.sendNotice(client, myUniq, fromNick, "RESET                Restores the old details on an account after a change."); 
-                protocol.sendNotice(client, myUniq, fromNick, "SHOWCOMMANDS         Lists available commands."); 
-                protocol.sendNotice(client, myUniq, fromNick, "VERSION              Show Version.");
-            }
-            else if (userList.get(fromNick).getUserAuth() == true) { 
-                //protocol.sendNotice(client, myUniq, fromNick, "HELP                     Displays help on a specific command."); 
-                protocol.sendNotice(client, myUniq, fromNick, "DROP                 Removes the bot to a channel."); 
-                protocol.sendNotice(client, myUniq, fromNick, "LOGOUT               Deauthenticates yourself from the bot."); 
-                protocol.sendNotice(client, myUniq, fromNick, "REQUESTBOT           Requests the bot to a channel."); 
-                protocol.sendNotice(client, myUniq, fromNick, "SHOWCOMMANDS         Lists available commands."); 
-                protocol.sendNotice(client, myUniq, fromNick, "VERSION              Show Version."); 
-                //protocol.sendNotice(client, myUniq, fromNick, "WHOAMI Displays information about you."); 
-                protocol.sendNotice(client, myUniq, fromNick, "WHOIS                Displays information about a user."); 
-            }
-            else {
-                userList.get(fromNick).setUserAccount("");
-                userList.get(fromNick).setUserAuthed(false);
-                protocol.sendNotice(client, myUniq, fromNick, "Logout successful.");
-            }
-            protocol.sendNotice(client, myUniq, fromNick, "End of list."); 
-        }
         else if (str.toUpperCase().startsWith("VERSION")) {
             protocol.sendNotice(client, myUniq, fromNick, "qbot4u - The Q Bot for UnrealIRCd."); 
         }
         else if (str.toUpperCase().startsWith("REQUESTBOT ")) { // REQUESTBOT #channel
             String channel = (str.split(" ", 2))[1];
-            String ownerAccount = userList.get(fromNick).getUserAccount();
 
             if (userList.get(fromNick).getUserAuthed() == false) {
                 protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
                 return;
             }
 
+            String ownerAccount = userList.get(fromNick).getUserAccount();
+
             // First check that the user is on the channel and opped
             if (userList.get(fromNick).getUserChanMode(channel).matches("(.*)o(.*)")) {
                 try {
                     sqliteDb.addRegChan(channel, ownerAccount);
-                    userList.get(fromNick).setUserChanlev(channel, "+amno");
-                    sqliteDb.setUserChanlev(userList.get(fromNick).getUserAccount(), channel, userList.get(fromNick).getUserChanlev(channel));
+                    //userList.get(fromNick).setUserChanlev(channel, "+amno");
+                    //sqliteDb.setUserChanlev(userList.get(fromNick).getUserAccount(), channel, userList.get(fromNick).getUserChanlev(channel));
+
+                    sqliteDb.setUserChanlev(ownerAccount, channel, "amno");
+                    userList.forEach( (user, usernode) -> {
+                        if (usernode.getUserAccount().equals(userAccount)) {
+                            usernode.setUserChanlev(channel, "amno");
+                        }
+                    } );
+                    // updating channel chanlev as well
+                    Map<String, String> chanNewChanlev = sqliteDb.getChanChanlev(channel);
+                    channelList.get(channel).setChanChanlev(chanNewChanlev);
                     
                     protocol.chanJoin(client, myUniq, channel);
                     protocol.setMode(client, channel, "+o", config.getCServeNick());
@@ -472,7 +466,6 @@ public class CService {
         }
         else if (str.toUpperCase().startsWith("DROP ")) { // DROP #channel
             String channel = (str.split(" ", 2))[1];
-            String ownerAccount = userList.get(fromNick).getUserAccount();
 
             if (userList.get(fromNick).getUserAuthed() == false) {
                 protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
