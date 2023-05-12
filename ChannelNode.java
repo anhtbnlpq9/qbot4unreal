@@ -84,8 +84,27 @@ public class ChannelNode {
     public void setOwner(UserNode user) {
         this.channelOwner = user;
     }
-    public void setChanlev(String chanlev) {
-        this.chanlev = chanlev;
+    public void setChanChanlev(Map<String, String> chanChanlev) {
+        this.chanChanlev = chanChanlev;
+    }
+    public void setChanChanlev(String user, String chanlev) {
+        if (chanlev.isEmpty() == false) {
+            if (this.chanChanlev.containsKey(user) == true) {
+                this.chanChanlev.replace(user, chanlev);
+            }
+            else {
+                this.chanChanlev.put(user, chanlev);
+            }
+        }
+        else {
+            if (this.chanChanlev.containsKey(user) == true) {
+                this.chanChanlev.remove(user);
+            }
+            else {
+                
+            }
+        }
+
     }
     public void addBanList(String str) {
         this.banList.add(str);
