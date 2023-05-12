@@ -82,6 +82,10 @@ public class Protocol extends Exception {
         }
 
         userList.get(who).addUserToChan(chan, channelList.get(chan), "");
+        try {
+            channelList.get(chan).setChanChanlev(sqliteDb.getChanChanlev(chan));
+        }
+        catch (Exception e) { e.printStackTrace(); return; }
 
         //channelList.get(chan).setChanUserCount(chanUserCount+1);
         client.write(str);
