@@ -156,27 +156,6 @@ public class UserNode {
         this.userChanlev = userChanlev;
     }
     public void setUserChanlev(String channel, String chanlev) {
-     
-        String chanlevNew = ""; 
-
-        /*if (this.userChanlev.containsKey(channel) == true) { 
-            chanlevNew = parseChanlev(this.userChanlev.get(channel), chanlev);
-        }
-        
-        if (chanlevNew.isEmpty() == false) {
-            if (this.userChanlev.containsKey(channel) == true) {
-                this.userChanlev.replace(channel, chanlevNew);
-            }
-            else {
-                this.userChanlev.put(channel, chanlevNew);
-            }
-        }
-        else {
-            if (this.userChanlev.containsKey(channel) == true) {
-                this.userChanlev.remove(channel);
-            }
-            else { }
-        }*/
         if (chanlev.isEmpty() == false) {
             if (this.userChanlev.containsKey(channel) == true) { 
                 this.userChanlev.replace(channel, chanlev);

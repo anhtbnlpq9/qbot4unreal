@@ -1,24 +1,12 @@
 
 import java.util.Map;
 import java.util.Date;
-import java.util.HashMap;
-//import java.util.ArrayList;
-
 import java.time.Instant;
-
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
-
-//import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-//import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.ArrayList;
-//import java.util.Arrays;
 import java.util.Base64;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
-
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
@@ -138,8 +126,6 @@ public class CService {
         return this.cServiceReady;
     }
     public void handleMessage(String fromNickRaw, String str) {
-        String message, message2;
-        String response;
         fromNick = fromNickRaw;
         
 
@@ -661,8 +647,7 @@ public class CService {
             
         }
         else { // Unknown command
-            message = "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.";
-            protocol.sendNotice(client, myUniq, fromNick, message);
+            protocol.sendNotice(client, myUniq, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
         }
         //return "";
     }

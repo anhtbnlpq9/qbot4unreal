@@ -70,10 +70,10 @@ public class Protocol extends Exception {
     }
     public void chanJoin(Client client, String who, String chan) /*throws Exception*/ {
         String str = ":" + who + " JOIN " + chan;
-        int chanUserCount=0;
+        //int chanUserCount=0;
 
         if (channelList.containsKey(chan)) {
-            chanUserCount = channelList.get(chan).getChanUserCount();
+            //chanUserCount = channelList.get(chan).getChanUserCount();
         }
         else {
             unixTime = Instant.now().getEpochSecond();
@@ -641,7 +641,6 @@ public class Protocol extends Exception {
             // :XXXXXXX MODE  #Civilization +o AnhTay
 
             String[] modeList      = command[2].split(" ", 128);
-            int      modeListCount = command[2].split(" ", 128).length;
 
             String channelName = modeList[0];
             
