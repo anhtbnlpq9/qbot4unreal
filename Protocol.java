@@ -93,6 +93,24 @@ public class Protocol extends Exception {
         
         client.write(str);
     }
+    public void chanKick(Client client, String who, String chan, String target, String reason) /*throws Exception*/ {
+        String str = ":" + who + " KICK " + chan + " " + target + " :" + reason;
+        
+        ChannelNode chanUserPart = channelList.get(chan);
+        userList.get(who).delUserFromChan(chan);
+
+        int chanUserCount = chanUserPart.getChanUserCount();
+
+        
+        if (chanUserCount == 1 && chanUserPart.getModes().containsKey("P") == false ) {
+            chanUserPart = null;
+            channelList.remove( chan );
+        }
+        else {
+            chanUserPart.setChanUserCount(chanUserCount - 1);
+        }
+        client.write(str);
+    }
     public void setMode(Client client, String who, String target, String modes, String parameters) throws Exception {
         String networkChanUserModes          = protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", "");
         /*
