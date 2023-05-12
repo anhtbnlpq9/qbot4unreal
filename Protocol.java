@@ -570,7 +570,9 @@ public class Protocol extends Exception {
                 ChannelNode chan = new ChannelNode( channelName, channelTS, chanModeList, chanBanList, chanExceptList, chanInviteList );
 
                 channelList.put(channelName, chan);
-
+                channelList.get(channelName).setChanUserCount(chanUserCount);
+                channelList.get(channelName).setChanChanlev(sqliteDb.getChanChanlev(channelName));
+                //System.out.println("BBP chanUserCount newchan="+ channelName + " count=" + chanUserCount);
             }
             
             chanUserMode.remove("");
@@ -820,6 +822,7 @@ public class Protocol extends Exception {
             //String oldNick = userList.get(fromEnt).getUserNick();
             //userList.get(fromEnt).setOldNick(oldNick);
             userList.get(fromEnt).setUserNick( (command[2].split(" "))[0] );
+
 
         }
 

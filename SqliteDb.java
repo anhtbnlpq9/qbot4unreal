@@ -294,7 +294,7 @@ public class SqliteDb {
             }
             else {
                 System.out.println("BAI user chanlev exists => deleting it");
-                sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "', userId='" + userId +"';";
+                sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                 //System.out.println(sql);
                 statement.executeUpdate(sql);
             }

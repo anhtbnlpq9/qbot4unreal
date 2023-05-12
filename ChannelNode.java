@@ -150,4 +150,24 @@ public class ChannelNode {
     public void setChanUserCount(int count) {
         this.chanUserCount = count;
     }
+    private static String removeDuplicate(String s) {
+
+        char[] chars = s.toCharArray();
+        Set<Character> charSet = new LinkedHashSet<Character>();
+        for (char c : chars) {
+            charSet.add(c);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Character character : charSet) {
+            sb.append(character);
+        }
+        return sb.toString();
+
+    }
+    private static String sortString(String str) {
+        char charArray[] = str.toCharArray();
+        Arrays.sort(charArray);
+        return new String(charArray);
+    }
 }

@@ -607,8 +607,175 @@ public class CService {
                 }
             }
             else {
-                protocol.sendNotice(client, myUniq, fromNick, "You must have the flag +n in the chanlev to drop the channel."); 
+                protocol.sendNotice(client, myUniq, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
             }
+            
+        }
+        else if (str.toUpperCase().startsWith("CHANLEV ")) { // CHANLEV <channel> [<user> [<change>]]
+        /*
+            * CHANLEV flags:
+            * +a = auto (op/voice, op has priority on voice)
+            * +b = ban
+            * +d = will be automatically deopped / incompatible with +o / setting +d will unset +o
+            * +j = auto-invite when authing
+            * +k = known-user (can use INVITE command)
+            * +m = master (can (un)set all the flags except n and m)
+            * +n = owner (can (un)set all the flags)
+            * +o = can use OP command / incompatible with +d / setting +o will unset +d
+            * +p = protect (Q will revoice/reop the user)
+            * +q = will be automatically devoiced / incompatible with +v / setting +q will unset +v
+            * +t = can use SETTOPIC command
+            * +v = can use VOICE command / incompatible with +q / setting +v will unset +q
+            * +w = disable auto welcome notice on join
+            */
+            String[] command = str.split(" ",5);
+            String userNick = "";
+            String chanlevMod = "";
+            userAccount = "";
+            userChanlevFilter = "";
+
+            final String CHANLEV_FLAGS = "abdjkmnopqtvw";
+            final String CHANLEV_SYMBS = "+-";
+
+            if (userList.get(fromNick).getUserAuthed() == false) {
+                protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
+
+            try {  channel = command[1]; }
+            catch (ArrayIndexOutOfBoundsException e) { 
+                protocol.sendNotice(client, myUniq, fromNick, "Invalid command. CHANLEV <channel> [<user> [<change>]]."); 
+                return; 
+            }
+            try {  userNick = command[2]; }
+            catch (ArrayIndexOutOfBoundsException e) {  }
+            try {  chanlevMod = command[3]; }
+            catch (ArrayIndexOutOfBoundsException e) {  }
+
+
+            if (userNick.startsWith("#")) { // direct access to account
+                userAccount = userNick.replaceFirst("#", "").toLowerCase();
+            }
+            else if (userNick.isEmpty() == true) { // no nick/account provided => only display chanlev
+            }
+            else { // indirect access to account => need to lookup account name
+                try {
+                    if (userList.get(protocol.getNickLookupTableCi(userNick)).getUserAccount().isEmpty() == false)  {
+                        userAccount = userList.get(protocol.getNickLookupTableCi(userNick)).getUserAccount();
+                        //System.out.println("BBX 1=" + userNick + " 2=" + userAccount);
+                    }
+                    else {
+                        protocol.sendNotice(client, myUniq, fromNick, "That nickname is not authed.");
+                        return; 
+                    }
+                }
+                catch (NullPointerException e) { 
+                    e.printStackTrace();
+                    protocol.sendNotice(client, myUniq, fromNick, "No such nick.");
+                    return;
+                }
+            }
+
+            if ( userAccount.isEmpty() == false) {
+                userChanlevFilter = userAccount;
+            }
+
+            if (chanlevMod.isEmpty() == true) { // no chanlev => list
+                //System.out.println("BCB no chanlev => list userChanlevFilter=" +userChanlevFilter);
+
+                try {
+                    if (userList.get(fromNick).getUserChanlev(channel).matches("(.*)[kmn](.*)")) {
+                        protocol.sendNotice(client, myUniq, fromNick, "Displaying CHANLEV for channel " + channel + ":"); 
+                        channelList.get(channel).getChanlev().forEach( (user, chanlev) -> {
+                            //System.out.println("BCD userChanlevFilter=" +userChanlevFilter+ " user=" + user + " chanlev=" + chanlev);
+                            if ( (userChanlevFilter.isEmpty() == false && user.toLowerCase().equals(userChanlevFilter.toLowerCase())) || userChanlevFilter.isEmpty() == true) {
+                                protocol.sendNotice(client, myUniq, fromNick, user + "     +" + chanlev); 
+                            }
+                        });
+                        protocol.sendNotice(client, myUniq, fromNick, "End of list."); 
+                    }
+                    else {
+                        protocol.sendNotice(client, myUniq, fromNick, "You do not have sufficient access on " + channel + " to use chanlev."); 
+                        return;
+                    }
+                }
+                catch (Exception e) { 
+                    protocol.sendNotice(client, myUniq, fromNick, "You do not have sufficient access on " + channel + " to use chanlev."); 
+                    return;
+                }
+
+
+            }
+            else { 
+                if (chanlevMod.matches("^(?=.*["+ CHANLEV_FLAGS +"])(?=.*["+ CHANLEV_SYMBS +"]).+$")) {
+                    if (   (userList.get(fromNick).getUserChanlev(channel).matches("(.*)[n](.*)") && chanlevMod.matches("(.*)[abdjkmnopqtvw](.*)")) ||
+                           (userList.get(fromNick).getUserChanlev(channel).matches("(.*)[m](.*)") && chanlevMod.matches("(.*)[abdjkopqtvw](.*)"))) {
+
+                        // user wants to modify chanlev by account name directly
+                        // in this case, we need to update the db + check if the account is online and update that nick chanlev
+                        try {
+                            //sqliteDb.setUserChanlev(userAccount, channel,  userList.get(userNick).getUserChanlev(channel));
+
+                            // getting account chanlev from db to apply it to every usernode logged with account
+                            String userCurChanlev = sqliteDb.getUserChanlev(userAccount, channel);
+                            String userNewChanlev = UserNode.parseChanlev(userCurChanlev, chanlevMod);
+
+                            //protocol.sendNotice(client, myUniq, fromNick, "BCA current chanlev " + channel + " -> " + userCurChanlev + " :: mod=" + chanlevMod + " :: result=" + userNewChanlev);
+                            //System.out.println("BCA current chanlev " + channel + " -> " + userCurChanlev + " :: mod=" + chanlevMod + " :: result=" + userNewChanlev);
+
+                            sqliteDb.setUserChanlev(userAccount, channel, userNewChanlev);
+
+                            channelList.get(channel).setChanChanlev(sqliteDb.getChanChanlev(channel));
+
+                            userList.forEach( (user, usernode) -> {
+                                //System.out.println("BCG user=" + user + " account="+ usernode.getUserAccount() + " userAccount=" + userAccount);
+                                if (usernode.getUserAccount().equals(userAccount)) {
+                                    //System.out.println("BCH user=" + user + " : " + channel + " -> " + userNewChanlev);
+                                    //usernode.setUserChanlev(channel, userNewChanlev);
+                                    try {
+                                        // apply chanlev to every usernode logged as the user
+                                        usernode.setUserChanlev(sqliteDb.getUserChanlev(userAccount));
+
+                                        // Now we apply the modes of the user's chanlev as it was joining the channels
+                                        this.handleJoin(usernode, channelList.get(channel));
+                                    }
+                                    catch (Exception e) { 
+                                        e.printStackTrace();
+                                        protocol.sendNotice(client, myUniq, fromNick, "Error setting chanlev."); 
+                                        return; 
+                                    }
+                                }
+                            } );
+
+                            protocol.sendNotice(client, myUniq, fromNick, "Chanlev set. Chanlev for user account " + userAccount + " is now +" + userNewChanlev + ".");
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace(); 
+                            protocol.sendNotice(client, myUniq, fromNick, "Error setting chanlev."); 
+                            return; 
+                        }
+
+                        if (channelList.get(channel).getChanlev() == null || channelList.get(channel).getChanlev().isEmpty() == true) {
+                            try {
+                                userList.get(fromNick).unSetUserChanlev(channel);
+                                sqliteDb.unSetUserChanlev(channel);
+                                sqliteDb.delRegChan(channel);
+                                protocol.chanPart(client, myUniq, channel);
+                                protocol.sendNotice(client, myUniq, fromNick, "Channel has been dropped because its chanlev was left empty."); 
+                            }
+                            catch (Exception e) { return; }
+                        }
+                    }
+                    else {
+                        protocol.sendNotice(client, myUniq, fromNick, "You do not have sufficient rights on " + channel + " to set chanlev with those flags.");
+                        return;
+                    }
+                }
+                else {
+                    protocol.sendNotice(client, myUniq, fromNick, "Invalid chanlev flags. Valid flags are: <+|->" + CHANLEV_FLAGS);
+                }
+            }
+
             
         }
         else { // Unknown command

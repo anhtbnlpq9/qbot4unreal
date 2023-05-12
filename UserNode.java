@@ -22,6 +22,9 @@
  
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Arrays;
 
 public class UserNode {
     
@@ -52,7 +55,6 @@ public class UserNode {
     public UserNode() {
         
     }
- 
     public UserNode(String userNick,     String userIdent,    String userHost,
                     String userRealHost, String userRealName, String userUniq,
                     long userTS,         String userModes) {
@@ -107,10 +109,6 @@ public class UserNode {
     public void setUserAccount(String account) {
         this.userAccount = account;
     }
-    public Boolean getUserAuth() {
-        if (this.userAuthed == true) { return true; }
-        else { return false; }
-    }
     public void addUserToChan(String channel, ChannelNode chanObj, String mode) /*throws Exception*/ {
         //if (this.userChanList.contains(channel)) {
         //    throw new Exception("Cannot add the user inside a channel they already are in"); 
@@ -121,7 +119,6 @@ public class UserNode {
         userChanList.put(channel, chanObj);
         userChanModes.put(channel, mode);
     }
-
     public void delUserFromChan(String channel) /*throws Exception*/ {
         //if (this.userChanList.contains(channel)) {
         //    throw new Exception("Cannot add the user inside a channel they already are in"); 
@@ -132,14 +129,12 @@ public class UserNode {
         userChanList.remove(channel);
         userChanModes.remove(channel);
     }
-
     public String getUserChanMode(String chan) {
         return this.userChanModes.get(chan);
     }
     public void addUserChanMode(String chan, String modes) {
-        this.userChanModes.replace(chan, this.userChanModes.get(chan) + modes);
+        this.userChanModes.replace(chan, sortString(removeDuplicate(this.userChanModes.get(chan) + modes)));
     }
-
     public void delUserChanMode(String chan, String modes) {
 
         //this.userChanModes.forEach( (key, value) -> { System.out.println("AAB userChanModes map = " + key + " -> " + value); });
@@ -148,7 +143,6 @@ public class UserNode {
 
         //this.userChanModes.forEach( (key, value) -> { System.out.println("AAC userChanModes map = " + key + " -> " + value); });
     }
-
     public void setUserAuthed(Boolean state) {
         this.userAuthed = state;
     }
@@ -158,42 +152,137 @@ public class UserNode {
     public void setUserTS(Integer userTS) {
         this.userTS = userTS;
     }
-
     public void setUserChanlev(Map<String, String> userChanlev) {
         this.userChanlev = userChanlev;
     }
     public void setUserChanlev(String channel, String chanlev) {
-        System.out.println("BAK chanlev="+chanlev);
+     
+        String chanlevNew = ""; 
+
+        /*if (this.userChanlev.containsKey(channel) == true) { 
+            chanlevNew = parseChanlev(this.userChanlev.get(channel), chanlev);
+        }
+        
+        if (chanlevNew.isEmpty() == false) {
+            if (this.userChanlev.containsKey(channel) == true) {
+                this.userChanlev.replace(channel, chanlevNew);
+            }
+            else {
+                this.userChanlev.put(channel, chanlevNew);
+            }
+        }
+        else {
+            if (this.userChanlev.containsKey(channel) == true) {
+                this.userChanlev.remove(channel);
+            }
+            else { }
+        }*/
+        if (chanlev.isEmpty() == false) {
+            if (this.userChanlev.containsKey(channel) == true) { 
+                this.userChanlev.replace(channel, chanlev);
+            }
+            else {
+                this.userChanlev.put(channel, chanlev);
+            }
+        }
+        
+    }
+    public static String parseChanlev(String chanlevUser, String chanlevNew) {
+        
+       /*
+        * CHANLEV flags:
+        * +a = auto (op/voice, op has priority on voice)
+        * +b = ban
+        * +d = will be automatically deopped / incompatible with +op / setting +d will unset +op
+        * +j = auto-invite when authing
+        * +k = known-user (can use INVITE command)
+        * +m = master (can (un)set all the flags except n and m)
+        * +n = owner (can (un)set all the flags)
+        * +o = can use OP command / incompatible with +d / setting +o will unset +d
+        * +p = protect (Q will revoice/reop the user) / incompatible with +dq / setting +p will unset +dq
+        * +q = will be automatically devoiced / incompatible with +vp / setting +q will unset +vp
+        * +t = can use SETTOPIC command
+        * +v = can use VOICE command / incompativle with +q / setting +v will unser +q
+        * +w = disable auto welcome notice on join
+        * 
+        * incompatibilites:
+        * +d with +o +p
+        * +q with +v +p
+        * +o with +d
+        * +v with +q
+        * +p with +d +q
+        * 
+        */
+
+
+        Map<String, String> chanlevTemp = new HashMap<String, String>();
+        chanlevTemp.put("+", "");
+        chanlevTemp.put("-", "");
+        chanlevTemp.put("result", "");
+        chanlevTemp.put("user", "");
+ 
+        chanlevTemp.put("user", chanlevUser);
+         
+
         boolean plusMode = false;
-        for(int i=0; i < chanlev.length(); i++) {
-            if (chanlev.charAt(i) == '+') {
-                System.out.println("BAL chanlev+");
+        for(int i=0; i < chanlevNew.length(); i++) {
+            if (chanlevNew.charAt(i) == '+') {
                 plusMode = true;
             }
-            else if (chanlev.charAt(i) == '-') {
-                System.out.println("BAO chanlev-");
+            else if (chanlevNew.charAt(i) == '-') {
                 plusMode = false;
             }
             else {
-
                 if (plusMode == true) {
-                    System.out.println("BAM chanlev+");
-                    if (this.userChanlev.containsKey(channel) == false) {
-                        System.out.println("BAP new chanlev");
-                        this.userChanlev.put(channel, String.valueOf(chanlev.charAt(i)));
-                    }
-                    else {
-                        System.out.println("BAQ existing chanlev");
-                        this.userChanlev.replace(channel, this.userChanlev.get(channel) + chanlev.charAt(i));
-                    }
+                chanlevTemp.replace("+", chanlevTemp.get("+") + String.valueOf(chanlevNew.charAt(i)));
                 }
                 else {
-                    System.out.println("BAN chanlev-");
-                    this.userChanlev.replace(channel, this.userChanlev.get(channel).replaceAll(String.valueOf(chanlev.charAt(i)), ""));
+                    chanlevTemp.replace("-", chanlevTemp.get("-") + String.valueOf(chanlevNew.charAt(i)));
                 }
             }
         }
-    }
+        /*
+        * +d => -o
+        * +q => -v
+        * +od => +d
+        * +vq => +q
+        * +abdjkmnopqtvw => +abdjkmnpqtw
+        */
+
+        String chanlevTempP = chanlevTemp.get("+");
+        String chanlevTempM = chanlevTemp.get("-");
+        String chanlevTempR = "";
+
+        // applying priority in +flags (+abdjkmnopqtvw => +abdjkmnpqtw)
+        if (chanlevTempP.contains("d")) {
+            chanlevTempP.replaceAll("o","");
+        }
+        if (chanlevTempP.contains("q")) {
+            chanlevTempP.replaceAll("v","");
+        }
+
+        // Append user chanlev to +flags to temp chanlev
+        chanlevTemp.replace("result", sortString(removeDuplicate(chanlevTemp.get("user") + chanlevTempP)));
+        // remove the -flags from temp chanlev
+        for (int i=0; i < chanlevTempM.length(); i++) {
+            chanlevTemp.replace("result", chanlevTemp.get("result").replaceAll(String.valueOf(chanlevTempM.charAt(i)), ""));
+        }
+
+        // analyse incompatibilities
+        chanlevTempR = chanlevTemp.get("result"); // store result temporarily here to avoid loops in incompatibilities analysis
+        if (chanlevTempR.contains("d")) {
+            chanlevTemp.replace("result", chanlevTemp.get("result").replaceAll("o", ""));
+        }
+        if (chanlevTempR.contains("q")) {
+            chanlevTemp.replace("result", chanlevTemp.get("result").replaceAll("v", ""));
+        }
+
+        //System.out.println("BBS old chanlev=" + chanlevUser);
+        //System.out.println("BBT new chanlev=" + chanlevTemp.get("result"));
+
+        return chanlevTemp.get("result");
+
+     }
     public void unSetUserChanlev(String channel) {
         this.userChanlev.remove(channel);
     }
@@ -260,5 +349,25 @@ public class UserNode {
     public Boolean isOper() {
         if (this.userModes.matches("(.*)o(.*)") == true) return true;
         else return false;
+    }
+    private static String removeDuplicate(String s) {
+
+        char[] chars = s.toCharArray();
+        Set<Character> charSet = new LinkedHashSet<Character>();
+        for (char c : chars) {
+            charSet.add(c);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Character character : charSet) {
+            sb.append(character);
+        }
+        return sb.toString();
+
+    }
+    private static String sortString(String str) {
+        char charArray[] = str.toCharArray();
+        Arrays.sort(charArray);
+        return new String(charArray);
     }
 }

@@ -59,7 +59,7 @@ public class Client implements Runnable {
 
             System.out.println("* Connected");
 
-            protocol = new Protocol(config);
+            protocol = new Protocol(config, sqliteDb);
             protocol.setClientRef(this);
 
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
