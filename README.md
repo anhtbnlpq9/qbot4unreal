@@ -64,6 +64,10 @@ There is no roadmap, the development just goes as my ideas flow.
 
 GNU General Public License v2
 
+## Contact
+
+Project is hosted at irc.mjav.xyz / #qbot
+
 ## How to use
 
 % javac *.java
