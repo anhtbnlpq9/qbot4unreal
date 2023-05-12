@@ -17,8 +17,6 @@ public class SqliteDb {
            e.printStackTrace();
            System.exit(0);
         }
-        //System.out.println("* Opened database successfully");
-
     }
     public ArrayList<String> getRegChan(){
         Statement statement = null;
@@ -37,7 +35,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { e.printStackTrace(); System.exit(0); }
         
         return regChannels;
     }
