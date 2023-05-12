@@ -5,8 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Properties;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -21,7 +21,7 @@ public class Config {
     private String serverVersionFlags;
     private String serverFullVersionText;
 
-    private String[] adminInformation;
+    private ArrayList<String> adminInformation = new ArrayList<String>();
     
     private String  linkPeer;
     private String  linkHost;
@@ -53,7 +53,9 @@ public class Config {
         
         LinkedHashMap confme       = (LinkedHashMap) data.get("me");
         LinkedHashMap conflink     = (LinkedHashMap) data.get("link");
-        LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");   
+        LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");
+
+        adminInformation           = (ArrayList<String>) data.get("admin");
         
         serverName              = (String) confme.get("name");
         serverId                = (String) confme.get("sid");
@@ -84,6 +86,10 @@ public class Config {
                         + "  |---  fullversiontext  = " + serverFullVersionText + "\n"
                         + "  +- Link peer name      = " + linkPeer + "\n"
                         + "  `--- peer host         = " + linkHost + "\n");
+        
+        //System.out.println("conf=" + data.toString());
+        //System.out.println("admin=" + adminInformation);
+
                         
         //UserNode cservice = new UserNode(cserviceNick, cserviceUniq, );
     }
@@ -105,58 +111,47 @@ public class Config {
     public String getServerId() {
         return this.serverId;
     }   
-
     public String getServerDescription() {
         return this.serverDescription;
     }
-
     public String getLinkPeerName() {
         return this.linkPeer;
     }
-
     public String getLinkPeerHost() {
         return this.linkHost;
     }
-    
     public Integer getLinkPeerPort() {
         return this.linkPort;
     }
-    
     public String getLinkPassword() {
         return this.linkPassword;
     }
-    
     public String getEAUTH() {
         return this.serverName + "," + this.serverProtocolVersion + "," + this.serverVersionFlags + "," + this.serverFullVersionText;
     }
-
     public String getCServeUniq() {
         return this.cserviceUniq;
-        //return this.serverId+this.cserviceUniq;
     }
-
     public String getCServeNick() {
         return this.cserviceNick;
     }
-
     public String getCServeIdent() {
         return this.cserviceIdent;
     }
-    
     public String getCServeHost() {
         return this.cserviceHost;
     }
-
     public String getCServeRealName() {
         return this.cserviceReal;
     }
-
     public String getCServeModes() {
         return this.cserviceModes;
     }
-
     public String getCServeStaticChan() {
         return this.cserviceStaticChan;
+    }
+    public ArrayList<String> getAdminInfo() {
+        return this.adminInformation;
     }
 
 }
