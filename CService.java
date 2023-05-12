@@ -95,26 +95,12 @@ public class CService {
         
         
         unixTime = Instant.now().getEpochSecond();
-        //client.write(":" + config.getServerId() + " " + "SJOIN " + unixTime + " " + config.getCServeStaticChan() + " + :" + config.getServerId() + config.getCServeUniq());
 
-
-        unixTime = Instant.now().getEpochSecond();
-        //client.write(":" + config.getServerId() + " MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
-        ////this.write("MODE " + config.getCServeStaticChan() + " +o " + config.getCServeNick());
-        
         for (String regChannel: sqliteDb.getRegChan()) {
             protocol.chanJoin(client, myUniq, regChannel);
             try { protocol.setMode(client, regChannel, "+o", config.getCServeNick()); }
             catch (Exception e) { e.printStackTrace(); }
-        }
-
-        protocol.chanJoin(client, myUniq, config.getCServeStaticChan());
-        try {
-            protocol.setMode(client, config.getCServeStaticChan(), "+o", config.getCServeNick());
-        }
-        catch (Exception e) { e.printStackTrace(); }
-        
-        
+        }  
         cServiceReady = true;
         this.protocol = protocol;
         protocol.setCService(this);

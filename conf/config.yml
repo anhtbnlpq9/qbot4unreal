@@ -31,4 +31,3 @@ cservice:
     host: CServe
     realname: The Q Bot
     modes: +ioqBS
-    staticchan: "#qbotstatic"
