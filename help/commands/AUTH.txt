@@ -1,0 +1,8 @@
+Usage: AUTH <username> <password>
+Authenticates you on the bot, where:
+ - username - your username
+ - password - your password
+If you do not have a username and password, see HELLO.
+Note: due to the sensitive nature of this command, you must send the message
+to Q@CServe.quakenet.org when using it.
+Note: the preferred way to authenticate is to use the /AUTH command.

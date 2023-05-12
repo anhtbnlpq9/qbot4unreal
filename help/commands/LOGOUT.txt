@@ -1,0 +1,2 @@
+Usage: LOGOUT
+De-authenticate yourself from the bot.

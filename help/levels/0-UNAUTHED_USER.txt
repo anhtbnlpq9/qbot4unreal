@@ -1,0 +1,12 @@
+The following commands are available to you.
+For more information on a specific command, type HELP <command>:
+AUTH                 Authenticates you on the bot.
+//CHALLENGE            Returns a challenge for use in challengeauth. 
+//CHALLENGEAUTH        Authenticates you on the bot using challenge response. 
+HELLO                Creates a new user account. 
+HELP                 Displays help on a specific command. 
+//REQUESTPASSWORD      Requests the current password by email. 
+//RESET                Restores the old details on an account after a change. 
+SHOWCOMMANDS         Lists available commands. 
+VERSION              Show Version.
+End of list.

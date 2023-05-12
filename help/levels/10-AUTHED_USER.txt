@@ -1,0 +1,11 @@
+The following commands are available to you.
+For more information on a specific command, type HELP <command>:
+HELP                 Displays help on a specific command.
+DROP                 Removes the bot to a channel.
+LOGOUT               Deauthenticates yourself from the bot.
+REQUESTBOT           Requests the bot to a channel.
+SHOWCOMMANDS         Lists available commands.
+VERSION              Show Version.
+//WHOAMI               Displays information about you.
+WHOIS                Displays information about a user.
+End of list.

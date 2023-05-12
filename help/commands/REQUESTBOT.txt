@@ -1,0 +1,4 @@
+Usage: REQUESTBOT <channel>
+Requests the bot for a new channel.
+In order to this command to work, the user
+must be present on the channel and opped

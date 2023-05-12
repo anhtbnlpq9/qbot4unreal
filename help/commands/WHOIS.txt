@@ -1,0 +1,4 @@
+Usage: WHOIS <user>
+Displays information about a user, where:
+user  - user to request information for, either the nickname of an active user on
+        the network or #accountname.

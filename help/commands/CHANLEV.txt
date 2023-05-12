@@ -1,0 +1,47 @@
+Usage: CHANLEV <channel> [<user> [<change>]]
+Displays or alters the access of known users on a channel, where:
+ - channel : the channel to use
+ - user    : the user to list or modify.  user can be specified as either an active
+             nickname on the network or #accountname.  If user is not specified then
+             all known users are listed.
+ - change  : lists the flags to add or remove, with + to add or - to remove.  For
+             example, +ao to add a and o flags, or -gv to remove g and v flags.  This 
+             can be used to add or remove users from the channel.  If change is not
+             specified then the current access of the named user is displayed.
+Displaying known user information requires you to be known (+k) on the named channel.
+Adjusting flags for other users requires master (+m) access on the named channel.
+Adding or removing the +m flag for other users requires owner (+n) access on the
+named channel.
+You may always remove your own flags, except +qdb flags (which are not visible to you).
+Adding or removing personal flags requires you to be known (+k) on the named channel.
+Note that channel owners (+n) can grant +n to channel masters but they must use
+the GIVEOWNER command for this.
+The access level flags determine which commands a user is allowed to use on a channel.
+Holding an access flag also grants access to any action requiring a lesser flag (e.g.
++m users can perform actions requiring operator (+o) status even if they do not
+actually have +o set).  The access flags are listed in descending order.
+Valid flags are:
+Access level flags - these control the user's overall privilege level on the channel:
+ +n OWNER     Can add or remove masters and all other flags (except personal flags)
+ +m MASTER    Can add or remove all access except master or owner
+ +o OP        Can get ops on the channel
+ +v VOICE     Can get voice on the channel
+ +k KNOWN     Known on the channel - can get invites to the channel via INVITE
+Punishment flags - these restrict the user on the channel in some way:
+ +q DEVOICE   Not allowed to be voiced on the channel
+ +d DEOP      Not allowed to be opped on the channel
+ +b BANNED    Banned from the channel
+Extra flags - these control specific behaviour on the channel:
+ +a AUTOOP    Ops the user automatically when they join the channel (the user 
+              must also hold +o in order to have this flag)
++g AUTOVOICE Voices the user automatically when they join the channel (the
+              user must also hold +v in order to have this flag)
+ +p PROTECT   If the user has +o or +v, this makes sure they will always have
+              that status, they will be reopped/voiced if deopped/voiced
+ +t TOPIC     Can use SETTOPIC to alter the topic on the channel
+Personal flags - these control user personal preferences and can only be changed
+                 by the user concerned.  They are not visible to other users.
+ +w NOWELCOME Prevents the welcome message being sent when you join the channel.
+ +j AUTOINV   Invites you to the channel automatically when you authenticate.
+Note that non-sensible combinations of flags are not allowed.  After making a 
+change the current status of the named user on the channel will be confirmed.
