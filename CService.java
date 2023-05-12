@@ -673,5 +673,40 @@ public class CService {
         }
         //return "";
     }
-
+    public void handleJoin(UserNode user, ChannelNode channel) {
+        //System.out.println("BBA chanjoin");
+        // check if user is authed
+        if (user.getUserAuthed() == true) {
+            //System.out.println("BBB user authed");
+            // check user chanlev
+            // +av => +v
+            // +ao* => +o
+            if (user.getUserChanlev().containsKey(channel.getChanName())) {
+                if (user.getUserChanlev(channel.getChanName()).contains("b")) {
+                    //System.out.println("BBC chanlev ban");
+                    try {
+                        protocol.setMode(client, myUniq, channel.getChanName(), "+b", "*!*" + user.getUserIdent() + "@" + user.getUserHost());
+                        protocol.chanKick(client, myUniq, channel.getChanName(), user.getUserNick(), "You are BANNED from this channel.");
+                    }
+                    catch (Exception e) { e.printStackTrace(); }
+                }
+                else if (user.getUserChanlev(channel.getChanName()).contains("a")) {
+                    if (user.getUserChanlev(channel.getChanName()).contains("o")) {
+                        //System.out.println("BBD chanlev op");
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+o", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                    else if (user.getUserChanlev(channel.getChanName()).contains("v")) {
+                        //System.out.println("BBE chanlev voice");
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+v", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -821,6 +821,9 @@ public class Protocol extends Exception {
             
             //String oldNick = userList.get(fromEnt).getUserNick();
             //userList.get(fromEnt).setOldNick(oldNick);
+            userNickSidLookup.remove(userList.get(fromEnt).getUserNick());
+            userNickSidLookup.put((command[2].split(" "))[0], fromEnt);
+
             userList.get(fromEnt).setUserNick( (command[2].split(" "))[0] );
 
 
