@@ -1,6 +1,8 @@
 
 public class Qbot {
 
+    private static final String CONFIG_FILE = "./conf/config.yml";
+
     public static void main(String[] args) {
         System.out.println("+----------------------------------------------------------------+\n"
 + "|                                                                |\n"
@@ -26,7 +28,7 @@ public class Qbot {
                 );
 
         System.out.println("* Loading conf");
-        Config config = new Config("./conf/config.yml");
+        Config config = new Config(CONFIG_FILE);
 
         System.out.println("* Opening database");
         SqliteDb sqliteDb = new SqliteDb();

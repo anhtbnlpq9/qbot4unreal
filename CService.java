@@ -37,6 +37,11 @@ public class CService {
     String userAccount= "";
     String channel = "";
 
+    final String CHANLEV_FLAGS = "abdjkmnopqtvw";
+    final String CHANLEV_SYMBS = "+-";
+
+    final String CHANLEV_FOUNDER_DEFAULT = "ano";
+
     long unixTime;
     
     public CService() {
@@ -199,13 +204,10 @@ public class CService {
                     protocol.sendNotice(client, myUniq, fromNick, " |- ban list: " + node.getBanList().toString() );
                     protocol.sendNotice(client, myUniq, fromNick, " |- except list: " + node.getExceptList().toString() );
                     protocol.sendNotice(client, myUniq, fromNick, " `- invite list: " + node.getInviteList().toString() );
-
                 }
             });
             protocol.sendNotice(client, myUniq, fromNick, "There are " + channelList.size() + " channels on the network.");
             protocol.sendNotice(client, myUniq, fromNick, "End of list.");
-
-            
         } 
         else if (str.toUpperCase().startsWith("WHOIS ")) {
             String nick = (str.split(" ", 2))[1];
@@ -237,7 +239,6 @@ public class CService {
                             protocol.sendNotice(client, myUniq, fromNick, "|- is authed as " + user.getValue().getUserAccount());
                         }
 
-                        
                         //bufferMode = "";
                         if (userList.get(fromNick).isOper() == true || user.getValue().getUserNick().equals(userList.get(fromNick).getUserNick()) ) {
                             protocol.sendNotice(client, myUniq, fromNick, "|- on channels: ");
@@ -248,7 +249,6 @@ public class CService {
                             });
                         }
 
-                        
                         if (user.getValue().getUserAuthed() == true && ( user.getValue().getUserNick().equals(userList.get(fromNick).getUserNick()) ) ) {
                             protocol.sendNotice(client, myUniq, fromNick, "|- chanlev: ");
 
@@ -411,10 +411,10 @@ public class CService {
                     //userList.get(fromNick).setUserChanlev(channel, "+amno");
                     //sqliteDb.setUserChanlev(userList.get(fromNick).getUserAccount(), channel, userList.get(fromNick).getUserChanlev(channel));
 
-                    sqliteDb.setUserChanlev(ownerAccount, channel, "amno");
+                    sqliteDb.setUserChanlev(ownerAccount, channel, CHANLEV_FOUNDER_DEFAULT);
                     userList.forEach( (user, usernode) -> {
-                        if (usernode.getUserAccount().equals(userAccount)) {
-                            usernode.setUserChanlev(channel, "amno");
+                        if (usernode.getUserAccount().equals(ownerAccount)) {
+                            usernode.setUserChanlev(channel, CHANLEV_FOUNDER_DEFAULT);
                         }
                     } );
                     // updating channel chanlev as well
@@ -488,9 +488,6 @@ public class CService {
             userAccount = "";
             userChanlevFilter = "";
 
-            final String CHANLEV_FLAGS = "abdjkmnopqtvw";
-            final String CHANLEV_SYMBS = "+-";
-
             if (userList.get(fromNick).getUserAuthed() == false) {
                 protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
                 return;
@@ -554,6 +551,7 @@ public class CService {
                     }
                 }
                 catch (Exception e) { 
+                    e.printStackTrace();
                     protocol.sendNotice(client, myUniq, fromNick, "You do not have sufficient access on " + channel + " to use chanlev."); 
                     return;
                 }
