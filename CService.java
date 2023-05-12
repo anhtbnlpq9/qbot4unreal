@@ -137,133 +137,22 @@ public class CService {
         String response;
         
 
-        if (str.equalsIgnoreCase("HELP")) {
-            message2 = "The following commands are available to you.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "For more information on a specific command, type HELP <command>:";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "ADDUSER        Adds one or more users to a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "AUTHHISTORY    View auth history for an account.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "AUTOLIMIT      Shows or changes the autolimit threshold on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "BANCLEAR       Removes all bans from a channel including persistent bans.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "BANDEL         Removes a single ban from a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "BANLIST        Displays all persistent bans on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "BANTIMER       Shows or changes the time after which bans are removed.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CHANFLAGS      Shows or changes the flags on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CHANLEV        Shows or modifies user access on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CHANMODE       Shows which modes are forced or denied on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CHANOPHISTORY  Displays a list of who has been opped on a channel recently with account names.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CHANSTAT       Displays channel activity statistics.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CLEARCHAN      Removes all modes from a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "CLEARTOPIC     Clears the topic on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "DEOPALL        Deops all users on channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "DEVOICEALL     Devoices all users on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "EMAIL          Change your email address.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "GIVEOWNER      Gives total control over a channel to another user.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "HELP           Displays help on a specific command.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "INVITE         Invites you to a channel or channels.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "NEWPASS        Change your password.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "OP             Ops you or other users on channel(s).";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "PERMBAN        Permanently bans a hostmask on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "RECOVER        Recovers a channel (same as deopall, unbanall, clearchan).";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "REMOVEUSER     Removes one or more users from a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "REQUESTOWNER   Requests ownership of a channel on which there are no owners.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "SETTOPIC       Changes the topic on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "SHOWCOMMANDS   Lists available commands.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "TEMPBAN        Bans a hostmask on a channel for a specified time period.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "UNBANALL       Removes all bans from a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "UNBANMASK      Removes bans matching a particular mask from a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "UNBANME        Removes any bans affecting you from a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "USERFLAGS      Shows or changes user flags.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "USERS          Displays a list of users on the channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "VERSION        Show Version.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "VOICE          Voices you or other users on channel(s).";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "WELCOME        Shows or changes the welcome message on a channel.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "WHOAMI         Displays information about you.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2; 
-            client.write(response);
-            message2 =  "WHOIS          Displays information about a user.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
-            message2 =  "End of list.";
-            response = ":" + myUniq + " NOTICE " + fromNick + " " + message2;
-            client.write(response);
+        if (str.toUpperCase().startsWith("HELP ALL")) {                    Help.getHelp("commands", "ALL").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP AUTH")) {              Help.getHelp("commands", "AUTH").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP AUTHHISTORY")) {       Help.getHelp("commands", "AUTHHISTORY").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP CHANFLAGS")) {         Help.getHelp("commands", "CHANFLAGS").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP CHANLEV")) {           Help.getHelp("commands", "CHANLEV").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP DROP")) {              Help.getHelp("commands", "DROP").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP HELLO")) {             Help.getHelp("commands", "HELLO").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP LOGOUT")) {            Help.getHelp("commands", "LOGOUT").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP REQUESTBOT")) {        Help.getHelp("commands", "HELLO").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP SHOWCOMMANDS")) {      Help.getHelp("commands", "SHOWCOMMANDS").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP VERSION")) {           Help.getHelp("commands", "VERSION").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("HELP WHOIS")) {             Help.getHelp("commands", "WHOIS").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+        else if (str.toUpperCase().startsWith("SHOWCOMMANDS")) {
+            if (userList.get(fromNick).getUserAuthed() == false) {  Help.getHelp("levels", "0-UNAUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+            else if (userList.get(fromNick).getUserAuthed() == true) { Help.getHelp("levels", "10-AUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+            else if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
         }            
         else if (str.equalsIgnoreCase("USERLIST")) {
             protocol.sendNotice(client, myUniq, fromNick, "List of users:");
