@@ -88,10 +88,20 @@ public class Config {
         //UserNode cservice = new UserNode(cserviceNick, cserviceUniq, );
     }
 
+    /**
+     * Returns the server name
+     * 
+     * @return this.serverName Server name
+     */
     public String getServerName() {
         return this.serverName;
     }
 
+    /**
+     * Returns the server SID
+     * 
+     * @return this.serverId server SID
+     */
     public String getServerId() {
         return this.serverId;
     }   
