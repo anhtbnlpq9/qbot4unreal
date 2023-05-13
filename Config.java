@@ -105,13 +105,11 @@ public class Config {
         
         System.out.println("* Config:\n"
                         + "  +- Me name             = " + serverName  + "\n"
-                        + "  |---  sid              = " + serverId + "\n"
-                        + "  |---  description      = " + serverDescription + "\n"
-                        + "  |---  protocolversion  = " + serverProtocolVersion  + "\n"
-                        + "  |---  versionflags     = " + serverVersionFlags + "\n"
-                        + "  |---  fullversiontext  = " + serverFullVersionText + "\n"
+                        + "  |--- sid               = " + serverId + "\n"
+                        + "  |--- description       = " + serverDescription + "\n"
                         + "  +- Link peer name      = " + linkPeer + "\n"
-                        + "  `--- peer host         = " + linkHost + "\n");
+                        + "  |--- peer host         = " + linkHost + "\n"
+                        + "  |--- peer port         = " + linkPort + "\n"
                         + "  +- Logging             = " + linkPeer + "\n"
                         + "  |--- debug in          = " + logDebugIn + "\n"
                         + "  `--- debug out         = " + logDebugOut + "\n");
