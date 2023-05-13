@@ -69,7 +69,7 @@ public class Client implements Runnable {
 
             String str;
             while ((str = in.readLine()) != null) {
-                //System.out.println("<<< " + str);
+                if (config.getLogging("debugIn") == true) { System.out.println("<<< " + str); }
                 protocol.getResponse(str);
             }
             throw new Exception("Connection has been closed.");
@@ -127,7 +127,8 @@ public class Client implements Runnable {
 
     public void write(String str) {
 		try {
-            //System.out.println(">>> " + str);
+            if (config.getLogging("debugOut") == true) { System.out.println(">>> " + str); }
+
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 			out.write(str + "\n");
 			out.flush();

@@ -23,6 +23,9 @@ link:
 
 set:
     network: Mjav
+logging:
+    debugIn: no
+    debugOut: no
 
 cservice:
     nick: Q

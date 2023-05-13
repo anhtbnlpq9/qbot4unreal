@@ -36,6 +36,8 @@ public class Config {
     private String cserviceModes;
     private String cserviceStaticChan;
 
+    private Boolean logDebugIn;
+    private Boolean logDebugOut;
    /**
     * Constructor for the class
     * ...
@@ -54,6 +56,7 @@ public class Config {
         LinkedHashMap confme       = (LinkedHashMap) data.get("me");
         LinkedHashMap conflink     = (LinkedHashMap) data.get("link");
         LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");
+        LinkedHashMap confLogging  = (LinkedHashMap) data.get("logging");
 
         adminInformation           = (ArrayList<String>) data.get("admin");
         
@@ -76,6 +79,8 @@ public class Config {
         cserviceReal         = (String) confcservice.get("realname");
         cserviceModes        = (String) confcservice.get("modes");
         cserviceStaticChan   = (String) confcservice.get("staticchan");
+        logDebugIn           = (Boolean) confLogging.get("debugIn");
+        logDebugOut          = (Boolean) confLogging.get("debugOut");
         
         System.out.println("* Config:\n"
                         + "  +- Me name             = " + serverName  + "\n"
@@ -86,6 +91,9 @@ public class Config {
                         + "  |---  fullversiontext  = " + serverFullVersionText + "\n"
                         + "  +- Link peer name      = " + linkPeer + "\n"
                         + "  `--- peer host         = " + linkHost + "\n");
+                        + "  +- Logging             = " + linkPeer + "\n"
+                        + "  |--- debug in          = " + logDebugIn + "\n"
+                        + "  `--- debug out         = " + logDebugOut + "\n");
         
         //System.out.println("conf=" + data.toString());
         //System.out.println("admin=" + adminInformation);
@@ -153,5 +161,17 @@ public class Config {
     public ArrayList<String> getAdminInfo() {
         return this.adminInformation;
     }
+    public Boolean getLogging(String source) {
+        switch (source) {
+            case "debugIn":
+                return this.logDebugIn;
+
+            case "debugOut":
+                return this.logDebugOut;
+
+            default:
+                return false;
+        }
+    }  
 
 }
