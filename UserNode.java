@@ -107,7 +107,7 @@ public class UserNode {
         this.userCertFP = certfp;
     }
     public void setUserAccount(String account) {
-        this.userAccount = account;
+        this.userAccountP = account;
     }
     public void addUserToChan(String channel, ChannelNode chanObj, String mode) /*throws Exception*/ {
         //if (this.userChanList.contains(channel)) {
@@ -308,7 +308,7 @@ public class UserNode {
         return this.userCertFP;
     }
     public String getUserAccount() {
-        return this.userAccount;
+        return this.userAccountP;
     }
     public Map<String, ChannelNode> getUserChanList() {
         return this.userChanList;
