@@ -603,7 +603,7 @@ public class Protocol extends Exception {
                     }
                 }
             }
-            if (sjoinParam[2].startsWith("+")) { // Case when SJOIN contains modes (syncing from network)     
+            if (sjoinParam[2].startsWith("+")) { // Case when SJOIN contains modes (syncing from network)
                 // Populate the hashmap with remaining modes
                 for(char m : chanModeWithOutParams) {
                     chanModeList.put( String.valueOf(m) , "");
@@ -623,7 +623,7 @@ public class Protocol extends Exception {
 
             //System.out.println("BBO chanUserCount chan="+ channelName + " count=" + chanUserCount);
 
-            if ( ! channelList.containsKey(channelName) ) {
+            if (channelList.containsKey(channelName) == false) {
             
                 ChannelNode chan = new ChannelNode( channelName, channelTS, chanModeList, chanBanList, chanExceptList, chanInviteList );
 
