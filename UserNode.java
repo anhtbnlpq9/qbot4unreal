@@ -277,9 +277,6 @@ public class UserNode {
     public String getUserAccountId() {
         return this.userAccountId;
     }
-    public String setUserAccountId() {
-        return this.userAccountId;
-    }
     public String getUserOldNick() {
         return this.userOldNick;
     }
