@@ -136,6 +136,8 @@ public class CService {
             if (userList.get(fromNick).getUserAuthed() == false) {  Help.getHelp("levels", "0-UNAUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
             else if (userList.get(fromNick).getUserAuthed() == true) { Help.getHelp("levels", "10-AUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
             else if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
+
+            if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUniq, fromNick, line);} ); }
         }
 
         else if (str.equalsIgnoreCase("USERLIST")) {
