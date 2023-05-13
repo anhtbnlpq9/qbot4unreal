@@ -113,13 +113,14 @@ public class Client implements Runnable {
 
         this.write(":" + config.getServerId() + " " + "PASS" + " :" + config.getLinkPassword());
         this.write(":" + config.getServerId() + " " + "PROTOCTL NICKv2 VHP UMODE2 NICKIP SJOIN SJOIN2 SJ3 NOQUIT TKLEXT MLOCK SID MTAGS");
-        this.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getEAUTH());
+        // PROTOCTL EAUTH=my.server.name[,protocolversion[,versionflags,fullversiontext]]
+        this.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getServerName() + "," + config.getSrvProtocolVersion() + "," + config.getSrvVersionFlags() + "," + config.getSrvFullVersionText());
+        //this.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getEAUTH());
         this.write(":" + config.getServerId() + " " + "PROTOCTL SID=" + config.getServerId());
         this.write(":" + config.getServerId() + " " + "SERVER" + " " + config.getServerName() + " 1 :" + config.getServerDescription());
-        this.write(":" + config.getServerId() + " " + "EOS");        
 
         ServerNode server = new ServerNode(config.getServerName(), "0", config.getServerId(), config.getServerDescription());
-        server.setEOS(true);
+        server.setEOS(false);
         server.setServerPeerResponded(false);
         serverList.put(config.getServerId(), server);
         

@@ -397,6 +397,31 @@ public class Protocol extends Exception {
             ServerNode server = serverList.get(fromEnt);
             //System.out.println("@@@ " + fromEnt + " " + server.getServerName() + " reached EOS ");
             server.setEOS(true);
+
+            String str = ":" + config.getServerId() + " EOS";
+            client.write(str);
+            serverList.get(config.getServerId()).setEOS(true);
+        }
+        else if (command[0].equals("NETINFO")) {
+            //:ABC NETINFO 13        1683227483  6000                   SHA256:06aa55fd33c824d6132b0aebc1da0cd0e253473f68391a5ace8cf0bd 0 0 0 :Mjav
+            //     NETINFO maxglobal currenttime protocolversion        cloakhash                                                       0 0 0 :networkname
+            //     NETINFO xx        unixTime    config.protocolversion *                                                               0 0 0 :config.netName
+
+            String[] netinfoParam = raw.split(" ", 20);
+            //command = (command[1]).split(" ", 4);
+
+            unixTime = Instant.now().getEpochSecond();
+
+            String str = ":" + config.getServerId() + " NETINFO " + netinfoParam[1] + " " + unixTime + " " + config.getSrvProtocolVersion() + " * 0 0 0 :" + config.getNetworkName();
+            client.write(str);
+
+            //:ABC MD client lynx.      saslmechlist :EXTERNAL,PLAIN
+            //:ABC MD client <nick|uid> <varname>    <value>
+            if (config.getFeature("sasl") == true) {
+                str = ":" + config.getServerId() + " MD client " + config.getServerName() + " saslmechlist :EXTERNAL,PLAIN";
+                client.write(str);
+            }
+
         }
         else if (command[1].equals("SINFO")) {
             //<<< :5PX SINFO 1683275149 6000 diopqrstwxzBDGHIRSTWZ beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ * :UnrealIRCd-6.1.0

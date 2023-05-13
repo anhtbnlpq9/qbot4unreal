@@ -3,7 +3,7 @@ me:
     name: cheetah.
     description: jThIRC
     sid: 5PC
-    protocolversion: ""
+    protocolversion: "6000"
     versionflags: ""
     fullversiontext: jThIRC
     
@@ -21,8 +21,8 @@ link:
     # Auth by cert => we set password to *
     password: "*"
 
-set:
-    network: Mjav
+network:
+    name: Mjav
 logging:
     debugIn: no
     debugOut: no

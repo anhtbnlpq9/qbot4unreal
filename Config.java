@@ -36,6 +36,8 @@ public class Config {
     private String cserviceModes;
     private String cserviceStaticChan;
 
+    private String networkName;
+
     private Boolean logDebugIn;
     private Boolean logDebugOut;
    /**
@@ -56,6 +58,7 @@ public class Config {
         LinkedHashMap confme       = (LinkedHashMap) data.get("me");
         LinkedHashMap conflink     = (LinkedHashMap) data.get("link");
         LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");
+        LinkedHashMap confNetwork  = (LinkedHashMap) data.get("network");
         LinkedHashMap confLogging  = (LinkedHashMap) data.get("logging");
 
         adminInformation           = (ArrayList<String>) data.get("admin");
@@ -79,6 +82,9 @@ public class Config {
         cserviceReal         = (String) confcservice.get("realname");
         cserviceModes        = (String) confcservice.get("modes");
         cserviceStaticChan   = (String) confcservice.get("staticchan");
+
+        networkName          = (String) confNetwork.get("name");
+
         logDebugIn           = (Boolean) confLogging.get("debugIn");
         logDebugOut          = (Boolean) confLogging.get("debugOut");
         
@@ -137,6 +143,15 @@ public class Config {
     public String getEAUTH() {
         return this.serverName + "," + this.serverProtocolVersion + "," + this.serverVersionFlags + "," + this.serverFullVersionText;
     }
+    public String getSrvProtocolVersion() {
+        return this.serverProtocolVersion;
+    }
+    public String getSrvVersionFlags() {
+        return this.serverVersionFlags;
+    }
+    public String getSrvFullVersionText() {
+        return this.serverFullVersionText;
+    }
     public String getCServeUniq() {
         return this.cserviceUniq;
     }
@@ -161,6 +176,9 @@ public class Config {
     public ArrayList<String> getAdminInfo() {
         return this.adminInformation;
     }
+    public String getNetworkName() {
+        return this.networkName;
+    }   
     public Boolean getLogging(String source) {
         switch (source) {
             case "debugIn":
