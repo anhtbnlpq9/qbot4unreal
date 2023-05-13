@@ -69,10 +69,10 @@ public class Protocol extends Exception {
     }
     public void chanJoin(Client client, String who, String chan) /*throws Exception*/ {
         String str = ":" + who + " JOIN " + chan;
-        //int chanUserCount=0;
+        int chanUserCount=0;
 
         if (channelList.containsKey(chan)) {
-            //chanUserCount = channelList.get(chan).getChanUserCount();
+            chanUserCount = channelList.get(chan).getChanUserCount();
         }
         else {
             unixTime = Instant.now().getEpochSecond();
@@ -86,7 +86,7 @@ public class Protocol extends Exception {
         }
         catch (Exception e) { e.printStackTrace(); return; }
 
-        //channelList.get(chan).setChanUserCount(chanUserCount+1);
+        channelList.get(chan).setChanUserCount(chanUserCount+1);
         client.write(str);
     }
     public void chanPart(Client client, String who, String chan) /*throws Exception*/ {
@@ -711,9 +711,11 @@ public class Protocol extends Exception {
                 }
             }
         
-            
+            //chanUserMode.forEach( (user, mode) -> { System.out.println("BDA chan=" + channelName + " user=" + user + " -> mode=" + mode);  } );
+
             chanUserMode.remove("");
-            chanUserCount = chanUserMode.size();
+
+            //chanUserCount = chanUserMode.size();
 
             //chanUserMode.forEach( (key, value) -> { System.out.println("BBN chanUserMode chan=" + channelName + " " + userList.get(key).getUserNick() + " -> " + value); });
 
@@ -731,9 +733,13 @@ public class Protocol extends Exception {
                 channelList.get(channelName).setChanChanlev(sqliteDb.getChanChanlev(channelName));
                 //System.out.println("BBP chanUserCount newchan="+ channelName + " count=" + chanUserCount);
             }
-            
-            if(channelList.get(channelName).getChanUserCount() > 0) { channelList.get(channelName).setChanUserCount(channelList.get(channelName).getChanUserCount()+1); }
-            else { channelList.get(channelName).setChanUserCount(chanUserCount); }
+            else {
+                if(channelList.get(channelName).getChanUserCount() > 0) { 
+                    //System.out.println("BBZ here");
+                    channelList.get(channelName).setChanUserCount(channelList.get(channelName).getChanUserCount()+1); 
+                }
+                else { channelList.get(channelName).setChanUserCount(chanUserCount); }
+            }
 
             chanUserMode.forEach( (user, modes) -> {
                 //System.out.println("chanUserMode " + channelName + " = " + user + " -> " + modes);
