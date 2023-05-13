@@ -28,30 +28,29 @@ import java.util.Arrays;
 
 public class UserNode {
     
-    public String userNick = "";
-    public String userOldNick = "";
-    public String userIdent = "";
-    public String userHost = "";
-    public String userRealHost = "";
-    public String userRealName = "";
-    public String userUniq = "" ;
-    public String userModes = "";
-    public String userCertFP = "";
-    public String userAccount = "";
-    public String userAccountId = "";
+    private String userNick       = "";
+    private String userOldNick    = "";
+    private String userIdent      = "";
+    private String userHost       = "";
+    private String userRealHost   = "";
+    private String userRealName   = "";
+    private String userUniq       = "";
+    private String userModes      = "";
+    private String userCertFP     = "";
+    private String userAccountP   = "";
+    private String userAccountId  = "";
 
-    public ServerNode userServer;
+    private ServerNode userServer;
     private UserAccount userAccount;
 
-    public long userTS;
+    private long userTS;
 
-    //public ArrayList<String> userChanList = new ArrayList<String>();
-    public Map<String, ChannelNode> userChanList = new HashMap<String, ChannelNode>();
-    public Map<String, String> userChanModes = new HashMap<String, String>();
-    public Map<String, String> userChanlev = new HashMap<String, String>();
+    private Map<String, ChannelNode> userChanList   = new HashMap<String, ChannelNode>();
+    private Map<String, String>      userChanModes  = new HashMap<String, String>();
+    private Map<String, String>      userChanlev    = new HashMap<String, String>();
 
-    public Boolean userAuthed = false;
-    public Boolean userNickRegistered = false;
+    private Boolean userAuthed         = false;
+    private Boolean userNickRegistered = false;
 
     public UserNode() {
         
