@@ -1,0 +1,37 @@
+Usage: CHANFLAGS <channel> [<changes>]
+Shows or changes the status of channel flags, where:
+channel - channel to use
+changes - changes to apply to the channel flags in the usual +/- format, e.g. +c
+          to set +c and -c to remove it.
+Viewing the current flags requires operator (+o) access on the named channel.
+Changing the flags requires master (+m) access on the named channel.
+Valid channel flags are:
+ +a AUTOOP     Automatically ops any user who has op access when they join the
+               channel.  Same effect as giving all ops the +a chanlev flag.
+ +b BITCH      Prevents users who don't have operator access on the channel
+               from being opped (automatically deops them)
+ +c AUTOLIMIT  Enables automatic limit feature - updates the channel limit at
+               regular intervals to keep a certain number of free spaces.  This
+               can mitigate the effect of join floods.  See AUTOLIMIT.
+ +e ENFORCE    Enforces bans on the channel.  Any user who is banned will be
+               kicked automatically.
+ +f FORCETOPIC Prevents channel ops from changing the topic.  The SETTOPIC
+               command must be used instead.
+ +g AUTOVOICE  Automatically voices any user who has voice access when they join
+               the channel.  Same effect as giving all voices the +g chanlev flag.
+ +h ACH'MENTS  Display achievement announcements in channel.
+ +j JOINED     Causes Q to remain on the channel.  Cannot be removed.
+ +k KNOWNONLY  Any user who joins the channel who is not known (+k) will be kicked.  
+               Unless channel mode +i is set they will be banned as well.
+ +p PROTECT    Any user with voice (+v) or operator (+o) access will have that 
+               status enforced on the channel at all times.  Same effect as giving
+               all ops and voices the +p chanlev flag.
+ +t TOPICSAVE  Saves the topic when it changes.  Such saved topics can be restored
+               via settopic, or when the bot rejoins when a channel has been left
+               empty.
+ +v VOICEALL   Automatically grants voice (+v) on the channel to any user who enters,
+               unless they have quiet (+q) chanlev flag.
+ +w WELCOME    Sends the welcome message to users joining the channel.  See WELCOME.
+Note: Previous versions of Q included the facility to enforce limits and keys using
++k and +l chanflags.  This functionality is now available via the CHANMODE command.
+End of help.

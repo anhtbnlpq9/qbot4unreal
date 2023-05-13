@@ -1,0 +1,6 @@
+The following commands are available to you as an oper.
+For more information on a specific command, type HELP <command>:
+CHANLIST           List of the current created channels on the network.
+SERVERLIST         List of the current connected servers on the network.
+USERLIST           List of the current connected users on the network.
+End of list.

@@ -1,4 +1,5 @@
 Usage: SHOWCOMMANDS [<mask>]
 Prints a list of commands currently available to you, where:
-mask - Mask of commands to list (* or ? are wildcards).  If no mask is specified,
-       all available commands are displayed.
+mask - Mask of commands to list (* or ? are wildcards).  If no mask is specified,
+       all available commands are displayed.
+End of help.

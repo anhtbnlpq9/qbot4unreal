@@ -1,2 +1,3 @@
 Usage: LOGOUT
 De-authenticate yourself from the bot.
+End of help.

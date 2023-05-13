@@ -1,0 +1,6 @@
+Usage: DROP <channel>
+Drops the registration of a channel. By doing that, all the
+settings of your channel inside the bot will be deleted. Also the
+bot will leave the channel. This action cannot be undone.
+In order to perform this command, you need to hold the +n flag in the chanlev.
+End of help.

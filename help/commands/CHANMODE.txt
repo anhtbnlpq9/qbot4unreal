@@ -1,0 +1,22 @@
+Usage: CHANMODE <channel> [<modes>]
+Shows or changes the list of channel modes being enforced on the channel, where:
+  * channel  - the channel to use
+  * modes    - the list of modes to allow or deny.  Modes specified with + will be
+               enforced on the channel at all times, those specified with - will not
+               be allowed on the channel.  If modes are not specified the current
+               setting will be displayed.  If +k or +l modes are included, the actual
+               key or limit to be enforced must also be specified, for example 
+               "-il+ntk mykey", or "+nstl-Cc 20".  If you do not want any modes
+               enforced, "CHANMODE <channel> none" will clear the list.
+- Viewing the enforced modes requires operator (+o) access on the named channel.
+- Updating the enforced modes requires master (+m) access on the named channel.
+- Note: unlike similar commands that work on flags, specifying modes REPLACES
+        the list of modes to be enforced rather than changing the existing list.
+        This is because - modes are valid as well as + modes.  Thus whenever you
+        specify the modes argument you must provide the complete list of desired modes
+        each time.
+- Note: if autolimit is enabled (see CHANFLAGS) it will cause a +l limit mode
+        to be enforced, with the value updating periodically as users join and leave.
+        This +l forcing cannot be changed or overridden without disabling the autolimit
+        function using the CHANFLAGS command.
+End of help.

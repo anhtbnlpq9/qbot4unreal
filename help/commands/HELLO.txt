@@ -1,5 +1,6 @@
 Usage: HELLO <password> <email>
-Creates a new user account for yourself. Your current nickname will be used
+Creates a new user account for yourself. Your current nickname will be used
 for the name of the account, and may only contain letters, numbers and
-hyphens (-). An email containing password details will be sent to the email
-address supplied.
+hyphens (-). An email containing password details will be sent to the email
+address supplied.
+End of help.

@@ -1,2 +1,3 @@
 Usage: VERSION
 Shows the version number of the running bot.
+End of help.
