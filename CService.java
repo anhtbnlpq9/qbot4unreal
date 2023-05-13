@@ -141,6 +141,12 @@ public class CService {
         }
 
         else if (str.equalsIgnoreCase("USERLIST")) {
+
+            if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == false) {
+                protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
+
             protocol.sendNotice(client, myUniq, fromNick, "List of users:");
             
             /*for (Map.Entry<A, B> e : myMap.entrySet()) {
@@ -155,6 +161,11 @@ public class CService {
             protocol.sendNotice(client, myUniq, fromNick, "End of list.");
         }
         else if (str.equalsIgnoreCase("SERVERLIST")) {
+            if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == false) {
+                protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
+
             protocol.sendNotice(client, myUniq, fromNick, "List of servers:");
             
             /*for (Map.Entry<A, B> e : myMap.entrySet()) {
@@ -173,6 +184,11 @@ public class CService {
             protocol.sendNotice(client, myUniq, fromNick, "End of list.");
         }
         else if (str.toUpperCase().startsWith("CHANLIST")) {
+
+            if (userList.get(fromNick).getUserModes().matches("(.*)o(.*)") == false) {
+                protocol.sendNotice(client, myUniq, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
             protocol.sendNotice(client, myUniq, fromNick, "List of channels:");
             
             /*for (Map.Entry<A, B> e : myMap.entrySet()) {
