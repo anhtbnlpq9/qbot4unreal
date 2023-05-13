@@ -484,6 +484,87 @@ public class Protocol extends Exception {
             command = command[2].split(" ", 12);
             
             
+        else if (command[1].equals("SASL")) {
+            /*
+            * <<< :ocelot. SASL lynx. 5P0QVW5M3 H 2401:d800:7e60:5bb:21e:10ff:fe1f:0 2401:d800:7e60:5bb:21e:10ff:fe1f:0
+            * <<< :ocelot. SASL lynx. 5P0QVW5M3 S PLAIN
+            * >>> :5PBAAAAAF SASL ocelot. 5P0QVW5M3 C +
+            * <<< :ocelot. SASL lynx. 5P0QVW5M3 C <base64("Login" + "Login" + "Pass")>
+            * Fail:
+            * >>> :5PBAAAAAF SASL ocelot. 5P0IFAZM2 D F
+            * Success:
+            * >>> :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay
+            * >>> :5PBAAAAAF SASL ocelot. 5P0QVW5M3 D S
+            * <<< @s2s-md/geoip=cc=VN|cd=Vietnam;s2s-md/tls_cipher=TLSv1.3-TLS_CHACHA20_POLY1305_SHA256;s2s-md/creationtime=1683972418 :5P0 UID AnhTay_ 0 1683972414 ~anh 2401:d800:7e60:5bb:21e:10ff:fe1f:0 5P0QVW5M3 AnhTay +iwxz D0230F10:F347CFC4:51CFDDA3:IP D0230F10:F347CFC4:51CFDDA3:IP JAHYAH5gBbsCHhD//h8AAA== :Toi La Anh
+            * >>> :5PB CHGHOST 5P0QVW5M3 user/AnhTay
+            */
+
+            fromEnt = command[0].replaceFirst(":","");
+            command = command[2].split(" ", 12);
+
+            /*
+             *    Received " H " from user's server
+             * command[0] = SASL server
+             * command[1] = User SID
+             * command[2] = H
+             * command[3] = Hostname
+             * command[4] = IP
+             * command[5] = P if plaintext connection, else empty
+             */
+
+            /*
+             *    Received " S " from user's server
+             * command[0] = SASL server
+             * command[1] = User SID
+             * command[2] = S
+             * command[3] = Client SASL type (PLAIN for user/pass, EXTERNAL for authentication through ircd)
+             * command[4] = CertFP if EXTERNAL, empty if PLAIN
+             */
+
+            /*
+             *    Sent " C " from authenticator SID (e.g. Q) to user's server
+             * command[0] = user's server SID
+             * command[1] = User SID
+             * command[2] = C
+             * command[3] = +
+             */
+
+            /*
+             *    Received " C " from user's server
+             * command[0] = SASL server
+             * command[1] = User SID
+             * command[2] = C
+             * command[3] = Base64 hash of <LoginLoginPass>
+             */
+
+            /*
+             *   Auth failure => Sent " D " from authenticator user SID to user's server
+             * command[0] = user's server SID
+             * command[1] = User SID
+             * command[2] = D
+             * command[3] = F
+             */
+
+            /*
+             *    Auth success => Sent " SVSLOGIN " from authenticator server SID to user's server
+             * command[0] = user's server SID
+             * command[1] = User SID
+             * command[2] = User login
+             */
+
+            /*
+             *    Auth success => Sent " D " from authenticator SID to user's server
+             * command[0] = user's server SID
+             * command[1] = User SID
+             * command[2] = D
+             * command[3] = S
+             */
+
+            /*
+             *    Auth success => Sent " CHGHOST " from authenticator server SID to user's server
+             * command[0] = User SID
+             * command[1] = vhost
+             */
 
             UserNode user = new UserNode( command[0],    // nick
                                         command[3],      // ident

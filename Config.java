@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.yaml.snakeyaml.Yaml;
@@ -38,8 +39,13 @@ public class Config {
 
     private String networkName;
 
+    private Boolean featureSasl;
+
     private Boolean logDebugIn;
     private Boolean logDebugOut;
+
+    HashMap<String, Boolean> featuresList = new HashMap<String, Boolean>();
+
    /**
     * Constructor for the class
     * ...
@@ -60,6 +66,7 @@ public class Config {
         LinkedHashMap confcservice = (LinkedHashMap) data.get("cservice");
         LinkedHashMap confNetwork  = (LinkedHashMap) data.get("network");
         LinkedHashMap confLogging  = (LinkedHashMap) data.get("logging");
+        LinkedHashMap confFeatures = (LinkedHashMap) data.get("features");
 
         adminInformation           = (ArrayList<String>) data.get("admin");
         
@@ -87,6 +94,14 @@ public class Config {
 
         logDebugIn           = (Boolean) confLogging.get("debugIn");
         logDebugOut          = (Boolean) confLogging.get("debugOut");
+
+        featureSasl          = (Boolean) confFeatures.get("sasl");
+
+
+
+        if (featureSasl == true) featuresList.put("sasl", true);
+        else featuresList.put("sasl", false);
+
         
         System.out.println("* Config:\n"
                         + "  +- Me name             = " + serverName  + "\n"
@@ -179,6 +194,15 @@ public class Config {
     public String getNetworkName() {
         return this.networkName;
     }   
+    public Boolean getFeature(String feature) {
+        switch (feature) {
+            case "sasl":
+                return this.featuresList.get(feature);
+    
+            default:
+                return false;
+        }
+    }  
     public Boolean getLogging(String source) {
         switch (source) {
             case "debugIn":

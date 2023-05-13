@@ -23,6 +23,10 @@ link:
 
 network:
     name: Mjav
+
+features:
+    sasl: no
+
 logging:
     debugIn: no
     debugOut: no
