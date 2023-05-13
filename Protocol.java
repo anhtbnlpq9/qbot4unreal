@@ -135,10 +135,10 @@ public class Protocol extends Exception {
          *             `------------------------------------------- group4: (list) parameter for set, parameter for unset
          */
     
-        String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // no parameter
-        String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for add, no parameter for remove
-        String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, parameter for unset
-        String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // (list) parameter for set, parameter for unset
+        String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (list) parameter for set, parameter for unset
+        String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
+        String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
+        String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
 
         String str = ":" + who + " MODE " + target + " " + modes + " " + parameters;
 
@@ -155,19 +155,9 @@ public class Protocol extends Exception {
             else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }
 
         }
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup1 + "]")) {
+        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup4 + "]")) {
             if(modes.startsWith("+")) {
                 channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup2 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
             }
             else if(modes.startsWith("-")) {
                 channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
@@ -180,11 +170,21 @@ public class Protocol extends Exception {
                 channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
             }
             else if(modes.startsWith("-")) {
+                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
+            }
+            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
+        }
+
+        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup2 + "]")) {
+            if(modes.startsWith("+")) {
+                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
+            }
+            else if(modes.startsWith("-")) {
                 channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
             }
             else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
         }
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup4 + "]")) {
+        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup1 + "]")) {
             if(modes.startsWith("+")) {
                 switch(modes.charAt(1)) {
                     case 'b':
@@ -668,16 +668,16 @@ public class Protocol extends Exception {
 
             /*
              * CHANMODES=beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ
-             *            |   |    |           `----------------------- group1: no parameter
-             *            |   |     `---------------------------------- group2: parameter for set, no parameter for unset
-             *            |    `--------------------------------------- group3: parameter for set, parameter for unset
-             *             `------------------------------------------- group4: (list) parameter for set, parameter for unset
+             *            |   |    |           `----------------------- group4: no parameter
+             *            |   |     `---------------------------------- group3: parameter for set, no parameter for unset
+             *            |    `--------------------------------------- group2: parameter for set, parameter for unset
+             *             `------------------------------------------- group1: (list) parameter for set, parameter for unset
              */
         
-            String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // no parameter
-            String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for add, no parameter for remove
-            String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, parameter for unset
-            String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // (list) parameter for set, parameter for unset
+            String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (list) parameter for set, parameter for unset
+            String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
+            String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
+            String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
 
             
 
