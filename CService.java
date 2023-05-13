@@ -440,7 +440,7 @@ public class CService {
                     channelList.get(channel).setChanChanlev(chanNewChanlev);
                     
                     protocol.chanJoin(client, myUniq, channel);
-                    protocol.setMode(client, channel, "+o", config.getCServeNick());
+                    protocol.setMode(client, channel, "+ro", config.getCServeNick());
                     protocol.sendNotice(client, myUniq, fromNick, "Channel successfully registered."); 
                 }
                 catch (Exception e) { 
@@ -469,6 +469,7 @@ public class CService {
                     userList.get(fromNick).unSetUserChanlev(channel);
                     sqliteDb.unSetUserChanlev(channel);
                     sqliteDb.delRegChan(channel);
+                    protocol.setMode(client, channel, "-r", "");
                     protocol.chanPart(client, myUniq, channel);
                     protocol.sendNotice(client, myUniq, fromNick, "Channel successfully dropped."); 
                 }
@@ -630,6 +631,7 @@ public class CService {
                                 userList.get(fromNick).unSetUserChanlev(channel);
                                 sqliteDb.unSetUserChanlev(channel);
                                 sqliteDb.delRegChan(channel);
+                                protocol.setMode(client, channel, "-r", "");
                                 protocol.chanPart(client, myUniq, channel);
                                 protocol.sendNotice(client, myUniq, fromNick, "Channel has been dropped because its chanlev was left empty."); 
                             }
