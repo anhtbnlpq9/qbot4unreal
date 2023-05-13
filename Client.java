@@ -3,20 +3,11 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
 import java.lang.Exception;
 import java.lang.String;
 import java.lang.Thread;
-
 import java.net.Socket;
-
-//import java.security.cert.Certificate;
-
 import java.util.Map;
-
-
-//import javax.net.ssl.SSLSession;
-//import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class Client implements Runnable {

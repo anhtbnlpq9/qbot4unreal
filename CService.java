@@ -97,8 +97,8 @@ public class CService {
         user.setUserServer(serverList.get(config.getServerId()));
         userList.put(myUniq, user);
         protocol.addNickLookupTable(config.getCServeNick(), myUniq);
-        
-        
+
+
         unixTime = Instant.now().getEpochSecond();
 
         for (String regChannel: sqliteDb.getRegChan()) {

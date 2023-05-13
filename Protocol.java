@@ -26,7 +26,6 @@ public class Protocol extends Exception {
     String foundNickLookUpCi;
 
     public Protocol() {
-        
     }  
     public Protocol(Config config, SqliteDb sqliteDb) {
         this.config = config;
@@ -98,7 +97,6 @@ public class Protocol extends Exception {
 
         int chanUserCount = chanUserPart.getChanUserCount();
 
-        
         if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
             chanUserPart = null;
             channelList.remove( chan );
@@ -106,7 +104,7 @@ public class Protocol extends Exception {
         else {
             chanUserPart.setChanUserCount(chanUserCount - 1);
         }
-        
+
         client.write(str);
     }
     public void chanKick(Client client, String who, String chan, String target, String reason) /*throws Exception*/ {
@@ -342,7 +340,6 @@ public class Protocol extends Exception {
         return this.myPeerServerId;
     }
     public void getResponse(String raw) throws Exception {
-
         String response = "";
         String[] command;
         String fromEnt;
@@ -580,15 +577,22 @@ public class Protocol extends Exception {
             //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
             userNickSidLookup.put(command[0], command[5]);
 
+
+
+
+
+
+
+
         }
         else if (command[1].equals("SJOIN")) {
             // :5P0 SJOIN 1680362593 #mjav         +fnrtCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6         :5PKEPJH3U @5PXDR1D20 @5P0FWO841 
             // :5P0 SJOIN 1681424518 #Civilization +fnrtCHPS [30j#R10,40m#M10,10n#N15]:15 50:15m :@5PX8ZA302 @5PBAAAAAI &test!*@* "test!*@* 'test!*@*
             // :5PX SJOIN 1679224907 #test                                                       :5PX8ZA302
             // :5PX SJOIN 1683480448 #newChan                                                    :@5PX8ZA302
-            // :5PX MODE  #newChan   +ntCT         1683480448
 
             //System.out.println("DDD SJOIN " + command[2]);
+
             fromEnt = (command[0].split(":"))[1];
 
             String[] sjoinParam      = command[2].split(" ", 64);
@@ -598,8 +602,7 @@ public class Protocol extends Exception {
             int indexMode = 0;
 
             long channelTS = Integer.parseInt(sjoinParam[0]);
-            
-            
+
             String networkChanmodesWithOutParams = ((protocolProps.get("CHANMODES")).split(",", 4))[3];
             String networkChanmodesWithParams    = ((protocolProps.get("CHANMODES")).split(",", 4))[0] + ((protocolProps.get("CHANMODES")).split(",", 4))[1] + ((protocolProps.get("CHANMODES")).split(",", 4))[2];
             
