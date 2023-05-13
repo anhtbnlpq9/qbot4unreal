@@ -41,6 +41,7 @@ public class UserNode {
     public String userAccountId = "";
 
     public ServerNode userServer;
+    private UserAccount userAccount;
 
     public long userTS;
 
