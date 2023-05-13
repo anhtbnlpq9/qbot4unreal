@@ -32,9 +32,22 @@ logging:
     debugOut: no
 
 cservice:
+    enable: yes
     nick: Q
     uniq: AAAAAA
     ident: qbot
     host: CServe
     realname: The Q Bot
     modes: +ioqBS
+    accountsettings:
+        passlen: 12
+        autolimitinterval: 60
+        chanophistory: 10
+        maxchannels: 500
+        lastreg: 100
+    chansettings:
+        emaillen: 60
+        welcomelen: 250
+        infolen: 100
+        maxchanlevs: 500
+        maxbans: 100
