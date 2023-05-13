@@ -463,9 +463,9 @@ public class CService {
             }
 
             // First check that the user is a the channel's owner (chanlev +n)
-            
-            if (userList.get(fromNick).getUserChanlev(channel).matches("(.*)n(.*)")) {
-                try {
+            try {
+                if (userList.get(fromNick).getUserChanlev(channel).matches("(.*)n(.*)")) {
+
                     userList.get(fromNick).unSetUserChanlev(channel);
                     sqliteDb.unSetUserChanlev(channel);
                     sqliteDb.delRegChan(channel);
@@ -473,16 +473,15 @@ public class CService {
                     protocol.chanPart(client, myUniq, channel);
                     protocol.sendNotice(client, myUniq, fromNick, "Channel successfully dropped."); 
                 }
-                catch (Exception e) { 
-                    protocol.sendNotice(client, myUniq, fromNick, "Error while dropping the channel."); 
-                    e.printStackTrace();
-                    return;
+                else {
+                    protocol.sendNotice(client, myUniq, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
                 }
             }
-            else {
+            catch (Exception e) { 
                 protocol.sendNotice(client, myUniq, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
+                e.printStackTrace();
+                return;
             }
-            
         }
         else if (str.toUpperCase().startsWith("CHANLEV ")) { // CHANLEV <channel> [<user> [<change>]]
         /*
