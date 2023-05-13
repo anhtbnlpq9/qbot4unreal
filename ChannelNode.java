@@ -160,7 +160,7 @@ public class ChannelNode {
     public Integer getChanUserCount() {
         return this.chanUserCount;
     }
-    public void setChanUserCount(int count) {
+    public void setChanUserCount(Integer count) {
         this.chanUserCount = count;
     }
 }
