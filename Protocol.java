@@ -376,10 +376,44 @@ public class Protocol extends Exception {
             // :XXXX UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
 
             fromEnt = (command[0].split(":"))[1];
-            
             command = command[2].split(" ", 12);
+
+            if (userList.containsKey(command[5]) == false) {
+                UserNode user = new UserNode( command[0],                 // nick
+                                            command[3],                   // ident
+                                            command[8],                   // vhost
+                                            command[4],                   // realhost
+                                            (command[11].split(":"))[1],  // gecos
+                                            command[5],                   // unique id
+                                            Integer.parseInt(command[2]), // TS
+                                            command[7]                    // modes
+                                        );
+
+                userList.put(command[5], user);
+                userNickSidLookup.put(command[0], command[5]);
+                user.setUserServer(serverList.get(fromEnt));
+            }
+
+            else {
+                UserNode user = userList.get(command[5]);
+
+                user.setUserNick(command[0]);                       // nick
+                user.setUserIdent(command[3]);                      // ident
+                user.setUserHost(command[8]);                       // vhost
+                user.setUserRealHost(command[4]);                   // realhost
+                user.setUserRealName((command[11].split(":"))[1]);  // gecos
+                user.setUserTS(Integer.parseInt(command[2]));       // TS
+                user.setUserModes(command[7]);                      // modes
+
+            }
+
+
             
             
+            //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
+            
+
+        }
         else if (command[1].equals("SASL")) {
             /*
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 H 2401:d800:7e60:5bb:21e:10ff:fe1f:0 2401:d800:7e60:5bb:21e:10ff:fe1f:0
