@@ -110,7 +110,8 @@ public class SqliteDb {
 
         try {
             statement = connection.createStatement();
-            sql = "DELETE FROM channels WHERE name='" + channel + "');";
+            sql = "DELETE FROM channels WHERE name='" + channel + "';";
+            //System.out.println("drop sql="+sql);
             statement.executeUpdate(sql);
         }
         catch (Exception e) { 
