@@ -1001,11 +1001,11 @@ abstract class Flags {
      * @param character Chanlev flag character
      * @return Chanlev flag int
      */
-    public static Integer getChanLFlagInt(String character) throws Exception {
+    public static Integer getChanLFlagInt(String character) {
         try {
             return chanlevFlagCharMap.get(character);
         }
-        catch (Exception e) { throw new Exception("The chanlev flag does not exists."); }
+        catch (Exception e) { return 0; }
     }
     
     /**
@@ -1013,11 +1013,11 @@ abstract class Flags {
      * @param chanlev Chanlev flag int
      * @return Chanlev flag character
      */
-    public static String getChanLFlagChar(Integer chanlev) throws Exception {
+    public static String getChanLFlagChar(Integer chanlev) {
         try {
             return chanlevFlagCharRevMap.get(chanlev);
         }
-        catch (Exception e) { throw new Exception("The chanlev flag does not exists."); }
+        catch (Exception e) { return ""; }
     }
 
     /*
@@ -1709,11 +1709,11 @@ abstract class Flags {
      * @param character User flag character
      * @return User flag int
      */
-    public static Integer getUserFlagInt(String character) throws Exception {
+    public static Integer getUserFlagInt(String character) {
         try {
             return userFlagCharMap.get(character);
         }
-        catch (Exception e) { throw new Exception("The user flag does not exists."); }
+        catch (Exception e) { return 0; }
     }
     
     /**
@@ -1721,11 +1721,12 @@ abstract class Flags {
      * @param userFlag User flag int
      * @return User flag character
      */
-    public static String getUserFlagChar(Integer userFlag) throws Exception {
+    public static String getUserFlagChar(Integer userFlag) {
         try {
             return userFlagCharRevMap.get(userFlag);
         }
-        catch (Exception e) { throw new Exception("The user flag does not exists."); }
+        catch (Exception e) { return ""; }
+    }
 
 
     /**
