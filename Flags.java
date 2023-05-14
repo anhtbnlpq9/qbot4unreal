@@ -50,7 +50,7 @@ abstract class Flags {
      * Note: some flags cannot be set through USERFLAGS but with specific commands: +g, +z.
      */
 
-    private static final String    UFLAGS_LIST         = "aglopqwz";
+    private static final String    UFLAGS_LIST         = "aglopqw"; /* List of flags settable with USERFLAGS */
 
     //private static final Integer   UFLAG_SPARE_A       = 0x80000000; // +A
     //private static final Integer   UFLAG_SPARE_B       = 0x40000000; // +B
@@ -167,7 +167,7 @@ abstract class Flags {
      * Note: some flags cannot be set through CHANFLAGS but with specific commands: +z.
      */
 
-    private static final String    CHFLAGS_LIST         = "bcefjkptvwz";
+    private static final String    CHFLAGS_LIST         = "bcefkptvw"; /* List of flags settable with CHANFLAGS */
 
     //private static final Integer   CHFLAG_SPARE_A       = 0x80000000; // +A
     //private static final Integer   CHFLAG_SPARE_B       = 0x40000000; // +B
