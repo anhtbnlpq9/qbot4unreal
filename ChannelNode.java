@@ -16,7 +16,7 @@ public class ChannelNode {
     public String channelTopic;
     public Boolean channelRegistered;
     public UserNode channelOwner;
-    public Map<String, String> chanChanlev; // Map username -> chanlev
+    public Map<String, Integer> chanChanlev; // Map username -> chanlev
     public Integer chanUserCount=0;
 
     public long channelTS;
@@ -84,11 +84,11 @@ public class ChannelNode {
     public void setOwner(UserNode user) {
         this.channelOwner = user;
     }
-    public void setChanChanlev(Map<String, String> chanChanlev) {
+    public void setChanChanlev(Map<String, Integer> chanChanlev) {
         this.chanChanlev = chanChanlev;
     }
-    public void setChanChanlev(String user, String chanlev) {
-        if (chanlev.isEmpty() == false) {
+    public void setChanChanlev(String user, Integer chanlev) {
+        if (chanlev == 0) {
             if (this.chanChanlev.containsKey(user) == true) {
                 this.chanChanlev.replace(user, chanlev);
             }
@@ -148,7 +148,7 @@ public class ChannelNode {
     public UserNode getOwner() {
         return this.channelOwner;
     }
-    public Map<String, String> getChanlev() {
+    public Map<String, Integer> getChanlev() {
         return this.chanChanlev;
     }
     public String getChanName() {

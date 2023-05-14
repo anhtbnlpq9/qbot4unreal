@@ -186,12 +186,12 @@ public class SqliteDb {
 
         return user;
     }
-    public Map<String, String> getUserChanlev(String username) throws Exception {
+    public Map<String, Integer> getUserChanlev(String username) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
-        Map<String, String> userChanlev = new HashMap<String, String>();
-        String chanlev;
+        Map<String, Integer> userChanlev = new HashMap<String, Integer>();
+        Integer chanlev;
         String channel;
         Integer userId           = 0;
 
@@ -207,7 +207,7 @@ public class SqliteDb {
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
                 channel = resultSet.getString("name");
-                chanlev = resultSet.getString("chanlev");
+                chanlev = resultSet.getInt("chanlev");
                 userChanlev.put(channel, chanlev);
             }
         }
@@ -215,13 +215,13 @@ public class SqliteDb {
         statement.close();
         return userChanlev;
     }
-    public String getUserChanlev(String username, String channel) throws Exception {
+    public Integer getUserChanlev(String username, String channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
-        String userChanlev = "";
+        Integer userChanlev      = 0;
         Integer userId           = 0;
-        Integer chanId          = 0;
+        Integer chanId           = 0;
 
         try { 
             statement = connection.createStatement();
@@ -242,7 +242,7 @@ public class SqliteDb {
             //System.out.println("BBD db chanlev=" + sql);
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
-                userChanlev = resultSet.getString("chanlev");
+                userChanlev = resultSet.getInt("chanlev");
             }
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not get user " + username + " chanlev."); }
@@ -250,12 +250,12 @@ public class SqliteDb {
         //System.out.println("BBE db chanlev=" + userChanlev);
         return userChanlev;
     }
-    public Map<String, String> getChanChanlev(String channel) throws Exception {
+    public Map<String, Integer> getChanChanlev(String channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
-        Map<String, String> chanChanlev = new HashMap<String, String>();
-        String chanlev;
+        Map<String, Integer> chanChanlev = new HashMap<String, Integer>();
+        Integer chanlev;
         String username;
         Integer chanId           = 0;
 
@@ -272,7 +272,7 @@ public class SqliteDb {
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
                 username = resultSet.getString("name");
-                chanlev = resultSet.getString("chanlev");
+                chanlev = resultSet.getInt("chanlev");
                 chanChanlev.put(username, chanlev);
             }
         }
@@ -280,6 +280,7 @@ public class SqliteDb {
         statement.close();
         return chanChanlev;
     }
+    // XXX to delete
     public void setUserChanlev(String username, String channel, String chanlev) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -335,7 +336,63 @@ public class SqliteDb {
             statement.close();
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not set user " + username + " chanlev."); }
+    }
 
+    public void setUserChanlev(String username, String channel, Integer chanlev) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+
+        Integer userId           = 0;
+        Integer channelId        = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT uid FROM users WHERE name='" + username + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            userId = resultSet.getInt("uid");
+
+            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            channelId = resultSet.getInt("cid");
+
+            //sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
+            sql = "SELECT chanlev FROM chanlev WHERE channelId='"+ channelId +"' AND userId = " + userId + ";";
+            resultSet = statement.executeQuery(sql);
+
+            if(resultSet.next() == false) {
+                if (chanlev != 0) {
+                    //System.out.println("BAD user chanlev does not exist => creating it");
+                    sql = "INSERT INTO chanlev (channelId, userId, chanlev) VALUES ('" + channelId + "', '" + userId + "', '" + chanlev + "');";
+                    //System.out.println(sql);
+                    statement.executeUpdate(sql);
+                }
+                else {
+                    //System.out.println("BAG user chanlev does not exist => doing nothing");
+                    return;
+                }
+            }
+            else {
+                
+                if (chanlev != 0) {
+                    //System.out.println("BAE user chanlev exists => updating it");
+                    sql = "UPDATE chanlev SET chanlev='" + chanlev + "' WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
+                    //System.out.println(sql);
+                    statement.executeUpdate(sql);
+                }
+                else {
+                    //System.out.println("BAF user chanlev exists => deleting it");
+                    sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
+                    //System.out.println(sql);
+                    statement.executeUpdate(sql);
+                }
+            }
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not set user " + username + " chanlev."); }
     }
     public void unSetUserChanlev(String username, String channel) throws Exception {
         Statement statement      = null;

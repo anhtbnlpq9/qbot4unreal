@@ -29,7 +29,7 @@ public class UserNode {
 
     private Map<String, ChannelNode> userChanList   = new HashMap<String, ChannelNode>();
     private Map<String, String>      userChanModes  = new HashMap<String, String>();
-    private Map<String, String>      userChanlev    = new HashMap<String, String>();
+    private Map<String, Integer>      userChanlev   = new HashMap<String, Integer>();  // Maps user -> chanlev
 
     private Boolean userAuthed         = false;
     private Boolean userNickRegistered = false;
@@ -240,7 +240,7 @@ public class UserNode {
      * Sets the user chanlev on the channels they are known of
      * @param userChanlev User chanlevs
      */
-    public void setUserChanlev(Map<String, String> userChanlev) {
+    public void setUserChanlev(Map<String, Integer> userChanlev) {
         this.userChanlev = userChanlev;
     }
     /**
@@ -372,7 +372,7 @@ public class UserNode {
      * Fetches the user's chanlev for all the channels they are known of
      * @return User chanlevs
      */
-    public Map<String, String> getUserChanlev() {
+    public Map<String, Integer> getUserChanlev() {
         return this.userChanlev;
     }
     /**
@@ -380,7 +380,7 @@ public class UserNode {
      * @param channel Channel name
      * @return User channel chanlev
      */
-    public String getUserChanlev(String channel) {
+    public Integer getUserChanlev(String channel) {
         return this.userChanlev.get(channel);
     }
     /**
