@@ -12,7 +12,7 @@ public class SqliteDb {
 
     public SqliteDb(Config config) {   
         this.config = config;
-          
+
         try {
            Class.forName("org.sqlite.JDBC");
            connection = DriverManager.getConnection("jdbc:sqlite:" + config.getDatabasePath());

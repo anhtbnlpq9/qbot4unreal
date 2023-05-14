@@ -40,6 +40,7 @@ public class UserNode {
     public UserNode() {
         
     }
+
     /**
      * Class constructor
      * @param userUniq User SID
@@ -47,6 +48,7 @@ public class UserNode {
     public UserNode(String userUniq) {
         this.userUniq = userUniq;
     } 
+
     /**
      * User object contains information for connected users
      * @param userNick User nickname
@@ -78,6 +80,7 @@ public class UserNode {
         
     } 
 
+
     /**
      * Sets the user nickname
      * @param nick User nick
@@ -86,6 +89,7 @@ public class UserNode {
         this.userOldNick = this.userNick;
         this.userNick = nick;
     }
+
     /**
      * Sets the user account number
      * @param accountId User account number
@@ -93,6 +97,7 @@ public class UserNode {
     public void setUserAccountId(String accountId) {
         this.userAccountId = accountId;
     }
+
     /**
      * Sets the user ident
      * @param ident User ident
@@ -100,6 +105,7 @@ public class UserNode {
     public void setUserIdent(String ident) {
         this.userIdent = ident;
     }
+
     /**
      * Sets the user (v)host
      * @param host User (v)host
@@ -107,6 +113,7 @@ public class UserNode {
     public void setUserHost(String host) {
         this.userHost = host;
     }
+
     /**
      * Sets the user real host
      * @param rhost User real host
@@ -114,6 +121,7 @@ public class UserNode {
     public void setUserRealHost(String rhost) {
         this.userRealHost = rhost;
     }
+
     /**
      * Sets the user real name (gecos)
      * @param realName User gecos
@@ -121,6 +129,7 @@ public class UserNode {
     public void setUserRealName(String realName) {
         this.userRealName = realName;
     }
+
     /**
      * Sets the user SID
      * @param uniq User SID
@@ -128,6 +137,7 @@ public class UserNode {
     public void setUserUniq(String uniq) {
         this.userUniq = uniq;
     }
+
     /**
      * Sets the user usermodes
      * @param modes User usermodes
@@ -135,6 +145,7 @@ public class UserNode {
     public void setUserModes(String modes) {
         this.userModes = modes;
     }
+
     /**
      * Sets the user server
      * @param server User server
@@ -142,6 +153,7 @@ public class UserNode {
     public void setUserServer(ServerNode server) {
         this.userServer = server;
     }
+
     /**
      * Sets the user certificate fingerprint
      * @param certfp User certfp
@@ -149,6 +161,7 @@ public class UserNode {
     public void setUserCertFP(String certfp) {
         this.userCertFP = certfp;
     }
+
     /**
      * Sets the user account name
      * @param account User account name
@@ -156,6 +169,7 @@ public class UserNode {
     public void setUserAccount(String account) {
         this.userAccountP = account;
     }
+
     /**
      * Adds the user to the channel
      * @param channel Channel name
@@ -172,6 +186,7 @@ public class UserNode {
         userChanList.put(channel, chanObj);
         userChanModes.put(channel, mode);
     }
+
     /**
      * Removes the user from the channel
      * @param channel Channel name
@@ -186,6 +201,7 @@ public class UserNode {
         userChanList.remove(channel);
         userChanModes.remove(channel);
     }
+
     /**
      * Fetches the user modes on the channel
      * @param chan Channel name
@@ -194,6 +210,7 @@ public class UserNode {
     public String getUserChanMode(String chan) {
         return this.userChanModes.get(chan);
     }
+
     /**
      * Adds the user channel mode to the channel
      * @param chan Channel name
@@ -202,6 +219,7 @@ public class UserNode {
     public void addUserChanMode(String chan, String modes) {
         this.userChanModes.replace(chan, sortString(removeDuplicate(this.userChanModes.get(chan) + modes)));
     }
+
     /**
      * Removes the user channel mode to the channel
      * @param chan Channel name
@@ -215,6 +233,7 @@ public class UserNode {
 
         //this.userChanModes.forEach( (key, value) -> { System.out.println("AAC userChanModes map = " + key + " -> " + value); });
     }
+
     /**
      * Sets the user auth status
      * @param state User auth status
@@ -222,6 +241,7 @@ public class UserNode {
     public void setUserAuthed(Boolean state) {
         this.userAuthed = state;
     }
+
     /**
      * Sets the registration status of the user's nickname
      * @param state User nickname registration status
@@ -229,6 +249,7 @@ public class UserNode {
     public void setUserNickRegistered(Boolean state) {
         this.userNickRegistered = state;
     }
+
     /**
      * Sets the user timestamp
      * @param userTS User timestamp
@@ -236,6 +257,7 @@ public class UserNode {
     public void setUserTS(Integer userTS) {
         this.userTS = userTS;
     }
+
     /**
      * Sets the user chanlev on the channels they are known of
      * @param userChanlev User chanlevs
@@ -243,6 +265,7 @@ public class UserNode {
     public void setUserChanlev(Map<String, Integer> userChanlev) {
         this.userChanlev = userChanlev;
     }
+
     /**
      * Sets the user's chanlev for the channel
      * @param channel Channel name
@@ -259,6 +282,7 @@ public class UserNode {
         }
         
     }
+
     /**
      * Parses a chanlev change and applies it to an input chanlev
      * @param chanlevUser User current chanlev
@@ -361,6 +385,7 @@ public class UserNode {
         return chanlevTemp.get("result");
 
      }
+
     /**
      * Removes the user's chanlev from the channel
      * @param channel Channel name
@@ -368,6 +393,7 @@ public class UserNode {
     public void unSetUserChanlev(String channel) {
         this.userChanlev.remove(channel);
     }
+
     /**
      * Fetches the user's chanlev for all the channels they are known of
      * @return User chanlevs
@@ -375,6 +401,7 @@ public class UserNode {
     public Map<String, Integer> getUserChanlev() {
         return this.userChanlev;
     }
+
     /**
      * Fetches the user chanlev of the channel
      * @param channel Channel name
@@ -383,6 +410,7 @@ public class UserNode {
     public Integer getUserChanlev(String channel) {
         return this.userChanlev.get(channel);
     }
+
     /**
      * Fetches the user nickname
      * @return User nickname
@@ -390,6 +418,7 @@ public class UserNode {
     public String getUserNick() {
         return this.userNick;
     }
+
     /**
      * Fetches the user account number
      * @return User account number
@@ -397,6 +426,7 @@ public class UserNode {
     public String getUserAccountId() {
         return this.userAccountId;
     }
+
     /**
      * Fetches the user previous nickname
      * @return Previous user nickname
@@ -404,6 +434,7 @@ public class UserNode {
     public String getUserOldNick() {
         return this.userOldNick;
     }
+
     /**
      * Fetches the user ident
      * @return User ident
@@ -411,6 +442,7 @@ public class UserNode {
     public String getUserIdent() {
         return this.userIdent;
     }
+
     /**
      * Fetches the user (v)host
      * @return User (v)host
@@ -418,6 +450,7 @@ public class UserNode {
     public String getUserHost() {
         return this.userHost;
     }
+
     /**
      * Fetches the user real host
      * @return User realhost
@@ -425,6 +458,7 @@ public class UserNode {
     public String getUserRealHost() {
         return this.userRealHost;
     }
+
     /**
      * Fetches the user real name (gecos)
      * @return User gecos
@@ -432,6 +466,7 @@ public class UserNode {
     public String getUserRealName() {
         return this.userRealName;
     }
+
     /**
      * Fetches the user SID
      * @return User SID
@@ -439,6 +474,7 @@ public class UserNode {
     public String getUserUniq() {
         return this.userUniq;
     }
+
     /**
      * Fetches the user usermodes
      * @return User usermodes
@@ -446,6 +482,7 @@ public class UserNode {
     public String getUserModes() {
         return this.userModes;
     }
+
     /**
      * Fetches the user server SID
      * @return User server SID
@@ -453,6 +490,7 @@ public class UserNode {
     public ServerNode getUserServer() {
         return this.userServer;
     }
+
     /**
      * Fetches the user certificate fingerprint
      * @return User certfp
@@ -460,6 +498,7 @@ public class UserNode {
     public String getUserCertFP() {
         return this.userCertFP;
     }
+
     /**
      * Fetches the account name the user is authed as
      * @return User account name
@@ -467,6 +506,7 @@ public class UserNode {
     public String getUserAccount() {
         return this.userAccountP;
     }
+
     /**
      * Fetches the list of channels the user is in
      * @return List of the user channels
@@ -474,6 +514,7 @@ public class UserNode {
     public Map<String, ChannelNode> getUserChanList() {
         return this.userChanList;
     }
+
     /**
      * Fetches the list of the user's modes on the channels they are in
      * @return Modes of user in their channels
@@ -481,6 +522,7 @@ public class UserNode {
     public Map<String, String> getUserChanModes() {
         return this.userChanModes;
     }
+
     /**
      * Fetches whether the user is authed
      * @return User auth status
@@ -488,6 +530,7 @@ public class UserNode {
     public Boolean getUserAuthed() {
         return this.userAuthed;
     }
+
     /**
      * Fetches whether the user's nick is registered
      * @return User nick registration status
@@ -495,6 +538,7 @@ public class UserNode {
     public Boolean getUserNickRegistered() {
         return this.userNickRegistered;
     }
+
     /**
      * Fetches the user timestamp
      * @return User timestamp
@@ -502,6 +546,7 @@ public class UserNode {
     public long getUserTS() {
         return this.userTS;
     }
+
     /**
      * Fetches whether the user is an oper
      * @return User oper status
@@ -510,6 +555,7 @@ public class UserNode {
         if (this.userModes.matches("(.*)o(.*)") == true) return true;
         else return false;
     }
+
     /**
      * Removes duplicate chars in a string
      * @param s Input string
@@ -530,6 +576,7 @@ public class UserNode {
         return sb.toString();
 
     }
+
     /**
      * Sort a string alphabetically
      * @param str Input string
@@ -540,4 +587,5 @@ public class UserNode {
         Arrays.sort(charArray);
         return new String(charArray);
     }
+    
 }

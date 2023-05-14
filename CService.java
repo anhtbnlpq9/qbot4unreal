@@ -640,7 +640,7 @@ public class CService {
                 }
                 else {
                     protocol.sendNotice(client, myUniq, fromNick, "Invalid chanlev flags. Valid flags are: <+|->" + CHANLEV_FLAGS);
-                }
+                } 
             }
 
             

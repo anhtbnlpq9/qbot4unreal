@@ -350,6 +350,7 @@ abstract class Flags {
     private static final Integer   CLFLAGS_PERSONAL     = (CLFLAG_HIDEWELCOME | CLFLAG_AUTOINVITE);
 
 
+
     /**
      * Maps chanlev flag char to constant
      */
