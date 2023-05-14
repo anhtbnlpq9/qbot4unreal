@@ -248,9 +248,9 @@ public class UserNode {
      * @param channel Channel name
      * @param chanlev User chanlev
      */
-    public void setUserChanlev(String channel, String chanlev) {
-        if (chanlev.isEmpty() == false) {
-            if (this.userChanlev.containsKey(channel) == true) { 
+    public void setUserChanlev(String channel, Integer chanlev) {
+        if (chanlev != 0) {
+            if (this.userChanlev.containsKey(channel) == true) {
                 this.userChanlev.replace(channel, chanlev);
             }
             else {
