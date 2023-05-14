@@ -100,6 +100,8 @@ abstract class Flags {
     private static final Integer   UFLAG_OPER_PRIV     = (UFLAG_OPER | UFLAG_ADMIN );
     private static final Integer   UFLAG_ADMIN_PRIV     = (UFLAG_ADMIN );
 
+    private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED ); /* flags non-settable through USERFLAGS */
+
 
 
     /**
@@ -204,8 +206,8 @@ abstract class Flags {
 
     private static final Integer   CHFLAG_USERCONTROL   = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
                                                            CHFLAG_PROTECT | CHFLAG_TOPICSAVE | CHFLAG_VOICEALL);
-
-
+                                            
+    private static final Integer   CHFLAGS_READONLY     = ( CHFLAG_SUSPENDED | CHFLAG_JOINED ); /* flags non-settable through CHANFLAGS */
 
     /**
      * Maps chan flag char to constant
