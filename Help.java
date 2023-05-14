@@ -22,7 +22,7 @@ public class Help {
         }
         catch(Exception e)  {
             e.printStackTrace();
-            content.add("Help content not found for that command.");
+            content.add("Help not available for that command.");
         }  
         return content;
     }
