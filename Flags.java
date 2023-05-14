@@ -1,5 +1,11 @@
 import java.util.Map;
+import java.util.Set;
+
 import static java.util.Map.entry;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 
 /**
  * Flags class to host all methods regarding flags
@@ -383,6 +389,9 @@ abstract class Flags {
         entry(CLFLAG_HIDEWELCOME,    "w")
     );
 
+    /* Other static attributes for the class */
+    static String flagText  = "";
+    static Integer flagInt  =  0;
 
     /**
      * Constructor
@@ -1717,6 +1726,206 @@ abstract class Flags {
             return userFlagCharRevMap.get(userFlag);
         }
         catch (Exception e) { throw new Exception("The user flag does not exists."); }
+
+
+    /**
+     * Converts a flags integer value to their textual format
+     * @param type Type of flags
+     * @param flagInt Flags in integer format
+     * @return Flags in textual format
+     */
+    public static String flagsIntToChars(String type, Integer flagInt) {
+        flagText = "";
+        Map<Integer, String> map;
+
+        switch (type) {
+            case "chanlev":
+                map = chanlevFlagCharRevMap;
+                break;
+            case "chanflags":
+                map = chanFlagCharRevMap;
+                break;
+            case "userflags":
+                map = userFlagCharRevMap;
+                break;
+            default:
+                return "";
+        }
+
+        map.forEach( (flagConst, flagChar) -> {
+            if ((flagConst & flagInt) != 0) {
+                flagText += flagChar;
+            }
+        });
+        return sortString(flagText);
+    }
+
+    /**
+     * Converts a flags text to their integer equivalent
+     * @param type Type of flags
+     * @param flagChars Flags in textual format
+     * @return Flags in integer format
+     */
+    public static Integer flagsCharsToInt(String type, String flagChars) {
+        flagInt = 0;
+        Map<String, Integer> map;
+
+        switch (type) {
+            case "chanlev":
+                map = chanlevFlagCharMap;
+                break;
+            case "chanflags":
+                map = chanFlagCharMap;
+                break;
+            case "userflags":
+                map = userFlagCharMap;
+                break;
+            default:
+                return 0;
+        }
+        try {
+            for (int i=0; i < flagChars.length(); i++) {
+                flagInt += map.get(String.valueOf(flagChars.charAt(i)));
+            }
+            return flagInt;
+        }
+        catch (Exception e) { return 0; }
+    }
+
+    /**
+     * Sort a string alphabetically
+     * @param str Input string
+     * @return Sorted string
+     */
+    private static String sortString(String str) {
+        char charArray[] = str.toCharArray();
+        Arrays.sort(charArray);
+        return new String(charArray);
+    }
+        
+    /**
+     * Removes duplicate chars in a string
+     * @param s Input string
+     * @return String with unique chars
+     */
+    private static String deDupString(String s) {
+        char[] chars = s.toCharArray();
+        Set<Character> charSet = new LinkedHashSet<Character>();
+        for (char c : chars) {
+            charSet.add(c);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Character character : charSet) {
+            sb.append(character);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Applies the modification flags (+/-) to the input flags depending on flags type.
+     * @param type Flags type (chanlev, chanflags, userflags)
+     * @param flagsInput Input flags (numeric)
+     * @param flagsMod Input change flags (+xyz / -xyz) (numeric)
+     * @return
+     */
+    public static Integer applyFlagsFromInt(String type, Integer flagsInput, HashMap<String, Integer> flagsMod) {
+        Integer flagsModP = flagsMod.get("+");
+        Integer flagsModM = flagsMod.get("-");
+
+        Integer flagsNew = flagsInput;
+        
+        // Remove common values between + and - (+amno-antv = +m-tv) 
+        flagsModP ^= (flagsModP & flagsModM);
+        flagsModM ^= (flagsModP & flagsModM);
+
+        switch (type) {
+            case "chanlev":
+                // in flagsP, +od => +d; +vu => +u
+                if ( (flagsModP & CLFLAG_OP) > 0 &&  (flagsModP & CLFLAG_DENYOP) > 0) flagsModP &= ~CLFLAG_OP;
+                if ( (flagsModP & CLFLAG_VOICE) > 0 &&  (flagsModP & CLFLAG_DENYVOICE) > 0) flagsModP &= ~CLFLAG_VOICE;
+
+                // if userFlags contains +ov and flagsP contains +du, then -ov+du is applied 
+                if ( (flagsModP & CLFLAG_DENYOP) > 0 &&  (flagsNew & CLFLAG_OP) > 0) flagsNew &= ~CLFLAG_DENYOP;
+                if ( (flagsModP & CLFLAG_DENYVOICE) > 0 &&  (flagsNew & CLFLAG_VOICE) > 0) flagsNew &= ~CLFLAG_DENYVOICE;
+
+                // if userFlags contains +du and flagsP contains +ov, then -du+ov is applied
+                if ( (flagsModP & CLFLAG_OP) > 0 &&  (flagsNew & CLFLAG_DENYOP) > 0) flagsNew &= ~CLFLAG_OP;
+                if ( (flagsModP & CLFLAG_VOICE) > 0 &&  (flagsNew & CLFLAG_DENYVOICE) > 0) flagsNew &= ~CLFLAG_VOICE;
+
+                break;
+
+            case "chanflags":
+                // Prevent readonly flags to being set/cleared
+                flagsModP &= ~CHFLAGS_READONLY;
+                flagsModM &= ~CHFLAGS_READONLY;
+                break;
+
+            case "userflags":
+                // Prevent readonly flags to being set/cleared
+                flagsModP &= ~UFLAGS_READONLY;
+                flagsModM &= ~UFLAGS_READONLY;
+                break;
+        }
+
+        flagsNew &=  ~flagsModM;
+        flagsNew |=   flagsModP;
+
+
+        return flagsNew;
+    }
+
+
+    /**
+     * Applies the modification flags (+/-) to the input flags depending on flags type.
+     * @param type Flags type (chanlev, chanflags, userflags)
+     * @param flagsInput Input flags (textual)
+     * @param flagsMod Input change flags (+xyz / -xyz)
+     * @return
+     */
+    public static Integer applyFlagsFromStr(String type, Integer flagsInput, HashMap<String, String> flagsMod) {
+        Integer flagsModP = flagsCharsToInt(type, flagsMod.get("+"));
+        Integer flagsModM = flagsCharsToInt(type, flagsMod.get("-"));
+
+        HashMap<String, Integer> flagsMP = new HashMap<String, Integer>();
+        flagsMP.put("+", flagsModP);
+        flagsMP.put("-", flagsModM);
+
+        return applyFlagsFromInt(type, flagsInput, flagsMP);
+    }
+
+    /**
+     * Parse textual flags (in the format +abc-de+f-gh+i...), removes dupes between + and - and
+     * returns a HM<String, String> containing the list of sorted/deduplicated plus and minus flags.
+     * @param flagsIn Input flags modes
+     * @return Separated flags modes
+     */
+    public static HashMap<String, String> parseFlags(String flagsIn) { 
+        HashMap<String, String> flagsTemp = new HashMap<String, String>();
+        flagsTemp.put("+", "");
+        flagsTemp.put("-", "");
+        
+        boolean plusMode = false;
+        for(int i=0; i < flagsIn.length(); i++) {
+            if (flagsIn.charAt(i) == '+') {
+                plusMode = true;
+            }
+            else if (flagsIn.charAt(i) == '-') {
+                plusMode = false;
+            }
+            else {
+                if (plusMode == true) {
+                    flagsTemp.replace("+", flagsTemp.get("+") + String.valueOf(flagsIn.charAt(i)));
+                }
+                else {
+                    flagsTemp.replace("-", flagsTemp.get("-") + String.valueOf(flagsIn.charAt(i)));
+                }
+            }
+        }
+
+        flagsTemp.replace("+", sortString(deDupString(flagsTemp.get("+"))));
+        flagsTemp.replace("-", sortString(deDupString(flagsTemp.get("-"))));
+
+        return flagsTemp;
     }
 
 }
