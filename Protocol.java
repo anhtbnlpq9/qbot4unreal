@@ -414,7 +414,7 @@ public class Protocol extends Exception {
             
 
         }
-        else if (command[1].equals("SASL")) {
+        else if (command[1].equals("S-ASL")) {
             /*
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 H 2401:d800:7e60:5bb:21e:10ff:fe1f:0 2401:d800:7e60:5bb:21e:10ff:fe1f:0
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 S PLAIN

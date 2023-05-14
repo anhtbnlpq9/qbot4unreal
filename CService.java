@@ -1,6 +1,7 @@
 
 import java.util.Map;
 import java.util.Date;
+import java.util.HashMap;
 import java.time.Instant;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -40,7 +41,7 @@ public class CService {
     final String CHANLEV_FLAGS = "abdjkmnopqtvw";
     final String CHANLEV_SYMBS = "+-";
 
-    final String CHANLEV_FOUNDER_DEFAULT = "ano";
+    final Integer CHANLEV_FOUNDER_DEFAULT = (Flags.getChanLFlagInt("a") | Flags.getChanLFlagInt("n") | Flags.getChanLFlagInt("o")); // +ano
 
     long unixTime;
     
@@ -263,7 +264,7 @@ public class CService {
                             user.getValue().getUserChanModes().forEach( (key, value) -> {
                                 bufferMode = "";
                                 if (value.isEmpty() == false) { bufferMode = "(+" + value + ")"; }
-                                protocol.sendNotice(client, myUniq, fromNick, "| |- " + bufferMode + " " + key);
+                                protocol.sendNotice(client, myUniq, fromNick, "| |- " + key + " " + bufferMode);
                             });
                         }
 
@@ -272,7 +273,7 @@ public class CService {
 
                             user.getValue().getUserChanlev().forEach( (key, value) -> {
                                 bufferMode = "";
-                                if (value.isEmpty() == false) { bufferMode = "+" + value; }
+                                if (Flags.flagsIntToChars("chanlev", value).isEmpty() == false) { bufferMode = "+" + Flags.flagsIntToChars("chanlev", value); }
                                 protocol.sendNotice(client, myUniq, fromNick, "| |- " + key + ": " + bufferMode);
                             });
                         }
@@ -340,7 +341,7 @@ public class CService {
             String password;
             String username;
 
-            Map<String, String> userChanlev;
+            Map<String, Integer> userChanlev;
             
             String[] command = str.split(" ",4);
             if (userList.get(fromNick).getUserAuthed() == true) { 
@@ -436,7 +437,7 @@ public class CService {
                         }
                     } );
                     // updating channel chanlev as well
-                    Map<String, String> chanNewChanlev = sqliteDb.getChanChanlev(channel);
+                    Map<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(channel);
                     channelList.get(channel).setChanChanlev(chanNewChanlev);
                     
                     protocol.chanJoin(client, myUniq, channel);
@@ -464,7 +465,7 @@ public class CService {
 
             // First check that the user is a the channel's owner (chanlev +n)
             try {
-                if (userList.get(fromNick).getUserChanlev(channel).matches("(.*)n(.*)")) {
+                if (   Flags.hasChanLOwnerPriv(userList.get(fromNick).getUserChanlev(channel)) == true ) {
 
                     userList.get(fromNick).unSetUserChanlev(channel);
                     sqliteDb.unSetUserChanlev(channel);
@@ -484,25 +485,12 @@ public class CService {
             }
         }
         else if (str.toUpperCase().startsWith("CHANLEV ")) { // CHANLEV <channel> [<user> [<change>]]
-        /*
-            * CHANLEV flags:
-            * +a = auto (op/voice, op has priority on voice)
-            * +b = ban
-            * +d = will be automatically deopped / incompatible with +o / setting +d will unset +o
-            * +j = auto-invite when authing
-            * +k = known-user (can use INVITE command)
-            * +m = master (can (un)set all the flags except n and m)
-            * +n = owner (can (un)set all the flags)
-            * +o = can use OP command / incompatible with +d / setting +o will unset +d
-            * +p = protect (Q will revoice/reop the user)
-            * +q = will be automatically devoiced / incompatible with +v / setting +q will unset +v
-            * +t = can use SETTOPIC command
-            * +v = can use VOICE command / incompatible with +q / setting +v will unset +q
-            * +w = disable auto welcome notice on join
-            */
+
             String[] command = str.split(" ",5);
             String userNick = "";
             String chanlevMod = "";
+            HashMap<String, String> chanlevModStr = new HashMap<String, String>(); 
+            HashMap<String, Integer> chanlevModInt = new HashMap<String, Integer>(); 
             userAccount = "";
             userChanlevFilter = "";
 
@@ -518,8 +506,13 @@ public class CService {
             }
             try {  userNick = command[2]; }
             catch (ArrayIndexOutOfBoundsException e) {  }
-            try {  chanlevMod = command[3]; }
+
+            try {  chanlevMod =  command[3]; }
             catch (ArrayIndexOutOfBoundsException e) {  }
+            chanlevModStr = Flags.parseFlags(chanlevMod);
+            chanlevModInt.put("+", Flags.flagsCharsToInt("chanlev", chanlevModStr.get("+")));
+            chanlevModInt.put("-", Flags.flagsCharsToInt("chanlev", chanlevModStr.get("-")));
+
 
 
             if (userNick.startsWith("#")) { // direct access to account
@@ -553,12 +546,12 @@ public class CService {
                 //System.out.println("BCB no chanlev => list userChanlevFilter=" +userChanlevFilter);
 
                 try {
-                    if (userList.get(fromNick).getUserChanlev(channel).matches("(.*)[kmn](.*)")) {
+                    if (  Flags.hasChanLSignificant(userList.get(fromNick).getUserChanlev(channel))  ) {
                         protocol.sendNotice(client, myUniq, fromNick, "Displaying CHANLEV for channel " + channel + ":"); 
                         channelList.get(channel).getChanlev().forEach( (user, chanlev) -> {
                             //System.out.println("BCD userChanlevFilter=" +userChanlevFilter+ " user=" + user + " chanlev=" + chanlev);
                             if ( (userChanlevFilter.isEmpty() == false && user.toLowerCase().equals(userChanlevFilter.toLowerCase())) || userChanlevFilter.isEmpty() == true) {
-                                protocol.sendNotice(client, myUniq, fromNick, user + "     +" + chanlev); 
+                                protocol.sendNotice(client, myUniq, fromNick, user + "     +" + Flags.flagsIntToChars("chanlev", chanlev)); 
                             }
                         });
                         protocol.sendNotice(client, myUniq, fromNick, "End of list."); 
@@ -577,20 +570,23 @@ public class CService {
 
             }
             else { 
-                if (chanlevMod.matches("^(?=.*["+ CHANLEV_FLAGS +"])(?=.*["+ CHANLEV_SYMBS +"]).+$")) {
-                    if (   (userList.get(fromNick).getUserChanlev(channel).matches("(.*)[n](.*)") && chanlevMod.matches("(.*)[abdjkmnopqtvw](.*)")) ||
-                           (userList.get(fromNick).getUserChanlev(channel).matches("(.*)[m](.*)") && chanlevMod.matches("(.*)[abdjkopqtvw](.*)"))) {
+                if (    chanlevMod.matches("^(?=.*["+ CHANLEV_FLAGS +"])(?=.*["+ CHANLEV_SYMBS +"]).+$")    ) {
+                    if (   (  Flags.hasChanLMasterPriv(userList.get(fromNick).getUserChanlev(channel)) && ( Flags.containsChanLMasterConFlags(chanlevModInt.get("+")) || Flags.containsChanLMasterConFlags(chanlevModInt.get("-")) )) ||
+                    (  Flags.hasChanLOwnerPriv(userList.get(fromNick).getUserChanlev(channel)) && ( Flags.containsChanLOwnerConFlags(chanlevModInt.get("+")) || Flags.containsChanLOwnerConFlags(chanlevModInt.get("-")) ))  ) {
 
                         // user wants to modify chanlev by account name directly
                         // in this case, we need to update the db + check if the account is online and update that nick chanlev
                         try {
-                            //sqliteDb.setUserChanlev(userAccount, channel,  userList.get(userNick).getUserChanlev(channel));
-
                             // getting account chanlev from db to apply it to every usernode logged with account
-                            String userCurChanlev = sqliteDb.getUserChanlev(userAccount, channel);
-                            String userNewChanlev = UserNode.parseChanlev(userCurChanlev, chanlevMod);
+                            //XXX to change next 3 lines
 
-                            //protocol.sendNotice(client, myUniq, fromNick, "BCA current chanlev " + channel + " -> " + userCurChanlev + " :: mod=" + chanlevMod + " :: result=" + userNewChanlev);
+                            //System.out.println("BEA ");
+                            Integer userCurChanlev = sqliteDb.getUserChanlev(userAccount, channel);
+                            Integer userNewChanlev = Flags.applyFlagsFromStr("chanlev", userCurChanlev, chanlevModStr);
+                            //String userNewChanlev = UserNode.parseChanlev(userCurChanlev, chanlevMod);
+                            
+
+                            //protocol.sendNotice(client, myUniq, fromNick, "BCA current chanlev " + channel + " -> " + Flags.flagsIntToChars("chanlev", userCurChanlev) + " :: mod=" + chanlevMod + " :: result=" + Flags.flagsIntToChars("chanlev", userNewChanlev));
                             //System.out.println("BCA current chanlev " + channel + " -> " + userCurChanlev + " :: mod=" + chanlevMod + " :: result=" + userNewChanlev);
 
                             sqliteDb.setUserChanlev(userAccount, channel, userNewChanlev);
@@ -617,7 +613,7 @@ public class CService {
                                 }
                             } );
 
-                            protocol.sendNotice(client, myUniq, fromNick, "Chanlev set. Chanlev for user account " + userAccount + " is now +" + userNewChanlev + ".");
+                            protocol.sendNotice(client, myUniq, fromNick, "Chanlev set. Chanlev for user account " + userAccount + " is now +" + Flags.flagsIntToChars("chanlev", userNewChanlev) + ".");
                         }
                         catch (Exception e) {
                             e.printStackTrace(); 
@@ -644,7 +640,7 @@ public class CService {
                 }
                 else {
                     protocol.sendNotice(client, myUniq, fromNick, "Invalid chanlev flags. Valid flags are: <+|->" + CHANLEV_FLAGS);
-                }
+                } 
             }
 
             
@@ -663,7 +659,7 @@ public class CService {
             // +av => +v
             // +ao* => +o
             if (user.getUserChanlev().containsKey(channel.getChanName())) {
-                if (user.getUserChanlev(channel.getChanName()).contains("b")) {
+                if (  Flags.isChanLBanned( user.getUserChanlev(channel.getChanName()) ) == true ) {
                     //System.out.println("BBC chanlev ban");
                     try {
                         protocol.setMode(client, myUniq, channel.getChanName(), "+b", "*!*" + user.getUserIdent() + "@" + user.getUserHost());
@@ -671,15 +667,15 @@ public class CService {
                     }
                     catch (Exception e) { e.printStackTrace(); }
                 }
-                else if (user.getUserChanlev(channel.getChanName()).contains("a")) {
-                    if (user.getUserChanlev(channel.getChanName()).contains("o")) {
+                else if (   Flags.isChanLAuto( user.getUserChanlev(channel.getChanName())  ) ) {
+                    if (  Flags.isChanLOp( user.getUserChanlev(channel.getChanName()) ) ) {
                         //System.out.println("BBD chanlev op");
                         try {
                             protocol.setMode(client, myUniq, channel.getChanName(), "+o", user.getUserNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
-                    else if (user.getUserChanlev(channel.getChanName()).contains("v")) {
+                    else if (  Flags.isChanLVoice( user.getUserChanlev(channel.getChanName()))  ) {
                         //System.out.println("BBE chanlev voice");
                         try {
                             protocol.setMode(client, myUniq, channel.getChanName(), "+v", user.getUserNick());
