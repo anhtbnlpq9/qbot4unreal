@@ -44,6 +44,8 @@ public class Config {
     private Boolean logDebugIn;
     private Boolean logDebugOut;
 
+    private String databasePath;
+
     HashMap<String, Boolean> featuresList = new HashMap<String, Boolean>();
 
    /**
@@ -67,6 +69,7 @@ public class Config {
         LinkedHashMap confNetwork  = (LinkedHashMap) data.get("network");
         LinkedHashMap confLogging  = (LinkedHashMap) data.get("logging");
         LinkedHashMap confFeatures = (LinkedHashMap) data.get("features");
+        LinkedHashMap confDatabase = (LinkedHashMap) data.get("database");
 
         adminInformation           = (ArrayList<String>) data.get("admin");
         
@@ -97,6 +100,8 @@ public class Config {
 
         featureSasl          = (Boolean) confFeatures.get("sasl");
 
+        databasePath         = (String) confDatabase.get("path");
+
 
 
         if (featureSasl == true) featuresList.put("sasl", true);
@@ -110,6 +115,7 @@ public class Config {
                         + "  +- Link peer name      = " + linkPeer + "\n"
                         + "  |--- peer host         = " + linkHost + "\n"
                         + "  |--- peer port         = " + linkPort + "\n"
+                        + "  +- Database path       = " + databasePath + "\n"                       
                         + "  +- Logging             = " + linkPeer + "\n"
                         + "  |--- debug in          = " + logDebugIn + "\n"
                         + "  `--- debug out         = " + logDebugOut + "\n");
@@ -191,6 +197,14 @@ public class Config {
     }
     public String getNetworkName() {
         return this.networkName;
+    }
+
+    /**
+     * Fetches the configured database path
+     * @return Path of the database
+     */
+    public String getDatabasePath() {
+        return this.databasePath;
     }   
     public Boolean getFeature(String feature) {
         switch (feature) {

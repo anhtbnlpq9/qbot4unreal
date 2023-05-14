@@ -8,11 +8,14 @@ import java.time.Instant;
 public class SqliteDb {
     Connection connection;
     Long unixTime;
+    Config config;
 
-    public SqliteDb() {      
+    public SqliteDb(Config config) {   
+        this.config = config;
+          
         try {
            Class.forName("org.sqlite.JDBC");
-           connection = DriverManager.getConnection("jdbc:sqlite:db/qbot.sqlite3");
+           connection = DriverManager.getConnection("jdbc:sqlite:" + config.getDatabasePath());
         } catch ( Exception e ) {
            e.printStackTrace();
            System.exit(0);

@@ -31,7 +31,7 @@ public class Qbot {
         Config config = new Config(CONFIG_FILE);
 
         System.out.println("* Opening database");
-        SqliteDb sqliteDb = new SqliteDb();
+        SqliteDb sqliteDb = new SqliteDb(config);
         sqliteDb.getRegChan();
 
         System.out.println("* Starting client socket");
