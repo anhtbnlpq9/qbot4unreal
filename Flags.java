@@ -333,7 +333,7 @@ abstract class Flags {
     private static final Integer   CLFLAG_MASTER_PRIV   = (CLFLAG_MASTER | CLFLAG_OWNER);
     private static final Integer   CLFLAG_OWNER_PRIV    = (CLFLAG_OWNER);
 
-    //private static final Integer   CLFLAG_SIGNIFICANT   = (CLFLAG_MASTER | CLFLAG_OWNER | CLFLAG_OP);
+    private static final Integer   CLFLAG_SIGNIFICANT   = (CLFLAG_MASTER | CLFLAG_OWNER | CLFLAG_OP);
 
     private static final Integer   CLFLAG_MASTERCON     = (CLFLAG_AUTO | CLFLAG_BANNED | CLFLAG_DENYOP | CLFLAG_OP | CLFLAG_HALFOP | 
                                                            CLFLAG_DENYVOICE | CLFLAG_TOPIC | CLFLAG_VOICE | CLFLAG_PROTECT);
@@ -667,7 +667,20 @@ abstract class Flags {
      * @return True or False
      */
     public static Boolean hasChanLKnown(Integer chanlev) {
-        if ( (chanlev & (CLFLAG_KNOWN | CLFLAG_VOICE_PRIV)) == 0 ) {
+        if ( (chanlev & (CLFLAG_KNOWN | CLFLAG_VOICE_PRIV | CLFLAG_HALFOP_PRIV | CLFLAG_OP_PRIV | CLFLAG_MASTER_PRIV | CLFLAG_OWNER_PRIV)) == 0 ) {
+            return false;
+
+        }
+        else return true;
+    }
+
+    /**
+     * Returns if the user has significant privilege
+     * @param chanlev Chanlev
+     * @return True or False
+     */
+    public static Boolean hasChanLSignificant(Integer chanlev) {
+        if ( (chanlev & (CLFLAG_SIGNIFICANT)) == 0 ) {
             return false;
 
         }
