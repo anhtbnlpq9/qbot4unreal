@@ -70,8 +70,8 @@ public class Client implements Runnable {
 
     public void launchCService() {
         
-        Map<String, ServerNode> serverList = protocol.getServerList();
-        Map<String, UserNode> userList = protocol.getUserList();
+        Map<String, ServerNode>   serverList = protocol.getServerList();
+        Map<String, UserNode>       userList = protocol.getUserList();
         Map<String, ChannelNode> channelList = protocol.getChanList();
 
         cservice = new CService(this, protocol, sqliteDb);
