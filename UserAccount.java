@@ -33,7 +33,7 @@ public class UserAccount {
      */
     private HashMap<String, Integer> attachedLogins;
 
-    private HashMap<ChannelNode, String> userChanlev = new HashMap<ChannelNode, String>();    
+    private HashMap<String, Integer> userChanlev = new HashMap<String, Integer>();
 
 
     /**
@@ -159,7 +159,7 @@ public class UserAccount {
      * Sets the user chanlev
      * @param chanlev User chanlev
      */
-    public void setUserChanlev(HashMap<ChannelNode, String> chanlev) {
+    public void setUserChanlev(HashMap<String, Integer> chanlev) {
         this.userChanlev = chanlev;
     }
 
@@ -168,9 +168,9 @@ public class UserAccount {
      * @param channel Channel node
      * @param chanlev Chanlev
      */
-    public void setUserChanlev(ChannelNode channel, String chanlev) {
+    public void setUserChanlev(String channel, Integer chanlev) {
         if (this.userChanlev.containsKey(channel) == true) {
-            if (chanlev.isEmpty() == false) {
+            if (chanlev != 0) {
                 this.userChanlev.replace(channel, chanlev);
             }
             else {
@@ -178,7 +178,7 @@ public class UserAccount {
             }
         }
         else {
-            if (chanlev.isEmpty() == false) {
+            if (chanlev != 0) {
                 this.userChanlev.put(channel, chanlev);
             }
         }
@@ -188,7 +188,7 @@ public class UserAccount {
      * Fetches the user chanlev for all their known channels
      * @return Full user chanlev
      */
-    public HashMap<ChannelNode, String> getUserChanlev() {
+    public HashMap<String, Integer> getUserChanlev() {
         return this.userChanlev;
     }
 
@@ -198,7 +198,7 @@ public class UserAccount {
      * @return Chanlev of the user on that channel
      * @throws Exception
      */
-    public String getUserChanlev(ChannelNode channel) throws Exception {
+    public Integer getUserChanlev(ChannelNode channel) throws Exception {
         try {
             return this.userChanlev.get(channel);
         }
