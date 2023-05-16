@@ -30,10 +30,10 @@ public class Client implements Runnable {
         this.config = config;
         this.sqliteDb = sqliteDb;
         
-        System.setProperty("javax.net.ssl.trustStore", "/home/thib/.keystore");
-        System.setProperty("javax.net.ssl.trustStorePassword","123456");
-        System.setProperty("javax.net.ssl.keyStore", "/home/thib/.keystore");
-        System.setProperty("javax.net.ssl.keyStorePassword","123456");
+        System.setProperty("javax.net.ssl.trustStore",          config.getTrustStorePath());
+        System.setProperty("javax.net.ssl.trustStorePassword",  config.getTrustStorePassword());
+        System.setProperty("javax.net.ssl.keyStore",            config.getKeyStorePath());
+        System.setProperty("javax.net.ssl.keyStorePassword",    config.getKeyStorePassword());
     }
 
     public Client getClientRef() {

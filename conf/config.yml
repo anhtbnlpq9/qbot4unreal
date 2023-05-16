@@ -34,6 +34,14 @@ logging:
     debugIn: no
     debugOut: no
 
+ssl:
+    keystore:
+        path: "/home/thib/.keystore"
+        pasword: "123456"
+    truststore:
+        path: "/home/thib/.keystore"
+        password: "123456"
+
 cservice:
     enable: yes
     nick: Q

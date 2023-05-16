@@ -47,6 +47,11 @@ public class Config {
     private String databasePath;
 
     HashMap<String, Boolean> featuresList = new HashMap<String, Boolean>();
+    /* SSL parameters */
+    private String sslTruststorePath;
+    private String sslTruststorePassword;
+    private String sslKeystorePath;
+    private String sslKeystorePassword;
 
    /**
     * Constructor for the class
@@ -94,6 +99,7 @@ public class Config {
         cserviceStaticChan   = (String) confcservice.get("staticchan");
 
         networkName          = (String) confNetwork.get("name");
+        featureSasl                   = (Boolean) confFeatures.get("sasl");
 
         logDebugIn           = (Boolean) confLogging.get("debugIn");
         logDebugOut          = (Boolean) confLogging.get("debugOut");
@@ -101,8 +107,15 @@ public class Config {
         featureSasl          = (Boolean) confFeatures.get("sasl");
 
         databasePath         = (String) confDatabase.get("path");
+        LinkedHashMap confSsl         = (LinkedHashMap) data.get("ssl");
 
+        LinkedHashMap sslKeystore     = (LinkedHashMap) confSsl.get("keystore");
+        sslKeystorePath               = (String) sslKeystore.get("path");
+        sslKeystorePassword           = (String) sslKeystore.get("password");
 
+        LinkedHashMap sslTuststore    = (LinkedHashMap) confSsl.get("truststore");
+        sslTruststorePath             = (String) sslTuststore.get("path");
+        sslTruststorePassword         = (String) sslTuststore.get("password");
 
         if (featureSasl == true) featuresList.put("sasl", true);
         else featuresList.put("sasl", false);
@@ -226,6 +239,38 @@ public class Config {
             default:
                 return false;
         }
-    }  
+    }
+
+    /**
+     * Returns the key store path
+     * @return path
+     */
+    public String getKeyStorePath() {
+        return sslKeystorePath;
+    }
+
+    /**
+     * Returns the key store password
+     * @return password
+     */
+    public String getKeyStorePassword() {
+        return sslKeystorePassword;
+    }
+
+    /**
+     * Returns the trust store path
+     * @return path
+     */
+    public String getTrustStorePath() {
+        return sslTruststorePath;
+    }
+
+    /**
+     * Returns the trust store password
+     * @return password
+     */
+    public String getTrustStorePassword() {
+        return sslTruststorePassword;
+    }
 
 }
