@@ -14,11 +14,11 @@ public class Protocol extends Exception {
     private CService    cservice;
     private SqliteDb    sqliteDb;
     
-    private Map<String, String> userNickSidLookup = new HashMap<String, String>(); // Lookup map for Nick -> Sid
     private Map<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
     private Map<String, UserNode>        userList            = new HashMap<String, UserNode>();
     private Map<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
     private Map<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
+    private Map<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; XXX : to transform to <String, UserNode>
     private Map<String, String>          protocolProps       = new HashMap<String, String>();
     
     String myPeerServerId;
