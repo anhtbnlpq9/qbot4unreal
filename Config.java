@@ -10,6 +10,11 @@ import java.util.LinkedHashMap;
 
 import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Configuration class
+ * Loads and parses the configuration file
+ * @author me
+ */
 public class Config {
 
     public InputStream inputStream = null; 
@@ -156,54 +161,139 @@ public class Config {
     public String getServerId() {
         return this.serverId;
     }
+
+    /**
+     * Returns the server description
+     * @return description
+     */
     public String getServerDescription() {
         return this.serverDescription;
     }
+
+    /**
+     * Returns the remote server name
+     * @return remote server name
+     */
     public String getLinkPeerName() {
         return this.linkPeer;
     }
+
+    /**
+     * Returns the link remote host
+     * @return remote host
+     */
     public String getLinkPeerHost() {
         return this.linkHost;
     }
+
+    /**
+     * Returns the link remote port
+     * @return remote port
+     */
     public Integer getLinkPeerPort() {
         return this.linkPort;
     }
+
+    /**
+     * Returns the link password sent to the peer
+     * @return link password
+     */
     public String getLinkPassword() {
         return this.linkPassword;
     }
+    
+    /**
+     * Returns the EAUTH string
+     * @return EAUTH string
+     */
     public String getEAUTH() {
         return this.serverName + "," + this.serverProtocolVersion + "," + this.serverVersionFlags + "," + this.serverFullVersionText;
     }
+
+    /**
+     * Returns the server protocol version
+     * @return protocol version
+     */
     public String getSrvProtocolVersion() {
         return this.serverProtocolVersion;
     }
+
+    /**
+     * Returns the server "version flags"
+     * @return versionflags
+     */
     public String getSrvVersionFlags() {
         return this.serverVersionFlags;
     }
+
+    /**
+     * Returns the server "full version text"
+     * @return fullversiontext
+     */
     public String getSrvFullVersionText() {
         return this.serverFullVersionText;
     }
+
+    /**
+     * Returns the CService bot SID
+     * @return
+     */
     public String getCServeUniq() {
         return this.cserviceUniq;
     }
+
+    /**
+     * Returns the CService nick
+     * @return nickname
+     */
     public String getCServeNick() {
         return this.cserviceNick;
     }
+
+    /**
+     * Returns the CService bot ident
+     * @return ident
+     */
     public String getCServeIdent() {
         return this.cserviceIdent;
     }
+
+    /**
+     * Returns the CService bot host
+     * @return host
+     */
     public String getCServeHost() {
         return this.cserviceHost;
     }
+
+    /**
+     * Returns the CService bot realnam
+     * @return gecos
+     */
     public String getCServeRealName() {
         return this.cserviceReal;
     }
+
+    /**
+     * Returns the modes that the CService bot will have
+     * @return modes for cserve bot
+     */
     public String getCServeModes() {
         return this.cserviceModes;
     }
+
+    /**
+     * Returns the administrative information
+     * @return administrative information
+     */
     public ArrayList<String> getAdminInfo() {
         return this.adminInformation;
     }
+
+    /**
+     * Returns the network name
+     * @return network name
+     */
     public String getNetworkName() {
         return this.networkName;
     }
@@ -215,6 +305,12 @@ public class Config {
     public String getDatabasePath() {
         return this.databasePath;
     }   
+
+    /**
+     * Returns the features of services
+     * @param feature
+     * @return feature enable/disable
+     */
     public Boolean getFeature(String feature) {
         switch (feature) {
             case "sasl":
@@ -223,7 +319,13 @@ public class Config {
             default:
                 return false;
         }
-    }  
+    }
+
+    /**
+     * Returns logging parameters
+     * @param source steam direction
+     * @return logging status
+     */
     public Boolean getLogging(String source) {
         switch (source) {
             case "debugIn":
