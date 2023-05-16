@@ -22,7 +22,7 @@ public class Protocol extends Exception {
     private Map<String, String>          protocolProps       = new HashMap<String, String>();
     
     String myPeerServerId;
-    long unixTime;
+    Long unixTime;
     String foundNickLookUpCi;
 
     public Protocol() {
@@ -411,7 +411,7 @@ public class Protocol extends Exception {
                 user.setUserHost(command[8]);                       // vhost
                 user.setUserRealHost(command[4]);                   // realhost
                 user.setUserRealName((command[11].split(":"))[1]);  // gecos
-                user.setUserTS(Integer.parseInt(command[2]));       // TS
+                user.setUserTS(Long.parseLong(command[2]));       // TS
                 user.setUserModes(command[7]);                      // modes
 
             }

@@ -25,7 +25,7 @@ public class UserNode {
     private ServerNode userServer;
     private UserAccount userAccount;
 
-    private long userTS;
+    private Long userTS;
 
     private Map<String, ChannelNode> userChanList   = new HashMap<String, ChannelNode>();
     private Map<String, String>      userChanModes  = new HashMap<String, String>();
@@ -254,7 +254,7 @@ public class UserNode {
      * Sets the user timestamp
      * @param userTS User timestamp
      */
-    public void setUserTS(Integer userTS) {
+    public void setUserTS(Long userTS) {
         this.userTS = userTS;
     }
 
@@ -543,7 +543,7 @@ public class UserNode {
      * Fetches the user timestamp
      * @return User timestamp
      */
-    public long getUserTS() {
+    public Long getUserTS() {
         return this.userTS;
     }
 
