@@ -9,10 +9,10 @@ public class UserAccount {
 
     private SqliteDb sqliteDb;
 
-    private String  userAccountFlags;
     private Integer  userAccountId;
     private String   userAccountName;
     private String   userAccountCertFP;
+    private Integer  userAccountFlags;
     private String   userAccountEmail;
 
     /**
