@@ -77,6 +77,28 @@ public class UserAccount {
         }
     
     }
+
+    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP) {
+        this.sqliteDb = sqliteDb;
+        this.userAccountName = userAccountName;
+        this.userAccountId = userAccountId;
+        this.userAccountFlags = userFlags;
+        this.userAccountEmail = userAccountEmail;
+        this.userAccountCertFP = userAccountCertFP;
+
+        try { this.userChanlev = sqliteDb.getUserChanlev(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve chanlev");
+        }
+
+        try { this.userChanlev = sqliteDb.getUserLoginTokens(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve tokens");
+        }
+    }
+
     /**
      * Adds the UserNode to the UserAccount login tracker
      * @param user User node
