@@ -327,14 +327,14 @@ public class CService {
             catch (Exception e) { e.printStackTrace();}
 
             try { 
-                sqliteDb.addUser(userList.get(fromNick).getUserNick().toLowerCase(), email, pwHash, pwSalt); 
+                sqliteDb.addUser(userList.get(fromNick).getUserNick(), email, pwHash, pwSalt); 
             }
             catch (Exception e) { 
                 protocol.sendNotice(client, myUniq, fromNick, "An account with that name already exists."); 
                 return;
             }
 
-            protocol.sendNotice(client, myUniq, fromNick, "Your account has been created with username \"" + userList.get(fromNick).getUserNick().toLowerCase() + "\". You can now auth using AUTH " + userList.get(fromNick).getUserNick().toLowerCase() + " <password>");
+            protocol.sendNotice(client, myUniq, fromNick, "Your account has been created with username \"" + userList.get(fromNick).getUserNick() + "\". You can now auth using AUTH " + userList.get(fromNick).getUserNick() + " <password>");
 
         }
         else if (str.toUpperCase().startsWith("AUTH ")) { // AUTH <username> <password>

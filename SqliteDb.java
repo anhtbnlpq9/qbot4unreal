@@ -49,7 +49,7 @@ public class SqliteDb {
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT name FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             
         }
@@ -89,7 +89,7 @@ public class SqliteDb {
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name FROM channels WHERE name='" + channel + "';";
+            sql = "SELECT name FROM channels WHERE lower(name)='" + channel.toLowerCase() + "';";
             //System.out.println(sql);
             resultSet = statement.executeQuery(sql);
         }
@@ -102,7 +102,7 @@ public class SqliteDb {
 
         try {
             statement = connection.createStatement();
-            sql = "DELETE FROM chanlev WHERE channelId IN (SELECT channelId FROM chanlev INNER JOIN channels ON chanlev.channelId=channels.cid WHERE channels.name='" + channel + "');";
+            sql = "DELETE FROM chanlev WHERE channelId IN (SELECT channelId FROM chanlev INNER JOIN channels ON chanlev.channelId=channels.cid WHERE lower(channels.name)='" + channel.toLowerCase() + "');";
             statement.executeUpdate(sql);
         }
         catch (Exception e) { 
@@ -113,7 +113,7 @@ public class SqliteDb {
 
         try {
             statement = connection.createStatement();
-            sql = "DELETE FROM channels WHERE name='" + channel + "';";
+            sql = "DELETE FROM channels WHERE lower(name)='" + channel .toLowerCase()+ "';";
             //System.out.println("drop sql="+sql);
             statement.executeUpdate(sql);
         }
@@ -130,7 +130,7 @@ public class SqliteDb {
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name FROM users WHERE name='" + username + "'";
+            sql = "SELECT name FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
 
             
@@ -164,7 +164,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid, name, password, salt FROM users WHERE name='" + username + "'";
+            sql = "SELECT uid, name, password, salt FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             name = resultSet.getString("name");
@@ -198,7 +198,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE name='" + username + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
@@ -226,13 +226,13 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE name='" + username + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
             //System.out.println("BBB db userId=" + userId);
 
-            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             chanId = resultSet.getInt("cid");
@@ -262,7 +262,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             chanId = resultSet.getInt("cid");
@@ -292,12 +292,12 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE name='" + username + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
 
-            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             channelId = resultSet.getInt("cid");
@@ -349,18 +349,17 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE name='" + username + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
 
-            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             channelId = resultSet.getInt("cid");
 
-            //sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
-            sql = "SELECT chanlev FROM chanlev WHERE channelId='"+ channelId +"' AND userId = " + userId + ";";
+            sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
             resultSet = statement.executeQuery(sql);
 
             if(resultSet.next() == false) {
@@ -410,12 +409,12 @@ public class SqliteDb {
             resultSet.next();
             userId = resultSet.getInt("uid");
 
-            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             channelId = resultSet.getInt("cid");
 
-            sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
+            sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.channelId = " + channelId + ";";
             resultSet = statement.executeQuery(sql);
 
 
@@ -444,7 +443,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT cid FROM channels WHERE name='" + channel + "'";
+            sql = "SELECT certfp FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             channelId = resultSet.getInt("cid");
