@@ -9,11 +9,11 @@ public class UserAccount {
 
     private SqliteDb sqliteDb;
 
-    private Integer userAccountId;
-    private String  userAccountName;
-    private String  userAccountCertFP;
     private String  userAccountFlags;
-    private String  userAccountEmail;
+    private Integer  userAccountId;
+    private String   userAccountName;
+    private String   userAccountCertFP;
+    private String   userAccountEmail;
 
     /**
      * HS of the UserNodes loggued with the UserAccount
@@ -40,7 +40,6 @@ public class UserAccount {
      * Class constructor
      */
     public UserAccount() {
-
     }
 
     /**

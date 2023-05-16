@@ -27,7 +27,7 @@ public class Client implements Runnable {
     long unixTime;
 
     public Client(Config config, SqliteDb sqliteDb) {
-        this.config = config;
+        this.config   = config;
         this.sqliteDb = sqliteDb;
         
         System.setProperty("javax.net.ssl.trustStore",          config.getTrustStorePath());
@@ -114,7 +114,6 @@ public class Client implements Runnable {
         server.setEOS(false);
         server.setServerPeerResponded(false);
         serverList.put(config.getServerId(), server);
-        
     }
 
     public void write(String str) {

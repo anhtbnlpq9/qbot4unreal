@@ -8,18 +8,18 @@ import java.time.Instant;
 
 public class Protocol extends Exception {
     
-    private Client client;
-    private Config config;
-    private ServerNode server;
-    private CService cservice;
-    private SqliteDb sqliteDb;
+    private Client      client;
+    private Config      config;
+    private ServerNode  server;
+    private CService    cservice;
+    private SqliteDb    sqliteDb;
     
-    private Map<String, ServerNode> serverList = new HashMap<String, ServerNode>();
-    private Map<String, UserNode> userList = new HashMap<String, UserNode>();
-    private Map<String, ChannelNode> channelList = new HashMap<String, ChannelNode>();
     private Map<String, String> userNickSidLookup = new HashMap<String, String>(); // Lookup map for Nick -> Sid
-
-    private Map<String, String> protocolProps = new HashMap<String, String>();
+    private Map<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
+    private Map<String, UserNode>        userList            = new HashMap<String, UserNode>();
+    private Map<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
+    private Map<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
+    private Map<String, String>          protocolProps       = new HashMap<String, String>();
     
     String myPeerServerId;
     long unixTime;
@@ -50,16 +50,20 @@ public class Protocol extends Exception {
         });
         return foundNickLookUpCi;
     }
+
     public void setClientRef(Client client) {
         this.client = client;
     }
+
     public void setCService(CService cservice) {
         this.cservice = cservice;
     }
+
     public void write(Client client, String str) /*throws Exception*/ {
         client.write(str);
     }
     public void sendPrivmsg(Client client, String from, String to, String msg) /*throws Exception*/ {
+
         String str = ":" + from + " PRIVMSG " + to + " :" + msg;
         client.write(str);
     }
@@ -226,18 +230,23 @@ public class Protocol extends Exception {
     public void setMode(Client client, String target, String modes, String parameters) throws Exception {
         setMode(client, config.getServerId(), target, modes, parameters);
     }
+
     public Map<String, ServerNode> getServerList() {
         return this.serverList;
     }
+
     public Map<String, UserNode> getUserList() {
         return this.userList;
     }
+
     public Map<String, ChannelNode> getChanList() {
         return this.channelList;
     }
+
     public String getPeerId() {
         return this.myPeerServerId;
     }
+
     public void getResponse(String raw) throws Exception {
         String response = "";
         String[] command;
@@ -251,7 +260,7 @@ public class Protocol extends Exception {
         // @blaablaa ...
         if (command[0].startsWith("@")) {
             command = (command[1] + " " + command[2]).split(" ", 3); // This cuts the IRCv3 prelude
-        } 
+        }
         if (command[1].equals("PRIVMSG")) {
             // :ABC PRIVMSG  DEF :MESSAGE
             // | 0| |    1| |      2     |   
