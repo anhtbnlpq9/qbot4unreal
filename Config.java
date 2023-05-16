@@ -201,9 +201,6 @@ public class Config {
     public String getCServeModes() {
         return this.cserviceModes;
     }
-    public String getCServeStaticChan() {
-        return this.cserviceStaticChan;
-    }
     public ArrayList<String> getAdminInfo() {
         return this.adminInformation;
     }
