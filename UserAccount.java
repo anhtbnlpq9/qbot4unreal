@@ -51,6 +51,31 @@ public class UserAccount {
         this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
         this.userAccountId = userAccountId;
+
+        try { this.userChanlev = sqliteDb.getUserChanlev(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve chanlev");
+        }
+        
+        try { this.userAccountFlags = sqliteDb.getUserFlags(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve flags");
+        }
+
+        try { this.userAccountEmail = sqliteDb.getUserEmail(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve email");
+        }
+
+        try { this.userAccountCertFP = sqliteDb.getUserCertFP(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve email");
+        }
+    
     }
     /**
      * Adds the UserNode to the UserAccount login tracker
