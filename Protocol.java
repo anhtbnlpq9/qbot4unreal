@@ -52,6 +52,25 @@ public class Protocol extends Exception {
     public void addNickLookupTable(String nick, String sid) {
         userNickSidLookup.put(nick, sid);
     }
+
+    /**
+     * Returns the UserNode behind a SID
+     * @param userSid user SID
+     * @return UserNode
+     */
+    public UserNode getUserNodeBySid(String userSid) {
+        return userList.get(userSid);
+    }
+
+    /**
+     * Returns a UserNode behind the nick (case insensitive)
+     * @param userNick user nick
+     * @return UserNode
+     */
+    public UserNode getUserNodeByNick(String userNick) {
+        return userList.get(getNickLookupTableCi(userNick));
+    }
+
     /**
      * Removes a map nick -> sid
      * @param nick nick
