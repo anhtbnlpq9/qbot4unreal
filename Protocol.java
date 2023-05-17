@@ -78,6 +78,18 @@ public class Protocol extends Exception {
     public void delNickLookupTable(String nick) {
         userNickSidLookup.remove(nick);
     }
+
+    /**
+     * Renicks a SID when their nick changes
+     * @param sid user SID
+     * @param oldNick previous nick
+     * @param newNick new nick
+     */
+    public void renameNickLookupTable(String sid, String oldNick, String newNick) {
+        addNickLookupTable(sid, newNick);
+        delNickLookupTable(oldNick);
+    }
+
     /**
      * Returns an user SID given his nickname (cs)
      * @param nick
