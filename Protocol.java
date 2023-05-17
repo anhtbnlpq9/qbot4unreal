@@ -160,6 +160,7 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
+    public void chanJoin(Client client, String who, String chan) /*throws Exception*/ { // XXX: to delete
         String str = ":" + who + " JOIN " + chan;
         int chanUserCount=0;
 
@@ -182,6 +183,36 @@ public class Protocol extends Exception {
         client.write(str);
     }
     public void chanPart(Client client, String who, String chan) /*throws Exception*/ {
+
+    /**
+     * Makes the bot join a channel
+     * @param client client
+     * @param who originator usernode
+     * @param chan target channel
+     */
+    public void chanJoin(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
+        String str = ":" + who.getUserUniq() + " JOIN " + chan.getChanName();
+        int chanUserCount=0;
+
+        if (channelList.containsKey(chan.getChanName())) {
+            chanUserCount = chan.getChanUserCount();
+        }
+        else {
+            unixTime = Instant.now().getEpochSecond();
+            ChannelNode newChannel = new ChannelNode(chan.getChanName(), unixTime);
+            channelList.put(chan.getChanName(), newChannel);
+        }
+
+        who.addUserToChan(chan.getChanName(), chan, "");
+        try {
+            chan.setChanChanlev(sqliteDb.getChanChanlev(chan.getChanName()));
+        }
+        catch (Exception e) { e.printStackTrace(); return; }
+
+        chan.setChanUserCount(chanUserCount+1);
+        client.write(str);
+    }
+
         String str = ":" + who + " PART " + chan;
 
         ChannelNode chanUserPart = channelList.get(chan);
