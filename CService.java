@@ -468,7 +468,7 @@ public class CService {
                 if (   Flags.hasChanLOwnerPriv(userList.get(fromNick).getUserChanlev(channel)) == true ) {
 
                     userList.get(fromNick).unSetUserChanlev(channel);
-                    sqliteDb.unSetUserChanlev(channel);
+                    sqliteDb.clearChanChanlev(channel);
                     sqliteDb.delRegChan(channel);
                     protocol.setMode(client, channel, "-r", "");
                     protocol.chanPart(client, myUniq, channel);
@@ -624,7 +624,7 @@ public class CService {
                         if (channelList.get(channel).getChanlev() == null || channelList.get(channel).getChanlev().isEmpty() == true) {
                             try {
                                 userList.get(fromNick).unSetUserChanlev(channel);
-                                sqliteDb.unSetUserChanlev(channel);
+                                sqliteDb.clearChanChanlev(channel);
                                 sqliteDb.delRegChan(channel);
                                 protocol.setMode(client, channel, "-r", "");
                                 protocol.chanPart(client, myUniq, channel);

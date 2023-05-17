@@ -450,22 +450,16 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not set user " + username + " chanlev."); }
     }
-    public void unSetUserChanlev(String username, String channel) throws Exception {
+    public void clearChanChanlev(String channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
 
-        Integer userId           = 0;
         Integer channelId        = 0;
 
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE name='" + username + "'";
-            resultSet = statement.executeQuery(sql);
-            resultSet.next();
-            userId = resultSet.getInt("uid");
-
             sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
@@ -481,13 +475,14 @@ public class SqliteDb {
             }
             else {
                 //System.out.println("BAI user chanlev exists => deleting it");
-                sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
+                sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "';";
                 //System.out.println(sql);
                 statement.executeUpdate(sql);
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset user " + username + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset " + channel + " chanlev."); }
+    }
 
     }
     public void unSetUserChanlev(String channel) throws Exception {
