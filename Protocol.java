@@ -182,7 +182,6 @@ public class Protocol extends Exception {
         channelList.get(chan).setChanUserCount(chanUserCount+1);
         client.write(str);
     }
-    public void chanPart(Client client, String who, String chan) /*throws Exception*/ {
 
     /**
      * Makes the bot join a channel
@@ -213,6 +212,7 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
+    public void chanPart(Client client, String who, String chan) /*throws Exception*/ { // XXX: to delete
         String str = ":" + who + " PART " + chan;
 
         ChannelNode chanUserPart = channelList.get(chan);
@@ -231,6 +231,32 @@ public class Protocol extends Exception {
         client.write(str);
     }
     public void chanKick(Client client, String who, String chan, String target, String reason) /*throws Exception*/ {
+   
+    /**
+     * Make the bot leaves the channel
+     * @param client client
+     * @param who usernode originator
+     * @param chan channelnode
+     */
+    public void chanPart(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
+        String str = ":" + who.getUserUniq() + " PART " + chan.getChanName();
+
+        ChannelNode chanUserPart = chan;
+        who.delUserFromChan(chan.getChanName());
+
+        int chanUserCount = chanUserPart.getChanUserCount();
+
+        if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
+            chanUserPart = null;
+            channelList.remove( chan.getChanName() );
+        }
+        else {
+            chanUserPart.setChanUserCount(chanUserCount - 1);
+        }
+
+        client.write(str);
+    }
+
         String str = ":" + who + " KICK " + chan + " " + target + " :" + reason;
         
         ChannelNode chanUserPart = channelList.get(chan);
