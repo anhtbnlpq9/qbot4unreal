@@ -143,10 +143,23 @@ public class Protocol extends Exception {
         client.write(str);
     }
     
+    public void sendNotice(Client client, String from, String to, String msg) /*throws Exception*/ { // XXX: to delete
         String str = ":" + from + " NOTICE " + to + " :" + msg;
         client.write(str);
     }
-    public void chanJoin(Client client, String who, String chan) /*throws Exception*/ {
+        
+    /**
+     * Sends a notice from an user to another user
+     * @param client client
+     * @param from originator usernode
+     * @param to target usernode
+     * @param msg message string
+     */
+    public void sendNotice(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
+        String str = ":" + from.getUserUniq() + " NOTICE " + to.getUserUniq() + " :" + msg;
+        client.write(str);
+    }
+
         String str = ":" + who + " JOIN " + chan;
         int chanUserCount=0;
 
