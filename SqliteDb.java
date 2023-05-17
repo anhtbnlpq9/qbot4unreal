@@ -176,7 +176,7 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); }
 
         if (resultSet.next() == false) {
-            throw new Exception("Cannot drop the new channel '" + channel + "' because it is not registered.");
+            throw new Exception("Error dropping the channel '" + channel + "': it is not registered.");
         }
         statement.close();
 
@@ -188,7 +188,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Error while dropping the channel."); 
+            throw new Exception("Unhandled error while deleting the channel chanlev."); 
         }
         statement.close();
 
@@ -201,7 +201,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Error while dropping the channel."); 
+            throw new Exception("Unhandled error while deleting the channel."); 
         }
         statement.close();
     }
@@ -229,7 +229,7 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); }
 
-        if (resultSet.next() == true) { throw new Exception("Cannot register the new user '" + username + "' in the database because it already exists."); }
+        if (resultSet.next() == true) { throw new Exception("Error registering the user '" + username + "': it already exists."); }
         statement.close();
 
         try { 
@@ -275,7 +275,7 @@ public class SqliteDb {
         statement.close();
 
         if (name.isEmpty() == true) {
-            throw new Exception("Cannot fetch the new user '" + username + "' in the database because it does not exist.");
+            throw new Exception("Error: cannot fetch the user '" + username + "' in the database.");
         }
 
         user.put("name",     name);
@@ -310,7 +310,10 @@ public class SqliteDb {
                 userChanlev.put(channel, chanlev);
             }
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not get user " + username + " chanlev."); }
+        catch (Exception e) { 
+            e.printStackTrace();
+            throw new Exception("Could not get user " + username + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
+        }
         statement.close();
         return userChanlev;
     }
@@ -352,7 +355,10 @@ public class SqliteDb {
                 userChanlev = resultSet.getInt("chanlev");
             }
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not get user " + username + " chanlev."); }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + username + " chanlev."); /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
+        } 
         statement.close();
         //System.out.println("BBE db chanlev=" + userChanlev);
         return userChanlev;
@@ -390,7 +396,7 @@ public class SqliteDb {
                 chanChanlev.put(username, chanlev);
             }
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not get channel " + channel + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not get channel " + channel + " chanlev."); }
         statement.close();
         return chanChanlev;
     }
@@ -449,7 +455,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not set user " + username + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set user " + username + " chanlev."); }
     }
 
     public void setUserChanlev(String username, String channel, Integer chanlev) throws Exception {
@@ -511,7 +517,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not set user " + username + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset user " + username + " chanlev."); }
     }
     /**
      * Clear the channel chanlev
@@ -584,7 +590,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset " + channel + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unauth " + userSid + " chanlev."); }
 
     }
 }
