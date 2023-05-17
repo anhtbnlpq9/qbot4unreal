@@ -106,6 +106,8 @@ public class UserAccount {
     public void addUserAuth(UserNode user) throws Exception {
         if (this.attachedUserNodes.contains(user) == false) {
             this.attachedUserNodes.add(user);
+            sqliteDb.addUserAuth(userAccountId, user.getUserUniq(), user.getUserTS());
+
         }
         else {
             throw new Exception("Cannot add the usernode to the list because it is already in there");
@@ -120,6 +122,7 @@ public class UserAccount {
     public void delUserAuth(UserNode user) throws Exception {
         try {
             this.attachedUserNodes.remove(user);
+            sqliteDb.delUserAuth(user.getUserUniq());
         }
         catch (Exception e) {
             e.printStackTrace();
