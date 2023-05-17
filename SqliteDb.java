@@ -42,6 +42,63 @@ public class SqliteDb {
         
         return regChannels;
     }
+
+    /**
+     * Returns an user account object
+     * @param username user name
+     * @return user account object
+     */
+    public UserAccount getUserAccount(String username) {
+        Integer userAccountId = 0;
+
+        Statement statement = null;
+        String sql = null;
+        ResultSet resultSet = null;
+
+        try { 
+            statement = connection.createStatement();
+            sql = "SELECT uid FROM users WHERE lower(name) = " + username.toLowerCase() + ";";
+            resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                userAccountId = resultSet.getInt("uid");
+            }
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); System.exit(0); }
+        
+        UserAccount userAccount = new UserAccount(this, username, userAccountId);
+
+
+
+        return userAccount;
+
+    }
+
+    /**
+     * Returns the list of user account names as an ArrayList<String>
+     * @return list of user account names
+     */
+    public HashMap<String,UserAccount> getRegUsers() {
+        Statement statement = null;
+        String sql = null;
+        ResultSet resultSet = null;
+
+        HashMap<String,UserAccount> regUsers = new HashMap<String,UserAccount>();
+
+        try { 
+            statement = connection.createStatement();
+            sql = "SELECT name, uid, userFlags, email, certfp FROM users;";
+            resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                regUsers.put(resultSet.getString("name"), 
+                             new UserAccount(this, resultSet.getString("name"), resultSet.getInt("uid"), resultSet.getInt("userFlags"), resultSet.getString("email"), resultSet.getString("certfp")));
+            }
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); System.exit(0); }
+        
+        return regUsers;
+    }
     public void addRegChan(String channel, String owner) throws Exception {
         Statement statement = null;
         String sql = null;
