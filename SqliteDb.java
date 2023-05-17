@@ -574,23 +574,72 @@ public class SqliteDb {
             resultSet.next();
             channelId = resultSet.getInt("cid");
 
-            sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.channelId = " + channelId + ";";
+    /**
+     * Add an authentication token in the db between a (SID, TS) and a user account
+     * @param userNick user nickname
+     * @param userTS user timestamp
+     */
+    public void addUserAuth(Integer userId, String userSid, Long userTS) throws Exception {
+        Statement statement = null;
+        String sql = null;
+        ResultSet resultSet = null;
+
+        try { 
+            statement = connection.createStatement();
+            sql = "SELECT id FROM logins WHERE userSid='" + userSid + "';";
+            resultSet = statement.executeQuery(sql);
+            
+        }
+        catch (Exception e) { e.printStackTrace(); }
+
+        if (resultSet.next() == true) {
+            throw new Exception("Error: cannot reauth '" + userId + "' with '" + userSid + "'.");
+        }
+        statement.close();
+
+        try {
+            statement = connection.createStatement();
+            sql = "INSERT INTO logins (userId, userSid, userTS) VALUES ('" + userId + "', '" + userSid + "', '" + userTS.toString() + "');";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Error: cannot map login token '" + userSid + "' -> '" + userId + "'."); 
+        }
+    }
+
+    /**
+     * Deletes an authentication token in the db between a (SID, TS) and a user account
+     * @param username
+     * @param userSid
+     * @param userTS
+     */
+    public void delUserAuth(String userSid) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT userSid FROM logins WHERE userSid='" + userSid + "'";
             resultSet = statement.executeQuery(sql);
 
-
             if(resultSet.next() == false) {
-                //System.out.println("BAH user chanlev does not exist => doing nothing");
-                return;
-            }
-            else {
                 //System.out.println("BAI user chanlev exists => deleting it");
-                sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "';";
+                sql = "DELETE FROM logins WHERE userSid='" + userSid + "';";
                 //System.out.println(sql);
                 statement.executeUpdate(sql);
             }
+
             statement.close();
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unauth " + userSid + " chanlev."); }
 
+    }
+
+    public HashMap<String, Integer> getUserLoginTokens(String userAccountName) {
+        return null;
     }
 }
