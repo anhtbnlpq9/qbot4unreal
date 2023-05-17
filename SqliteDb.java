@@ -558,6 +558,32 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset " + channel + " chanlev."); }
     }
 
+    /**
+     * Returns the user flags
+     * @param username user name
+     * @return user flags
+     * @throws Exception
+     */
+    public Integer getUserFlags(String username) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Integer userFlags        = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT userflags FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            userFlags = resultSet.getInt("userflags");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + username + " userflags.");
+        } 
+        statement.close();
+        return userFlags;
     }
     public void unSetUserChanlev(String channel) throws Exception {
         Statement statement      = null;
@@ -566,13 +592,33 @@ public class SqliteDb {
 
         Integer channelId        = 0;
 
+    /**
+     * Returns the user certfp
+     * @param username
+     * @return user certfp
+     * @throws Exception
+     */
+    public String getUserCertFP(String username) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        String userCertFP         = "";
+
         try { 
             statement = connection.createStatement();
             
             sql = "SELECT certfp FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
-            channelId = resultSet.getInt("cid");
+            userCertFP = resultSet.getString("userflags");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + username + " userflags.");
+        } 
+        statement.close();
+        return userCertFP;
+    }
 
     /**
      * Add an authentication token in the db between a (SID, TS) and a user account
