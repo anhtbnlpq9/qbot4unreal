@@ -302,6 +302,15 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
+    /**
+     * Generic method to set a mode
+     * @param client
+     * @param who
+     * @param target
+     * @param modes
+     * @param parameters
+     * @throws Exception
+     */
     public void setMode(Client client, String who, String target, String modes, String parameters) throws Exception {
         String networkChanUserModes          = protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", "");
         /*
@@ -317,7 +326,9 @@ public class Protocol extends Exception {
         String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
         String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
 
-        String str = ":" + who + " MODE " + target + " " + modes + " " + parameters;
+        String str;
+        if (who.isEmpty() == true) str = ":" + config.getServerId() + " MODE " + target + " " + modes + " " + parameters;
+        else str = ":" + who + " MODE " + target + " " + modes + " " + parameters;
 
         
         userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getUserNick(), userSid); });
@@ -400,7 +411,81 @@ public class Protocol extends Exception {
         }
         client.write(str);
     }
-    public void setMode(Client client, String target, String modes, String parameters) throws Exception {
+
+    /**
+     * Sets a mode from an user to an user
+     * @param client client
+     * @param fromWho usernode
+     * @param toTarget usernode
+     * @param modes modes
+     * @param parameters parameters
+     * @throws Exception
+     */
+    public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // XXX: will not work because needs SVSMODE
+        String who = fromWho.getUserUniq();
+        String target = toTarget.getUserNick();
+        setMode(client, who, target, modes, parameters);
+    }
+
+    /**
+     * Sets a mode from a server to an user
+     * @param client client
+     * @param fromWho servernode
+     * @param toTarget usernode
+     * @param modes modes
+     * @param parameters parameters
+     * @throws Exception
+     */
+    public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // XXX: will not work because needs SVSMODE
+        String who = fromWho.getServerId();
+        String target = toTarget.getUserNick();
+        setMode(client, who, target, modes, parameters);
+    }
+
+    /**
+     * Sets a mode from an user to a channel
+     * @param client client
+     * @param fromWho usernode
+     * @param toTarget channelnide
+     * @param modes modes
+     * @param parameters parameters
+     * @throws Exception
+     */
+    public void setMode(Client client, UserNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
+        String who = fromWho.getUserUniq();
+        String target = toTarget.getChanName();
+        setMode(client, who, target, modes, parameters);
+    }
+
+    /**
+     * @param client client
+     * @param fromWho servernode
+     * @param toTarget channelnode
+     * @param modes modes
+     * @param parameters parameters
+     * @throws Exception
+     */
+    public void setMode(Client client, ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
+        String who = fromWho.getServerId();
+        String target = toTarget.getChanName();
+        setMode(client, who, target, modes, parameters);
+    }
+
+    /**
+     * @param client client
+     * @param fromWho servernode
+     * @param toTarget channelnode
+     * @param modes modes
+     * @param parameters parameters
+     * @throws Exception
+     */
+    public void setMode(Client client, ChannelNode toTarget, String modes, String parameters) throws Exception {
+        String who = config.getServerId();
+        String target = toTarget.getChanName();
+        setMode(client, who, target, modes, parameters);
+    }
+
+    public void setMode(Client client, String target, String modes, String parameters) throws Exception { // XXX to delete
         setMode(client, config.getServerId(), target, modes, parameters);
     }
 
