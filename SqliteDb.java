@@ -10,6 +10,10 @@ public class SqliteDb {
     Long unixTime;
     Config config;
 
+    /**
+     * Class constructor
+     * @param config
+     */
     public SqliteDb(Config config) {   
         this.config = config;
 
@@ -21,6 +25,11 @@ public class SqliteDb {
            System.exit(0);
         }
     }
+
+    /**
+     * Returns the list of registered chans as an ArrayList<String>
+     * @return registered chan list
+     */
     public ArrayList<String> getRegChan(){
         Statement statement = null;
         String sql = null;
@@ -99,6 +108,13 @@ public class SqliteDb {
         
         return regUsers;
     }
+
+    /**
+     * Add a channel into the databse
+     * @param channel channel name
+     * @param owner owner user id //XXX to be deleted because ownership can be handled by chanlev
+     * @throws Exception
+     */
     public void addRegChan(String channel, String owner) throws Exception {
         Statement statement = null;
         String sql = null;
@@ -139,11 +155,18 @@ public class SqliteDb {
             throw new Exception("Error while registering the channel."); 
         }
     }
+    
+    /**
+     * Removes a channel from the database (chanlev + channel)
+     * @param channel channel name
+     * @throws Exception
+     */
     public void delRegChan(String channel) throws Exception {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
 
+        /* Check if the channel exists if the database, if not throws an error */
         try { 
             statement = connection.createStatement();
             sql = "SELECT name FROM channels WHERE lower(name)='" + channel.toLowerCase() + "';";
@@ -157,6 +180,7 @@ public class SqliteDb {
         }
         statement.close();
 
+        /* Channel exists in the db => we can delete the chanlev first */
         try {
             statement = connection.createStatement();
             sql = "DELETE FROM chanlev WHERE channelId IN (SELECT channelId FROM chanlev INNER JOIN channels ON chanlev.channelId=channels.cid WHERE lower(channels.name)='" + channel.toLowerCase() + "');";
@@ -168,6 +192,7 @@ public class SqliteDb {
         }
         statement.close();
 
+        /* Channel exists in the db => we can delete the channel */
         try {
             statement = connection.createStatement();
             sql = "DELETE FROM channels WHERE lower(name)='" + channel .toLowerCase()+ "';";
@@ -180,11 +205,21 @@ public class SqliteDb {
         }
         statement.close();
     }
+    
+    /**
+     * Add an user into the database
+     * @param username user name
+     * @param email user email
+     * @param passwordHash hashed password (base64)
+     * @param salt user salt (base64)
+     * @throws Exception
+     */
     public void addUser(String username, String email, String passwordHash, String salt) throws Exception {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
 
+        /* Check if the user exists, if yes we throw an error */
         try { 
             statement = connection.createStatement();
             sql = "SELECT name FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
@@ -208,6 +243,13 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); }
     }
+    
+    /**
+     * Returns an user as a Map<String, String> of field:value
+     * @param username user name
+     * @return Map of the user as field:value
+     * @throws Exception
+     */
     public Map<String, String> getUser(String username) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -272,6 +314,14 @@ public class SqliteDb {
         statement.close();
         return userChanlev;
     }
+
+    /**
+     * Returns the user chanlev for a specific channel
+     * @param username user name
+     * @param channel channel name
+     * @return chanlev
+     * @throws Exception
+     */
     public Integer getUserChanlev(String username, String channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -307,6 +357,13 @@ public class SqliteDb {
         //System.out.println("BBE db chanlev=" + userChanlev);
         return userChanlev;
     }
+
+    /**
+     * Returns the chanlev for a specific channel as a Map<String, Integer) mapping user:chanlev
+     * @param channel channel name
+     * @return user:chanlev map
+     * @throws Exception
+     */
     public Map<String, Integer> getChanChanlev(String channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -396,6 +453,12 @@ public class SqliteDb {
     }
 
     public void setUserChanlev(String username, String channel, Integer chanlev) throws Exception {
+    /**
+     * Deletes the chanlev of an user on a channel
+     * @param username user name
+     * @param channel channel
+     * @throws Exception
+     */
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -450,6 +513,11 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not set user " + username + " chanlev."); }
     }
+    /**
+     * Clear the channel chanlev
+     * @param channel channel name
+     * @throws Exception
+     */
     public void clearChanChanlev(String channel) throws Exception {
         Statement statement      = null;
         String sql               = null;

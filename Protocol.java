@@ -25,22 +25,52 @@ public class Protocol extends Exception {
     Long unixTime;
     String foundNickLookUpCi;
 
+    /**
+     * Class constructor
+     */
     public Protocol() {
     }  
+
+    /**
+     * Class constructor
+     * Creates a protocol and populates the registered users list given by sqliteDB
+     * @param config object to static configuration
+     * @param sqliteDb object to static database
+     */
     public Protocol(Config config, SqliteDb sqliteDb) {
         this.config = config;
         this.sqliteDb = sqliteDb;
     }
 
+    /**
+     * Adds a map nick -> user SID
+     * @param nick user nick
+     * @param sid user SID
+     */
     public void addNickLookupTable(String nick, String sid) {
         userNickSidLookup.put(nick, sid);
     }
+    /**
+     * Removes a map nick -> sid
+     * @param nick nick
+     */
     public void delNickLookupTable(String nick) {
         userNickSidLookup.remove(nick);
     }
+    /**
+     * Returns an user SID given his nickname (cs)
+     * @param nick
+     * @return
+     */
     public String getNickLookupTable(String nick) {
         return userNickSidLookup.get(nick);
     }
+
+    /**
+     * Returns an user SID given his nickname (ci)
+     * @param nick user nick
+     * @return user SID
+     */
     public String getNickLookupTableCi(String nick) {
         foundNickLookUpCi = "";
         userNickSidLookup.forEach( (userNick, userSid) -> {
