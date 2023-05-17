@@ -40,6 +40,8 @@ public class Protocol extends Exception {
     public Protocol(Config config, SqliteDb sqliteDb) {
         this.config = config;
         this.sqliteDb = sqliteDb;
+
+        this.userAccounts = sqliteDb.getRegUsers();
     }
 
     /**
