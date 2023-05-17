@@ -125,12 +125,24 @@ public class Protocol extends Exception {
     public void write(Client client, String str) /*throws Exception*/ {
         client.write(str);
     }
-    public void sendPrivmsg(Client client, String from, String to, String msg) /*throws Exception*/ {
 
+    public void sendPrivmsg(Client client, String from, String to, String msg) /*throws Exception*/ { // XXX: to delete
         String str = ":" + from + " PRIVMSG " + to + " :" + msg;
         client.write(str);
     }
-    public void sendNotice(Client client, String from, String to, String msg) /*throws Exception*/ {
+    
+    /**
+     * Send a privmsg to an user
+     * @param client client
+     * @param from originator usernode
+     * @param to target usernode
+     * @param msg message string
+     */
+    public void sendPrivmsg(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
+        String str = ":" + from.getUserUniq() + " PRIVMSG " + to.getUserUniq() + " :" + msg;
+        client.write(str);
+    }
+    
         String str = ":" + from + " NOTICE " + to + " :" + msg;
         client.write(str);
     }
