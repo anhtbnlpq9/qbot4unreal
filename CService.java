@@ -290,6 +290,7 @@ public class CService {
         else if (str.toUpperCase().matches("HELLO[ ]{0,1}.*")) { // HELLO <password> <email>
             String password;
             String email;
+            String accountName;
             
             String[] command = str.split(" ",4);
             if (userList.get(fromNick).getUserAuthed() == true) { 
