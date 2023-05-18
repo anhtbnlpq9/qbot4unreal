@@ -51,7 +51,6 @@ public class ChannelNode {
                         ArrayList<String> exceptList,
                         ArrayList<String> inviteList)
     {
-
         this.channelName = channelName;
         this.channelTS = channelTS;
         this.channelModes = channelModes;
@@ -98,14 +97,10 @@ public class ChannelNode {
             }
         }
         else {
-            if (this.chanChanlev.containsKey(user) == true) {
-                this.chanChanlev.remove(user);
-            }
-            else {
-                
+            if (this.chanChanlev.containsKey(user.getUserAccount().getUserAccountName()) == true) {
+                this.chanChanlev.remove(user.getUserAccount().getUserAccountName());
             }
         }
-
     }
     public void addBanList(String str) {
         this.banList.add(str);

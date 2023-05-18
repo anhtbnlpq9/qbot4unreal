@@ -26,6 +26,7 @@ public class SqliteDb {
         }
     }
 
+
     /**
      * Returns the list of registered chans as an ArrayList<String>
      * @return registered chan list

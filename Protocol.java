@@ -24,6 +24,7 @@ public class Protocol extends Exception {
     String myPeerServerId;
     Long unixTime;
     String foundNickLookUpCi;
+    //UserAccount userAccountFound = null;
 
     /**
      * Class constructor

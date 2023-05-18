@@ -80,7 +80,6 @@ public class UserNode {
         
     } 
 
-
     /**
      * Sets the user nickname
      * @param nick User nick

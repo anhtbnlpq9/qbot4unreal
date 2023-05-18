@@ -9,7 +9,7 @@ me:
     
 database:
     path: "db/qbot.sqlite3"
-    
+
 admin:
     - line 1
     - line 2
