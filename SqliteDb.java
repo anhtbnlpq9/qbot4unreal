@@ -38,6 +38,7 @@ public class SqliteDb {
         String sql = null;
         ResultSet resultSet = null;
 
+        //ArrayList<String> regChannels = new ArrayList<String>();
         HashMap<String, ChannelNode> regChannels = new HashMap<String, ChannelNode>();
 
         try { 
@@ -66,6 +67,7 @@ public class SqliteDb {
         String sql = null;
         ResultSet resultSet = null;
 
+        //HashMap<String,UserAccount> regUsers = new HashMap<String,UserAccount>();
         HashMap<String, HashMap<String, Object>> regUsers = new HashMap<String, HashMap<String, Object>>();
 
         try { 
@@ -277,21 +279,24 @@ public class SqliteDb {
         String sql               = null;
         ResultSet resultSet      = null;
         HashMap<String, Integer> userChanlev = new HashMap<String, Integer>();
-        Integer chanlev;
-        String channel;
+        Integer chanlev = 0;
+        String channel = "";
         Integer userId           = 0;
 
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "';";
+            //System.out.println("sql1=" + sql);
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
 
             sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
+            //System.out.println("sql2=" + sql);
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
+                //System.out.println("BFP chan=" + resultSet.getString("name") + " -> chanlev=" + resultSet.getInt("chanlev"));
                 userChanlev.put(resultSet.getString("name"), resultSet.getInt("chanlev"));
             }
         }
@@ -300,6 +305,7 @@ public class SqliteDb {
             throw new Exception("Could not get user " + username + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
         }
         statement.close();
+        userChanlev.forEach( (chan, chanlev2) -> { System.out.println("BFQ chan=" + chan + " -> chanlev=" + chanlev2); });
         return userChanlev;
     }
 
