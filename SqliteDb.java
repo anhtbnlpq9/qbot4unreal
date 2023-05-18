@@ -3,12 +3,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 import java.time.Instant;
 
 public class SqliteDb {
     Connection connection;
     Long unixTime;
     Config config;
+    Protocol protocol;
 
     /**
      * Class constructor
@@ -59,20 +61,26 @@ public class SqliteDb {
      * Returns the list of user account names as an ArrayList<String>
      * @return list of user account names
      */
-    public HashMap<String,UserAccount> getRegUsers() {
+    public HashMap<String, HashMap<String, Object>> getRegUsers() {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
 
-        HashMap<String,UserAccount> regUsers = new HashMap<String,UserAccount>();
+        HashMap<String, HashMap<String, Object>> regUsers = new HashMap<String, HashMap<String, Object>>();
 
         try { 
             statement = connection.createStatement();
             sql = "SELECT name, uid, userFlags, email, certfp FROM users;";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                regUsers.put(resultSet.getString("name"), 
-                             new UserAccount(this, resultSet.getString("name"), resultSet.getInt("uid"), resultSet.getInt("userFlags"), resultSet.getString("email"), resultSet.getString("certfp")));
+                HashMap<String, Object> accountProperties = new HashMap<String, Object>();
+                accountProperties.put("name",      resultSet.getString("name"));
+                accountProperties.put("uid",       resultSet.getInt("uid"));
+                accountProperties.put("userFlags", resultSet.getInt("userFlags"));
+                accountProperties.put("email",     resultSet.getString("email"));
+                accountProperties.put("certfp",    resultSet.getString("certfp"));
+                accountProperties.put("name",      resultSet.getString("name"));
+                regUsers.put(resultSet.getString("name"), accountProperties);
             }
             statement.close();
         }

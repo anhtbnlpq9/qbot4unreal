@@ -16,7 +16,7 @@ public class Protocol extends Exception {
     
     private Map<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
     private Map<String, UserNode>        userList            = new HashMap<String, UserNode>();
-    private Map<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
+    private HashMap<String, UserAccount> userAccounts        = new HashMap<String, UserAccount>();
     private Map<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
     private Map<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; XXX : to transform to <String, UserNode>
     private Map<String, String>          protocolProps       = new HashMap<String, String>();
@@ -41,8 +41,20 @@ public class Protocol extends Exception {
     public Protocol(Config config, SqliteDb sqliteDb) {
         this.config = config;
         this.sqliteDb = sqliteDb;
+        sqliteDb.setProtocol(this);
 
-        this.userAccounts = sqliteDb.getRegUsers();
+        sqliteDb.getRegUsers().forEach( (username, userHM) -> {
+            this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (String) userHM.get("certfp")));
+            System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
+        });
+
+        this.regChannels  = sqliteDb.getRegChan();
+
+        this.regChannels.forEach( (regChannelName, regChannelNode) -> {
+            channelList.put(regChannelName, regChannelNode);
+        });
+    }
+
     }
 
     /**
