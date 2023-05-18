@@ -94,8 +94,8 @@ public class Client implements Runnable {
 
         System.out.println("* Peer has registered and we have EOS");
 
-
-        cservice.runCService(config, protocol, userList, serverList, channelList);
+        System.out.println("* CService is going online");
+        cservice.runCService(config, protocol);
 
     }
     
