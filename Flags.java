@@ -349,6 +349,7 @@ abstract class Flags {
 
     private static final Integer   CLFLAGS_PERSONAL     = (CLFLAG_HIDEWELCOME | CLFLAG_AUTOINVITE);
 
+    private static final Integer   CHANLEV_OWNER_DEF    = ( CLFLAG_OWNER | CLFLAG_AUTO | CLFLAG_OP );
 
 
     /**
@@ -1034,6 +1035,14 @@ abstract class Flags {
             return chanlevFlagCharRevMap.get(chanlev);
         }
         catch (Exception e) { return ""; }
+    }
+
+    /**
+     * Returns the owner default chanlev for new registered chans
+     * @return
+     */
+    public static Integer getChanLFlagOwnerDefault() {
+        return CHANLEV_OWNER_DEF;
     }
 
     /*
