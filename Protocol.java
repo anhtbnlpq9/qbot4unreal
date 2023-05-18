@@ -43,6 +43,7 @@ public class Protocol extends Exception {
         this.sqliteDb = sqliteDb;
         sqliteDb.setProtocol(this);
 
+        //this.userAccounts = 
         sqliteDb.getRegUsers().forEach( (username, userHM) -> {
             this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (String) userHM.get("certfp")));
             System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
@@ -55,6 +56,29 @@ public class Protocol extends Exception {
         });
     }
 
+    /**
+     * Return the list of registered users as a HM
+     * @return HM of registered users
+     */
+    public HashMap<String, UserAccount> getRegUserList() {
+        return userAccounts;
+    }
+
+    /**
+     * Returns an user account object given its account name
+     * @param userAccountName user account name
+     * @return user account object
+     */
+    public UserAccount getRegUserAccount(String userAccountName) {
+        return userAccounts.get(userAccountName);
+    }
+
+    /**
+     * Returns the list of registered channels as a HM
+     * @return list of registered channels
+     */
+    public HashMap<String, ChannelNode> getRegChanList() {
+        return regChannels;
     }
 
     /**
@@ -82,6 +106,43 @@ public class Protocol extends Exception {
      */
     public UserNode getUserNodeByNick(String userNick) {
         return userList.get(getNickLookupTableCi(userNick));
+    }
+
+    /**
+     * Returns an user account based on their username
+     * @param username user name
+     * @return user account
+     */
+    public UserAccount getUserAccount(String username) {
+        var wrapper = new Object(){ UserAccount foundUserAccount = null; };
+        this.userAccounts.forEach( (theusername, useraccount) -> {
+            if (username.toLowerCase().equals(theusername.toLowerCase())) { wrapper.foundUserAccount = useraccount;}
+        });
+        return wrapper.foundUserAccount;
+    }
+
+    /**
+     * Returns an user account based on their user id
+     * @param userId user id
+     * @return user account
+     */
+    public UserAccount getUserAccount(Integer userId) {
+        var wrapper = new Object(){ UserAccount userAccountFound = null; };
+        this.getRegUserList().forEach( (userName, userAccount) -> {
+            if (userAccount.getUserAccountId() == userId) { 
+                wrapper.userAccountFound = userAccount;
+            }
+        });
+        return wrapper.userAccountFound;
+    }
+
+    /**
+     * Returns the channel node corresponding to the name
+     * @param channelName channel name
+     * @return channel node
+     */
+    public ChannelNode getChannelNodeByName(String channelName) {
+        return channelList.get(channelName);
     }
 
     /**
@@ -139,11 +200,6 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
-    public void sendPrivmsg(Client client, String from, String to, String msg) /*throws Exception*/ { // XXX: to delete
-        String str = ":" + from + " PRIVMSG " + to + " :" + msg;
-        client.write(str);
-    }
-    
     /**
      * Send a privmsg to an user
      * @param client client
@@ -156,11 +212,6 @@ public class Protocol extends Exception {
         client.write(str);
     }
     
-    public void sendNotice(Client client, String from, String to, String msg) /*throws Exception*/ { // XXX: to delete
-        String str = ":" + from + " NOTICE " + to + " :" + msg;
-        client.write(str);
-    }
-        
     /**
      * Sends a notice from an user to another user
      * @param client client
@@ -170,29 +221,6 @@ public class Protocol extends Exception {
      */
     public void sendNotice(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
         String str = ":" + from.getUserUniq() + " NOTICE " + to.getUserUniq() + " :" + msg;
-        client.write(str);
-    }
-
-    public void chanJoin(Client client, String who, String chan) /*throws Exception*/ { // XXX: to delete
-        String str = ":" + who + " JOIN " + chan;
-        int chanUserCount=0;
-
-        if (channelList.containsKey(chan)) {
-            chanUserCount = channelList.get(chan).getChanUserCount();
-        }
-        else {
-            unixTime = Instant.now().getEpochSecond();
-            ChannelNode newChannel = new ChannelNode(chan, unixTime);
-            channelList.put(chan, newChannel);
-        }
-
-        userList.get(who).addUserToChan(chan, channelList.get(chan), "");
-        try {
-            channelList.get(chan).setChanChanlev(sqliteDb.getChanChanlev(chan));
-        }
-        catch (Exception e) { e.printStackTrace(); return; }
-
-        channelList.get(chan).setChanUserCount(chanUserCount+1);
         client.write(str);
     }
 
@@ -224,25 +252,6 @@ public class Protocol extends Exception {
         chan.setChanUserCount(chanUserCount+1);
         client.write(str);
     }
-
-    public void chanPart(Client client, String who, String chan) /*throws Exception*/ { // XXX: to delete
-        String str = ":" + who + " PART " + chan;
-
-        ChannelNode chanUserPart = channelList.get(chan);
-        userList.get(who).delUserFromChan(chan);
-
-        int chanUserCount = chanUserPart.getChanUserCount();
-
-        if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
-            chanUserPart = null;
-            channelList.remove( chan );
-        }
-        else {
-            chanUserPart.setChanUserCount(chanUserCount - 1);
-        }
-
-        client.write(str);
-    }
    
     /**
      * Make the bot leaves the channel
@@ -266,25 +275,6 @@ public class Protocol extends Exception {
             chanUserPart.setChanUserCount(chanUserCount - 1);
         }
 
-        client.write(str);
-    }
-
-    public void chanKick(Client client, String who, String chan, String target, String reason) /*throws Exception*/ { // XXX: to delete
-        String str = ":" + who + " KICK " + chan + " " + target + " :" + reason;
-        
-        ChannelNode chanUserPart = channelList.get(chan);
-        userList.get(who).delUserFromChan(chan);
-
-        int chanUserCount = chanUserPart.getChanUserCount();
-
-        
-        if (chanUserCount == 1 && chanUserPart.getModes().containsKey("P") == false ) {
-            chanUserPart = null;
-            channelList.remove( chan );
-        }
-        else {
-            chanUserPart.setChanUserCount(chanUserCount - 1);
-        }
         client.write(str);
     }
 
@@ -498,10 +488,6 @@ public class Protocol extends Exception {
         setMode(client, who, target, modes, parameters);
     }
 
-    public void setMode(Client client, String target, String modes, String parameters) throws Exception { // XXX to delete
-        setMode(client, config.getServerId(), target, modes, parameters);
-    }
-
     public Map<String, ServerNode> getServerList() {
         return this.serverList;
     }
@@ -658,8 +644,10 @@ public class Protocol extends Exception {
             fromEnt = (command[0].split(":"))[1];
             command = command[2].split(" ", 12);
 
+            UserNode user;
+
             if (userList.containsKey(command[5]) == false) {
-                UserNode user = new UserNode( command[0],                 // nick
+                user = new UserNode( command[0],                 // nick
                                             command[3],                   // ident
                                             command[8],                   // vhost
                                             command[4],                   // realhost
@@ -675,7 +663,7 @@ public class Protocol extends Exception {
             }
 
             else {
-                UserNode user = userList.get(command[5]);
+                user = userList.get(command[5]);
 
                 user.setUserNick(command[0]);                       // nick
                 user.setUserIdent(command[3]);                      // ident
@@ -820,6 +808,8 @@ public class Protocol extends Exception {
             String networkChanmodesWithParams    = ((protocolProps.get("CHANMODES")).split(",", 4))[0] + ((protocolProps.get("CHANMODES")).split(",", 4))[1] + ((protocolProps.get("CHANMODES")).split(",", 4))[2];
             
             String channelName = sjoinParam[1];
+            
+            ChannelNode sJoinChannel;
 
             String chanModeRaw = "";              // Contains the modes of the channel (without the params)
 
@@ -943,15 +933,22 @@ public class Protocol extends Exception {
 
                 channelList.put(channelName, chan);
                 channelList.get(channelName).setChanUserCount(chanUserCount);
-                channelList.get(channelName).setChanChanlev(sqliteDb.getChanChanlev(channelName));
+                channelList.get(channelName).setChanChanlev(sqliteDb.getChanChanlev(chan));
                 //System.out.println("BBP chanUserCount newchan="+ channelName + " count=" + chanUserCount);
             }
             else {
-                if(channelList.get(channelName).getChanUserCount() > 0) { 
+                sJoinChannel = channelList.get(channelName); 
+                sJoinChannel.setChanTS(channelTS);
+                sJoinChannel.setChanModes(chanModeList);
+                sJoinChannel.setBanList(chanBanList);
+                sJoinChannel.setExceptList(chanExceptList);
+                sJoinChannel.setInviteList(chanInviteList);
+
+                if(sJoinChannel.getChanUserCount() > 0) { 
                     //System.out.println("BBZ here");
-                    channelList.get(channelName).setChanUserCount(channelList.get(channelName).getChanUserCount()+1); 
+                    sJoinChannel.setChanUserCount(sJoinChannel.getChanUserCount()+1); 
                 }
-                else { channelList.get(channelName).setChanUserCount(chanUserCount); }
+                else { sJoinChannel.setChanUserCount(chanUserCount); }
             }
 
             chanUserMode.forEach( (user, modes) -> {
@@ -1115,7 +1112,7 @@ public class Protocol extends Exception {
                             userList.get(userNickSidLookup.get(modeList[indexParam])).delUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
                             //System.out.println("MMH channel " + channelName + " user mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
                             if (userList.get(userNickSidLookup.get(modeList[indexParam])).getUserNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == 'o') {
-                                this.setMode(client, channelName, "+o", config.getCServeNick());
+                                this.setMode(client, chan, "+o", config.getCServeNick());
                             }
                         }
                         indexParam++;
@@ -1139,16 +1136,19 @@ public class Protocol extends Exception {
             //System.out.println("DDD PART " + command[2]);
 
             fromEnt = (command[0].split(":"))[1];
+            UserNode fromUser = userList.get(fromEnt);
 
-            ChannelNode chanUserPart = channelList.get((command[2].split(" "))[0]);
+            String fromChannel = (command[2].split(" "))[0];
+
+            ChannelNode chanUserPart = channelList.get(fromChannel);
             
-            userList.get(fromEnt).delUserFromChan( (command[2].split(" "))[0] );
+            fromUser.delUserFromChan( chanUserPart.getChanName() );
             chanUserCount = chanUserPart.getChanUserCount();
             //System.out.println("DDE chan=" + chanUserPart.getChanName() + " mode=" + chanUserPart.getModes().containsKey("P"));
             
             if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
+                channelList.remove( chanUserPart.getChanName() );
                 chanUserPart = null;
-                channelList.remove( (command[2].split(" "))[0] );
             }
             else {
                 chanUserPart.setChanUserCount(chanUserCount - 1);
@@ -1160,16 +1160,20 @@ public class Protocol extends Exception {
             //System.out.println("DDD KICK " + command[2]);
 
             fromEnt = (command[0].split(":"))[1];
+            UserNode fromUser = userList.get(fromEnt);
+            UserNode kickedUSer = userList.get((command[2].split(" "))[1]);
 
-            ChannelNode chanUserPart = channelList.get((command[2].split(" "))[0]);
+            String kickChannelName = (command[2].split(" "))[0];
+
+            ChannelNode chanUserPart = channelList.get(kickChannelName);
             
-            userList.get((command[2].split(" "))[1]).delUserFromChan( (command[2].split(" "))[0] );
+            kickedUSer.delUserFromChan( kickChannelName );
             chanUserCount = chanUserPart.getChanUserCount();
             //System.out.println("DDE chan=" + chanUserPart.getChanName() + " mode=" + chanUserPart.getModes().containsKey("P"));
             
             if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
+                channelList.remove( chanUserPart.getChanName() );
                 chanUserPart = null;
-                channelList.remove( (command[2].split(" "))[0] );
             }
             else {
                 chanUserPart.setChanUserCount(chanUserCount - 1);
@@ -1183,6 +1187,10 @@ public class Protocol extends Exception {
             fromEnt = (command[0].split(":"))[1];
             
             UserNode userToRemove = userList.get(fromEnt);
+
+            sqliteDb.delUserAuth(fromEnt);
+            userToRemove.setUserAccount(null);
+
             userNickSidLookup.remove(userToRemove.getUserNick());
             userToRemove = null;
             userList.remove(fromEnt);
