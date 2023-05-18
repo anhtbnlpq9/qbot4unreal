@@ -691,7 +691,58 @@ public class SqliteDb {
 
     }
 
-    public HashMap<String, Integer> getUserLoginTokens(String userAccountName) {
-        return null;
+    /**
+     * Returns the list of login tokens for the user account
+     * @param userAccountName user account name
+     * @return list of tokens as HM(Sid : TS)
+     */
+    public HashMap<String, Integer> getUserLoginTokens(Integer userAccountId) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        HashMap<String, Integer> tokenList = new HashMap<String, Integer>();
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT userSid, userTS FROM logins WHERE lower(userId)='" + userAccountId + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            tokenList.put(resultSet.getString("userSid"), resultSet.getInt("userTS"));
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        } 
+        statement.close();
+
+        return tokenList;
+    }
+
+    public UserAccount getUserLoginToken(UserNode user) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        UserAccount account = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT userId FROM logins WHERE userSid='" + user.getUserUniq() + "' AND userTS='" + user.getUserTS()  + "';";
+            //System.out.println("BFF sql=" + sql);
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            //System.out.println("BFG userId=" + resultSet.getInt("userId"));
+            account = protocol.getUserAccount(resultSet.getInt("userId"));
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        } 
+        statement.close();
+        System.out.println("BFG accountFound=" + account.getUserAccountName());
+        return account;
+    }
+
+    public void setProtocol(Protocol protocol) {
+        this.protocol = protocol;
     }
 }
