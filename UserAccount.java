@@ -188,6 +188,15 @@ public class UserAccount {
     }
 
     /**
+     * Clear the user chanlev for the channel
+     * @param channel channel object
+     */
+    public void clearUserChanlev(ChannelNode channel) {
+        System.out.println("BFM");
+        setUserChanlev(channel, 0);
+    }
+
+    /**
      * Fetches the user chanlev for all their known channels
      * @return Full user chanlev
      */
@@ -211,5 +220,40 @@ public class UserAccount {
         }
     }
 
+    /**
+     * Returns the user account name
+     * @return user account name
+     */
+    public String getUserAccountName() {
+        return this.userAccountName;
+    }
+
+    /**
+     * Returns the user account certfp
+     * @return user certfp
+     */
+    public String getUserAccountCertFP() {
+        return this.userAccountCertFP;
+    }
+
+    /**
+     * Returns the user account email
+     * @return user email
+     */
+    public String getUserAccountEmail() {
+        return this.userAccountEmail;
+    }
+
+    /**
+     * Returns the user flags
+     * @return user flags
+     */
+    public Integer getUserAccountFlags() {
+        return this.userAccountFlags;
+    }
+
+    public HashSet<UserNode> getUserLogins() {
+        return this.attachedUserNodes;
+    }
 
 }

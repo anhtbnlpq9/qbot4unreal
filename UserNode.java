@@ -19,8 +19,6 @@ public class UserNode {
     private String userUniq       = "";
     private String userModes      = "";
     private String userCertFP     = "";
-    private String userAccountP   = "";
-    private String userAccountId  = "";
 
     private ServerNode userServer;
     private UserAccount userAccount;
@@ -90,14 +88,6 @@ public class UserNode {
     }
 
     /**
-     * Sets the user account number
-     * @param accountId User account number
-     */
-    public void setUserAccountId(String accountId) {
-        this.userAccountId = accountId;
-    }
-
-    /**
      * Sets the user ident
      * @param ident User ident
      */
@@ -162,11 +152,20 @@ public class UserNode {
     }
 
     /**
-     * Sets the user account name
-     * @param account User account name
+     * Sets the user account for the user node
+     * @param account user account object
      */
-    public void setUserAccount(String account) {
-        this.userAccountP = account;
+    public void setUserAccount(UserAccount account) {
+        if (account != null) {
+            this.userAccount = account;
+            try { this.userAccount.addUserAuth(this); }
+            catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not auth user."); }
+        }
+        else {
+            try { this.userAccount.delUserAuth(this); }
+            catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not de-auth user."); }   
+            this.userAccount = null;
+        }
     }
 
     /**
@@ -258,69 +257,11 @@ public class UserNode {
     }
 
     /**
-     * Sets the user chanlev on the channels they are known of
-     * @param userChanlev User chanlevs
-     */
-    public void setUserChanlev(Map<String, Integer> userChanlev) {
-        this.userChanlev = userChanlev;
-    }
-
-    /**
-     * Sets the user's chanlev for the channel
-     * @param channel Channel name
-     * @param chanlev User chanlev
-     */
-    public void setUserChanlev(String channel, Integer chanlev) {
-        if (chanlev != 0) {
-            if (this.userChanlev.containsKey(channel) == true) {
-                this.userChanlev.replace(channel, chanlev);
-            }
-            else {
-                this.userChanlev.put(channel, chanlev);
-            }
-        }
-        
-    }
-
-    /**
-     * Removes the user's chanlev from the channel
-     * @param channel Channel name
-     */
-    public void unSetUserChanlev(String channel) {
-        this.userChanlev.remove(channel);
-    }
-
-    /**
-     * Fetches the user's chanlev for all the channels they are known of
-     * @return User chanlevs
-     */
-    public Map<String, Integer> getUserChanlev() {
-        return this.userChanlev;
-    }
-
-    /**
-     * Fetches the user chanlev of the channel
-     * @param channel Channel name
-     * @return User channel chanlev
-     */
-    public Integer getUserChanlev(String channel) {
-        return this.userChanlev.get(channel);
-    }
-
-    /**
      * Fetches the user nickname
      * @return User nickname
      */
     public String getUserNick() {
         return this.userNick;
-    }
-
-    /**
-     * Fetches the user account number
-     * @return User account number
-     */
-    public String getUserAccountId() {
-        return this.userAccountId;
     }
 
     /**
@@ -399,8 +340,8 @@ public class UserNode {
      * Fetches the account name the user is authed as
      * @return User account name
      */
-    public String getUserAccount() {
-        return this.userAccountP;
+    public UserAccount getUserAccount() {
+        return this.userAccount;
     }
 
     /**

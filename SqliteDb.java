@@ -54,37 +54,6 @@ public class SqliteDb {
     }
 
     /**
-     * Returns an user account object
-     * @param username user name
-     * @return user account object
-     */
-    public UserAccount getUserAccount(String username) {
-        Integer userAccountId = 0;
-
-        Statement statement = null;
-        String sql = null;
-        ResultSet resultSet = null;
-
-        try { 
-            statement = connection.createStatement();
-            sql = "SELECT uid FROM users WHERE lower(name) = " + username.toLowerCase() + ";";
-            resultSet = statement.executeQuery(sql);
-            while (resultSet.next()) {
-                userAccountId = resultSet.getInt("uid");
-            }
-            statement.close();
-        }
-        catch (Exception e) { e.printStackTrace(); System.exit(0); }
-        
-        UserAccount userAccount = new UserAccount(this, username, userAccountId);
-
-
-
-        return userAccount;
-
-    }
-
-    /**
      * Returns the list of user account names as an ArrayList<String>
      * @return list of user account names
      */
@@ -116,7 +85,7 @@ public class SqliteDb {
      * @param owner owner user id //XXX to be deleted because ownership can be handled by chanlev
      * @throws Exception
      */
-    public void addRegChan(String channel, String owner) throws Exception {
+    public void addRegChan(ChannelNode channel, UserAccount owner) throws Exception {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
@@ -138,7 +107,7 @@ public class SqliteDb {
 
             Integer userAccountId = 0;
             statement = connection.createStatement();
-            sql = "SELECT uid FROM users WHERE name='" + owner + "';";
+            sql = "SELECT uid FROM users WHERE name='" + owner.getUserAccountId() + "';";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 userAccountId = resultSet.getInt("uid");
@@ -333,7 +302,7 @@ public class SqliteDb {
      * @return chanlev
      * @throws Exception
      */
-    public Integer getUserChanlev(String username, String channel) throws Exception {
+    public Integer getUserChanlev(UserAccount userAccount, ChannelNode channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -344,7 +313,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + userAccount.getUserAccountName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
@@ -365,7 +334,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " chanlev."); /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
+            throw new Exception("Could not get user " + userAccount.getUserAccountName() + " chanlev."); /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
         } 
         statement.close();
         //System.out.println("BBE db chanlev=" + userChanlev);
@@ -416,7 +385,7 @@ public class SqliteDb {
      * @param chanlev chanlev
      * @throws Exception
      */
-    public void setUserChanlev(String username, String channel, Integer chanlev) throws Exception {
+    public void setUserChanlev(UserAccount userAccount, ChannelNode channel, Integer chanlev) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -427,7 +396,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + userAccount.getUserAccountName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
@@ -470,7 +439,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set user " + username + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set user " + userAccount.getUserAccountName() + " chanlev."); }
     }
 
     /**
