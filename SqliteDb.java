@@ -678,7 +678,7 @@ public class SqliteDb {
             sql = "SELECT userSid FROM logins WHERE userSid='" + userSid + "'";
             resultSet = statement.executeQuery(sql);
 
-            if(resultSet.next() == false) {
+            if(resultSet.next() == true) {
                 //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM logins WHERE userSid='" + userSid + "';";
                 //System.out.println(sql);
