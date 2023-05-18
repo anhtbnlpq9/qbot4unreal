@@ -12,22 +12,23 @@ import java.util.Map;
  
 public class ChannelNode {
     
-    public String channelName;
-    public String channelTopic;
-    public Boolean channelRegistered;
-    public UserNode channelOwner;
-    public Map<String, Integer> chanChanlev; // Map username -> chanlev
-    public Integer chanUserCount=0;
+    private String channelName;
+    private String channelTopic;
+    private Boolean channelRegistered;
+    private UserNode channelOwner;
+    private Map<String, Integer> chanChanlev; // Map username -> chanlev
+    private Integer chanUserCount = 0;
+    private Integer channelFlags = 0;
 
-    public long channelTS;
+    private long channelTS;
     
-    public Map<String, UserNode> chanUserList = new HashMap<String, UserNode>();
-    //public Map<String, ChannelMode> channelModes = new HashMap<String, ChannelMode>();
-    public Map<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
+    private Map<String, UserNode> chanUserList = new HashMap<String, UserNode>();
+    //private Map<String, ChannelMode> channelModes = new HashMap<String, ChannelMode>();
+    private Map<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
     
-    public ArrayList<String> banList = new ArrayList<String>();
-    public ArrayList<String> exceptList = new ArrayList<String>();
-    public ArrayList<String> inviteList = new ArrayList<String>();
+    private ArrayList<String> banList = new ArrayList<String>();
+    private ArrayList<String> exceptList = new ArrayList<String>();
+    private ArrayList<String> inviteList = new ArrayList<String>();
     
     public ChannelNode() {
         

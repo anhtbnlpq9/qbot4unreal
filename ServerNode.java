@@ -16,17 +16,17 @@
  
 public class ServerNode {
 
-    public String serverName;
-    public String serverId;
-    public String serverDescription;
-    public String serverTS;
-    public String serverDistance;
+    private String serverName;
+    private String serverId;
+    private String serverDescription;
+    private String serverTS;
+    private String serverDistance;
     
     // Only used for me (detect that server peer has responded => it exists in serverList)
-    public Boolean serverPeerResponded = null;
+    private Boolean serverPeerResponded = null;
     
-    public Boolean serverIsPeer = false;
-    public Boolean serverIsEOS  = false;
+    private Boolean serverIsPeer = false;
+    private Boolean serverIsEOS  = false;
 
     public ServerNode() {
         
