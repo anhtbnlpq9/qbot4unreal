@@ -232,7 +232,39 @@ public class CService {
             String nick = (str.split(" ", 2))[1];
 
             if (nick.startsWith("#")) { // lookup user in database
-                protocol.sendNotice(client, myUniq, fromNick, "User lookup");
+
+                if (protocol.getUserAccount(nick.replaceFirst("#","")) != null) {
+                    UserAccount userAccount = protocol.getUserAccount(nick.replaceFirst("#",""));
+                    var wrapper = new Object(){ String buffer = ""; };
+                    userAccount.getUserLogins().forEach( (usernode) -> {
+                        wrapper.buffer += usernode.getUserNick() + " ";
+                    });
+
+                    protocol.sendNotice(client, myUserNode, fromNick, "-Information for account " + userAccount.getUserAccountName());
+                    protocol.sendNotice(client, myUserNode, fromNick, "User ID        : " + userAccount.getUserAccountId());
+                    protocol.sendNotice(client, myUserNode, fromNick, "User flags     : " + userAccount.getUserAccountFlags());
+                    protocol.sendNotice(client, myUserNode, fromNick, "Account users  : " + wrapper.buffer);
+                    protocol.sendNotice(client, myUserNode, fromNick, "User created   : ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Last auth      : ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Email address  : " + userAccount.getUserAccountEmail() );
+                    protocol.sendNotice(client, myUserNode, fromNick, "Email last set : ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Pass last set  : ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Known on the following channels:  ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Channel              Flags:");
+                    //wrapper.buffer = "";
+                    protocol.getUserAccount(nick.replaceFirst("#","")).getUserChanlev().forEach( (chan, chanlev) -> {
+                        //wrapper.buffer = "";
+
+                        //if (Flags.flagsIntToChars("chanlev", chanlev).isEmpty() == false) { wrapper.buffer = "+" + Flags.flagsIntToChars("chanlev", chanlev); }
+
+                        protocol.sendNotice(client, myUserNode, fromNick, chan + "              +" + Flags.flagsIntToChars("chanlev", chanlev));
+                    } );
+
+
+
+                }
+                else { protocol.sendNotice(client, myUserNode, fromNick, "Can't find user " +  nick + "."); }
+
             }
             else {
                 int foundNick=0;
