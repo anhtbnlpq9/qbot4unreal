@@ -44,6 +44,13 @@ public class ChannelNode {
         this.channelModes = channelModes;
     }
 
+    public ChannelNode(String channelName, Long channelTS, Integer channelFlags) {
+        this.channelName = channelName;
+        this.channelTS = channelTS;
+        this.channelFlags = channelFlags;
+        this.channelRegistered = true;
+    }
+
     public ChannelNode( String channelName, 
                         long channelTS,
                         Map<String, String> channelModes,
@@ -87,13 +94,13 @@ public class ChannelNode {
     public void setChanChanlev(Map<String, Integer> chanChanlev) {
         this.chanChanlev = chanChanlev;
     }
-    public void setChanChanlev(String user, Integer chanlev) {
-        if (chanlev == 0) {
-            if (this.chanChanlev.containsKey(user) == true) {
-                this.chanChanlev.replace(user, chanlev);
+    public void setChanChanlev(UserNode user, Integer chanlev) {
+        if (chanlev != 0) {
+            if (this.chanChanlev.containsKey(user.getUserAccount().getUserAccountName()) == true) {
+                this.chanChanlev.replace(user.getUserAccount().getUserAccountName(), chanlev);
             }
             else {
-                this.chanChanlev.put(user, chanlev);
+                this.chanChanlev.put(user.getUserAccount().getUserAccountName(), chanlev);
             }
         }
         else {
@@ -101,6 +108,9 @@ public class ChannelNode {
                 this.chanChanlev.remove(user.getUserAccount().getUserAccountName());
             }
         }
+    }
+    public void clearChanChanlev(UserNode user) {
+        setChanChanlev(user, 0);
     }
     public void addBanList(String str) {
         this.banList.add(str);
@@ -120,6 +130,15 @@ public class ChannelNode {
     public void delInviteList(String str) {
         this.inviteList.remove(str);
     }
+    public void setBanList(ArrayList<String> banList) {
+        this.banList = banList;
+    }
+    public void setExceptList(ArrayList<String> exceptList) {
+        this.exceptList = exceptList;
+    }
+    public void setInviteList(ArrayList<String> inviteList) {
+        this.inviteList = inviteList;
+    }
     public ArrayList<String> getBanList() {
         return this.banList;
     }
@@ -134,6 +153,9 @@ public class ChannelNode {
     }
     public String getMode(String mode) {
         return this.channelModes.get(mode);
+    }
+    public void setChanModes(Map<String, String> channelModes) {
+        this.channelModes = channelModes;
     }
     public String getTopic() {
         return this.channelTopic;
@@ -153,10 +175,19 @@ public class ChannelNode {
     public Long getChanTS() {
         return this.channelTS;
     }
+    public void setChanTS(Long channelTS) {
+        this.channelTS = channelTS;
+    }
     public Integer getChanUserCount() {
         return this.chanUserCount;
     }
     public void setChanUserCount(Integer count) {
         this.chanUserCount = count;
+    }
+    public void setChanFlags(Integer chanFlags) {
+        this.channelFlags = chanFlags;
+    }
+    public Integer getChanFlags() {
+        return this.channelFlags;
     }
 }

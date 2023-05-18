@@ -203,7 +203,7 @@ public class CService {
             else filterInput = "";
             filter = ".*" + filterInput + ".*"; 
             
-            channelList.forEach( (chan, node) -> {
+            protocol.getChanList().forEach( (chan, node) -> {
 
                 if (chan.matches("(?i)" + filter)) {
                     Date date = new Date((node.getChanTS())*1000L);

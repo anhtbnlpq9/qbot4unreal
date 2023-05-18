@@ -205,7 +205,7 @@ public class Protocol extends Exception {
 
         who.addUserToChan(chan.getChanName(), chan, "");
         try {
-            chan.setChanChanlev(sqliteDb.getChanChanlev(chan.getChanName()));
+            chan.setChanChanlev(sqliteDb.getChanChanlev(chan));
         }
         catch (Exception e) { e.printStackTrace(); return; }
 

@@ -31,20 +31,22 @@ public class SqliteDb {
      * Returns the list of registered chans as an ArrayList<String>
      * @return registered chan list
      */
-    public ArrayList<String> getRegChan(){
+    public HashMap<String, ChannelNode> getRegChan(){
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
 
-        ArrayList<String> regChannels = new ArrayList<String>();
+        HashMap<String, ChannelNode> regChannels = new HashMap<String, ChannelNode>();
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name FROM channels;";
+            sql = "SELECT name, regTS, chanflags FROM channels;";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                String  name = resultSet.getString("name");
-                regChannels.add(name);
+                //String  name = resultSet.getString("name");
+                //regChannels.add(name);
+                ChannelNode channelnode = new ChannelNode(resultSet.getString("name"), resultSet.getLong("regTS"), resultSet.getInt("chanflags"));
+                regChannels.put(resultSet.getString("name"), channelnode);
             }
             statement.close();
         }
@@ -92,14 +94,14 @@ public class SqliteDb {
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
+            sql = "SELECT name FROM channels WHERE lower(name)='" + channel.getChanName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             
         }
         catch (Exception e) { e.printStackTrace(); }
 
         if (resultSet.next() == true) {
-            throw new Exception("Cannot register the new channel '" + channel + "' in the database because it already exists.");
+            throw new Exception("Cannot register the new channel '" + channel .getChanName()+ "' in the database because it already exists.");
         }
         statement.close();
 
@@ -116,7 +118,7 @@ public class SqliteDb {
             statement.close();
 
             statement = connection.createStatement();
-            sql = "INSERT INTO channels (name, owner, regTS) VALUES ('" + channel + "', '" + userAccountId.toString() + "', '" + unixTime.toString() + "');";
+            sql = "INSERT INTO channels (name, owner, regTS) VALUES ('" + channel.getChanName() + "', '" + userAccountId.toString() + "', '" + unixTime.toString() + "');";
             statement.executeUpdate(sql);
             statement.close();
         }
@@ -282,9 +284,7 @@ public class SqliteDb {
             sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
-                channel = resultSet.getString("name");
-                chanlev = resultSet.getInt("chanlev");
-                userChanlev.put(channel, chanlev);
+                userChanlev.put(resultSet.getString("name"), resultSet.getInt("chanlev"));
             }
         }
         catch (Exception e) { 
@@ -319,7 +319,7 @@ public class SqliteDb {
             userId = resultSet.getInt("uid");
             //System.out.println("BBB db userId=" + userId);
 
-            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.getChanName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             chanId = resultSet.getInt("cid");
@@ -347,7 +347,7 @@ public class SqliteDb {
      * @return user:chanlev map
      * @throws Exception
      */
-    public Map<String, Integer> getChanChanlev(String channel) throws Exception {
+    public Map<String, Integer> getChanChanlev(ChannelNode channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -359,7 +359,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.getChanName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             chanId = resultSet.getInt("cid");
@@ -373,7 +373,7 @@ public class SqliteDb {
                 chanChanlev.put(username, chanlev);
             }
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not get channel " + channel + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not get channel " + channel.getChanName() + " chanlev."); }
         statement.close();
         return chanChanlev;
     }
@@ -401,7 +401,7 @@ public class SqliteDb {
             resultSet.next();
             userId = resultSet.getInt("uid");
 
-            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.toLowerCase() + "'";
+            sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.getChanName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             channelId = resultSet.getInt("cid");
