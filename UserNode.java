@@ -20,14 +20,13 @@ public class UserNode {
     private String userModes      = "";
     private String userCertFP     = "";
 
-    private ServerNode userServer;
-    private UserAccount userAccount;
+    private ServerNode   userServer;
+    private UserAccount  userAccount;
 
     private Long userTS;
 
-    private Map<String, ChannelNode> userChanList   = new HashMap<String, ChannelNode>();
-    private Map<String, String>      userChanModes  = new HashMap<String, String>();
-    private Map<String, Integer>      userChanlev   = new HashMap<String, Integer>();  // Maps user -> chanlev
+    private Map<String, ChannelNode>  userChanList   = new HashMap<String, ChannelNode>();
+    private Map<String, String>       userChanModes  = new HashMap<String, String>();
 
     private Boolean userAuthed         = false;
     private Boolean userNickRegistered = false;

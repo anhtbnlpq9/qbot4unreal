@@ -16,6 +16,7 @@ abstract class Flags {
 
     /*
      * User flags
+     * ==========
      * 
      * The following is the description of the user flags. User flags do not take argument.
      * +a ADMIN         :: Gives the user the admin status on the bot.
@@ -248,7 +249,8 @@ abstract class Flags {
 
     
     /* 
-     * Channel user ("chanlev") flags 
+     * Channel user ("chanlev") flags
+     * ==============================
      * 
      * The following is the description of the chanlev flags. Chanlev flags do not take argument.
      * +a AUTO          :: Auto voices/halfops/ops/admins/owners the user upon authing/joining the chan.
@@ -1958,7 +1960,6 @@ abstract class Flags {
 
         return flagsNew;
     }
-
 
     /**
      * Applies the modification flags (+/-) to the input flags depending on flags type.
