@@ -497,23 +497,45 @@ public class CService {
             cServeUserflags(fromNickRaw, str);
         }
 
-            String[] command = str.split(" ",5);
-            String userNick = "";
-            String chanlevMod = "";
-            HashMap<String, String> chanlevModStr = new HashMap<String, String>(); 
-            HashMap<String, Integer> chanlevModInt = new HashMap<String, Integer>(); 
-            String userAccountStr = "";
-            userChanlevFilter = "";
+        else { // Unknown command
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
+        }
 
-            if (fromNick.getUserAuthed() == false) {
-                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
-                return;
+    }
+
+    public void handleJoin(UserNode user, ChannelNode channel) {
+        //System.out.println("BBA chanjoin");
+        // check if user is authed
+        if (user.getUserAuthed() == true) {
+            if (user.getUserAccount().getUserChanlev().containsKey(channel.getChanName())) {
+                if (  Flags.isChanLBanned( user.getUserAccount().getUserChanlev(channel)) == true ) {
+                    //System.out.println("BBC chanlev ban");
+                    try {
+                        protocol.setMode(client, myUniq, channel.getChanName(), "+b", "*!*" + user.getUserIdent() + "@" + user.getUserHost());
+                        protocol.chanKick(client, myUserNode, channel, user, "You are BANNED from this channel.");
+                    }
+                    catch (Exception e) { e.printStackTrace(); }
+                }
+                else if (   Flags.isChanLAuto( user.getUserAccount().getUserChanlev(channel))  ) {
+                    if (  Flags.isChanLOp( user.getUserAccount().getUserChanlev(channel)) ) {
+                        //System.out.println("BBD chanlev op");
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+o", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                    else if (  Flags.isChanLVoice( user.getUserAccount().getUserChanlev(channel))  ) {
+                        //System.out.println("BBE chanlev voice");
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+v", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                }
             }
+        }
+    }
 
-            try { channel = command[1]; }
-            catch (ArrayIndexOutOfBoundsException e) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CHANLEV <channel> [<user> [<change>]]."); 
-                return; 
     public void cServeWhois(UserNode fromNick, String nick, String str) {
         Whois whois = (whoisUserAccount) -> {
 
@@ -602,8 +624,6 @@ public class CService {
         }
     }
 
-            if ( userAccountStr.isEmpty() == false) {
-                userChanlevFilter = userAccountStr;
     public void cServeChanlev(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
         String userNick = "";
@@ -756,7 +776,6 @@ public class CService {
 
     }
 
-            userChanlevFilter = "";
     public void cServeUserflags(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
         String flagsModRaw = "";
@@ -835,43 +854,7 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "Error setting userflags."); 
             return; 
         }
-        //return "";
     }
-    public void handleJoin(UserNode user, ChannelNode channel) {
-        //System.out.println("BBA chanjoin");
-        // check if user is authed
-        if (user.getUserAuthed() == true) {
-            //System.out.println("BBB user authed");
-            // check user chanlev
-            // +av => +v
-            // +ao* => +o
-            if (user.getUserAccount().getUserChanlev().containsKey(channel.getChanName())) {
-                if (  Flags.isChanLBanned( user.getUserAccount().getUserChanlev(channel)) == true ) {
-                    //System.out.println("BBC chanlev ban");
-                    try {
-                        protocol.setMode(client, myUniq, channel.getChanName(), "+b", "*!*" + user.getUserIdent() + "@" + user.getUserHost());
-                        protocol.chanKick(client, myUserNode, channel, user, "You are BANNED from this channel.");
-                    }
-                    catch (Exception e) { e.printStackTrace(); }
-                }
-                else if (   Flags.isChanLAuto( user.getUserAccount().getUserChanlev(channel))  ) {
-                    if (  Flags.isChanLOp( user.getUserAccount().getUserChanlev(channel)) ) {
-                        //System.out.println("BBD chanlev op");
-                        try {
-                            protocol.setMode(client, myUniq, channel.getChanName(), "+o", user.getUserNick());
-                        }
-                        catch (Exception e) { e.printStackTrace(); }
-                    }
-                    else if (  Flags.isChanLVoice( user.getUserAccount().getUserChanlev(channel))  ) {
-                        //System.out.println("BBE chanlev voice");
-                        try {
-                            protocol.setMode(client, myUniq, channel.getChanName(), "+v", user.getUserNick());
-                        }
-                        catch (Exception e) { e.printStackTrace(); }
-                    }
-                }
-            }
-        }
     }
 
 }
