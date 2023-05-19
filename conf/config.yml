@@ -56,6 +56,8 @@ cservice:
         chanophistory: 10
         maxchannels: 500
         lastreg: 100
+        authvhostprefix: "user/"
+        authvhostsuffix: ""
     chansettings:
         emaillen: 60
         welcomelen: 250
