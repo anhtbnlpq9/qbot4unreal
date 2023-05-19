@@ -44,6 +44,10 @@ public class CService {
     final Integer CHANLEV_FOUNDER_DEFAULT = Flags.getChanLFlagOwnerDefault();
 
     long unixTime;
+
+    interface Whois {
+        void displayW(UserAccount whoisUserAccount);
+    }
     
     public CService() {
         
@@ -232,37 +236,50 @@ public class CService {
         else if (str.toUpperCase().startsWith("WHOIS ")) {
             String nick = (str.split(" ", 2))[1];
 
+            Whois whois = (whoisUserAccount) -> {
+
+                String spaceFill = " ";
+
+                var wrapper = new Object(){ String buffer = ""; };
+                whoisUserAccount.getUserLogins().forEach( (userNode) -> {
+                    wrapper.buffer += userNode.getUserNick() + " ";
+                });
+                if (wrapper.buffer.isEmpty() == true) { wrapper.buffer = "(none)"; }
+
+                protocol.sendNotice(client, myUserNode, fromNick, "User ID        : " + whoisUserAccount.getUserAccountId());
+                if ( (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) || (fromNick.getUserAccount() == whoisUserAccount) ) {
+                  protocol.sendNotice(client, myUserNode, fromNick, "User flags     : " + whoisUserAccount.getUserAccountFlags());
+                }
+                protocol.sendNotice(client, myUserNode, fromNick, "Account users  : " + wrapper.buffer);
+                if ( (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) || (fromNick.getUserAccount() == whoisUserAccount) ) {
+                    //protocol.sendNotice(client, myUserNode, fromNick, "User created   : ");
+                    //protocol.sendNotice(client, myUserNode, fromNick, "Last auth      : ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Email address  : " + whoisUserAccount.getUserAccountEmail() );
+                    //protocol.sendNotice(client, myUserNode, fromNick, "Email last set : ");
+                    //protocol.sendNotice(client, myUserNode, fromNick, "Pass last set  : ");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Known on the following channels:");
+                    protocol.sendNotice(client, myUserNode, fromNick, "Channel                        Flags:");
+
+                    whoisUserAccount.getUserChanlev().forEach( (chan, chanlev) -> {
+                        protocol.sendNotice(client, myUserNode, fromNick, " " + chan + spaceFill.repeat(30-chan.length()) +"+" + Flags.flagsIntToChars("chanlev", chanlev));
+                    } );
+
+                }
+            };
+
+            if (fromNick.getUserAuthed() == false) {
+                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
+
             if (nick.startsWith("#")) { // lookup user in database
 
                 if (protocol.getUserAccount(nick.replaceFirst("#","")) != null) {
                     UserAccount userAccount = protocol.getUserAccount(nick.replaceFirst("#",""));
-                    var wrapper = new Object(){ String buffer = ""; };
-                    userAccount.getUserLogins().forEach( (usernode) -> {
-                        wrapper.buffer += usernode.getUserNick() + " ";
-                    });
 
-                    protocol.sendNotice(client, myUserNode, fromNick, "-Information for account " + userAccount.getUserAccountName());
-                    protocol.sendNotice(client, myUserNode, fromNick, "User ID        : " + userAccount.getUserAccountId());
-                    protocol.sendNotice(client, myUserNode, fromNick, "User flags     : " + userAccount.getUserAccountFlags());
-                    protocol.sendNotice(client, myUserNode, fromNick, "Account users  : " + wrapper.buffer);
-                    protocol.sendNotice(client, myUserNode, fromNick, "User created   : ");
-                    protocol.sendNotice(client, myUserNode, fromNick, "Last auth      : ");
-                    protocol.sendNotice(client, myUserNode, fromNick, "Email address  : " + userAccount.getUserAccountEmail() );
-                    protocol.sendNotice(client, myUserNode, fromNick, "Email last set : ");
-                    protocol.sendNotice(client, myUserNode, fromNick, "Pass last set  : ");
-                    protocol.sendNotice(client, myUserNode, fromNick, "Known on the following channels:  ");
-                    protocol.sendNotice(client, myUserNode, fromNick, "Channel              Flags:");
-                    //wrapper.buffer = "";
-                    protocol.getUserAccount(nick.replaceFirst("#","")).getUserChanlev().forEach( (chan, chanlev) -> {
-                        //wrapper.buffer = "";
-
-                        //if (Flags.flagsIntToChars("chanlev", chanlev).isEmpty() == false) { wrapper.buffer = "+" + Flags.flagsIntToChars("chanlev", chanlev); }
-
-                        protocol.sendNotice(client, myUserNode, fromNick, chan + "              +" + Flags.flagsIntToChars("chanlev", chanlev));
-                    } );
-
-
-
+                    protocol.sendNotice(client, myUserNode, fromNick, "-Information for account " + userAccount.getUserAccountName() + ":");
+                    whois.displayW(userAccount);
+                    protocol.sendNotice(client, myUserNode, fromNick, "End of list.");
                 }
                 else { protocol.sendNotice(client, myUserNode, fromNick, "Can't find user " +  nick + "."); }
 
@@ -272,57 +289,74 @@ public class CService {
                 for (Map.Entry<String, UserNode> user : protocol.getUserList().entrySet()) {
                     if ((user.getValue().getUserNick()).toLowerCase().equals(nick.toLowerCase())) {
                         foundNick=1;
-                        
-                        Date date = new Date((user.getValue().getUserTS())*1000L);
-                        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-                        jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        String userTSdate = jdf.format(date);
+                        UserNode foundUser = user.getValue();
 
-                        protocol.sendNotice(client, myUserNode, fromNick, " + " + user.getValue().getUserNick() + " (" + user.getValue().getUserUniq() + ") is " + user.getValue().getUserIdent() + "@" + user.getValue().getUserHost() + " * " + user.getValue().getUserRealName());
+                        if (foundUser.getUserAuthed() == true) {
 
-                        if (fromNick.isOper() == true || user.getValue().getUserNick().equals(fromNick.getUserNick()) ) {
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- is connecting from " + user.getValue().getUserRealHost());
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- is using modes " + user.getValue().getUserModes());
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- is using server " + (user.getValue().getUserServer()).getServerName() + " (" + (user.getValue().getUserServer()).getServerId() + ")");
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- signed on " + userTSdate );
+                            protocol.sendNotice(client, myUserNode, fromNick, "-Information for user " + foundUser.getUserNick() + " (using account " + foundUser.getUserAccount().getUserAccountName() + "):");
+                            whois.displayW(foundUser.getUserAccount());
+                            protocol.sendNotice(client, myUserNode, fromNick, "End of list.");
                         }
-
-                        if (user.getValue().getUserAuthed() == true) {
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- is authed as " + user.getValue().getUserAccount().getUserAccountName());
-                        }
-
-                        //bufferMode = "";
-                        if (fromNick.isOper() == true || user.getValue().getUserNick().equals(fromNick.getUserNick()) ) {
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- on channels: ");
-                            user.getValue().getUserChanModes().forEach( (key, value) -> {
-                                bufferMode = "";
-
-                                if (value.isEmpty() == false) { bufferMode = "(+" + value + ")"; }
-
-                                protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + " " + bufferMode);
-
-                            });
-                        }
-
-                        if (user.getValue().getUserAuthed() == true && ( user.getValue().getUserNick().equals(fromNick.getUserNick()) ) ) {
-                            protocol.sendNotice(client, myUserNode, fromNick, "|- chanlev: ");
-
-                            user.getValue().getUserAccount().getUserChanlev().forEach( (key, value) -> {
-                                bufferMode = "";
-
-                                if (Flags.flagsIntToChars("chanlev", value).isEmpty() == false) { bufferMode = "+" + Flags.flagsIntToChars("chanlev", value); }
-
-                                protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + ": " + bufferMode);
-                            });
-                        }
+                        else { protocol.sendNotice(client, myUserNode, fromNick, "The user " + nick + "is not authed."); }
                     }
                 }
-                if (foundNick == 0) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "No such nick.");
+                if (foundNick == 0) { protocol.sendNotice(client, myUserNode, fromNick, "Can't find user " + nick + ".");  }
+            }
+        }
+        else if (str.toUpperCase().startsWith("WHOIS2 ")) {
+            String nick = (str.split(" ", 2))[1];
+            int foundNick=0;
+            for (Map.Entry<String, UserNode> user : protocol.getUserList().entrySet()) {
+                if ((user.getValue().getUserNick()).toLowerCase().equals(nick.toLowerCase())) {
+                    foundNick=1;
+                    
+                    Date date = new Date((user.getValue().getUserTS())*1000L);
+                    SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+                    jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    String userTSdate = jdf.format(date);
+
+                    protocol.sendNotice(client, myUserNode, fromNick, " + " + user.getValue().getUserNick() + " (" + user.getValue().getUserUniq() + ") is " + user.getValue().getUserIdent() + "@" + user.getValue().getUserHost() + " * " + user.getValue().getUserRealName());
+
+                    if (fromNick.isOper() == true || user.getValue().getUserNick().equals(fromNick.getUserNick()) ) {
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- is connecting from " + user.getValue().getUserRealHost());
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- is using modes " + user.getValue().getUserModes());
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- is using server " + (user.getValue().getUserServer()).getServerName() + " (" + (user.getValue().getUserServer()).getServerId() + ")");
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- signed on " + userTSdate );
+                    }
+
+                    if (user.getValue().getUserAuthed() == true) {
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- is authed as " + user.getValue().getUserAccount().getUserAccountName());
+                    }
+
+                    //bufferMode = "";
+                    if (fromNick.isOper() == true || user.getValue().getUserNick().equals(fromNick.getUserNick()) ) {
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- on channels: ");
+                        user.getValue().getUserChanModes().forEach( (key, value) -> {
+                            bufferMode = "";
+
+                            if (value.isEmpty() == false) { bufferMode = "(+" + value + ")"; }
+
+                            protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + " " + bufferMode);
+
+                        });
+                    }
+
+                    if (user.getValue().getUserAuthed() == true && ( user.getValue().getUserNick().equals(fromNick.getUserNick()) ) ) {
+                        protocol.sendNotice(client, myUserNode, fromNick, "|- chanlev: ");
+
+                        user.getValue().getUserAccount().getUserChanlev().forEach( (key, value) -> {
+                            bufferMode = "";
+
+                            if (Flags.flagsIntToChars("chanlev", value).isEmpty() == false) { bufferMode = "+" + Flags.flagsIntToChars("chanlev", value); }
+
+                            protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + ": " + bufferMode);
+                        });
+                    }
+                    protocol.sendNotice(client, myUserNode, fromNick, "End of List.");
                 }
-                else {
-                    protocol.sendNotice(client, myUserNode, fromNick, "End of IRCWHOIS.");
-                }
+            }
+            if (foundNick == 0) {
+                protocol.sendNotice(client, myUserNode, fromNick, "No such nick.");
             }
         }
         else if (str.toUpperCase().matches("HELLO[ ]{0,1}.*")) { // HELLO <password> <email>
