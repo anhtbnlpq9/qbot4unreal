@@ -19,21 +19,15 @@ public class UserAccount {
      * HS of the UserNodes loggued with the UserAccount
      * Table to map the SIDs loggued with that UserAccount
      */
-    private HashSet<UserNode> attachedUserNodes;
-
-    /**
-     * HS of the nicks attached to the UserAccount
-     * Table used for nick registration/protection feature
-     */
-    private HashSet<String>   attachedUserNicks;
+    private HashSet<UserNode> attachedUserNodes = new HashSet<UserNode>();
 
     /**
      * HM of the previously authed SIDs to the UserAccount, from the db
      * Table used to restore auth after Chanserv disconnect
      */
-    private HashMap<String, Integer> attachedLogins;
+    private HashMap<String, Integer> attachedLoginTokens;
 
-    private HashMap<String, Integer> userChanlev = new HashMap<String, Integer>();
+    private HashMap<String, Integer> userChanlev = null;// = new HashMap<String, Integer>();
 
 
     /**
@@ -78,6 +72,15 @@ public class UserAccount {
     
     }
 
+    /**
+     * Constructor for UserAccount
+     * @param sqliteDb database
+     * @param userAccountName user account name
+     * @param userAccountId user account id
+     * @param userFlags user flags
+     * @param userAccountEmail user account email
+     * @param userAccountCertFP user account certfp
+     */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP) {
         this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
@@ -86,17 +89,22 @@ public class UserAccount {
         this.userAccountEmail = userAccountEmail;
         this.userAccountCertFP = userAccountCertFP;
 
-        try { this.userChanlev = sqliteDb.getUserChanlev(userAccountName); }
+        try {
+            //sqliteDb.getUserChanlev(userAccountName).forEach( (chan, chanlev) -> { System.out.println("BFR chan=" + chan + " chanlev=" + chanlev); });
+
+            this.userChanlev = sqliteDb.getUserChanlev(userAccountName); 
+        }
         catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error: could not retrieve chanlev");
         }
 
-        try { this.userChanlev = sqliteDb.getUserLoginTokens(userAccountName); }
+        try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
         catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error: could not retrieve tokens");
         }
+        //this.userChanlev.forEach( (chan, chanlev) -> { System.out.println("BFO chan=" + chan + " chanlev=" + chanlev); });
     }
 
     /**
@@ -106,8 +114,7 @@ public class UserAccount {
     public void addUserAuth(UserNode user) throws Exception {
         if (this.attachedUserNodes.contains(user) == false) {
             this.attachedUserNodes.add(user);
-            sqliteDb.addUserAuth(userAccountId, user.getUserUniq(), user.getUserTS());
-
+            //sqliteDb.addUserAuth(userAccountId, user.getUserUniq(), user.getUserTS());
         }
         else {
             throw new Exception("Cannot add the usernode to the list because it is already in there");
@@ -122,7 +129,7 @@ public class UserAccount {
     public void delUserAuth(UserNode user) throws Exception {
         try {
             this.attachedUserNodes.remove(user);
-            sqliteDb.delUserAuth(user.getUserUniq());
+            //sqliteDb.delUserAuth(user.getUserUniq());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -131,38 +138,11 @@ public class UserAccount {
     }
 
     /**
-     * Adds the Nick to the UserAccount
-     * @param user User nick
-     */
-    public void addUserNick(String nick) throws Exception {
-        if (this.attachedUserNicks.contains(nick) == false) {
-            this.attachedUserNicks.add(nick);
-        }
-        else {
-            throw new Exception("Cannot add the nick to the list because it is already in there");
-        }
-    }
-
-    /**
-     * Removes the Nick from the UserAccount
-     * @param user User nick
-     * @throws Exception
-     */
-    public void delUserNick(String nick) throws Exception {
-        try {
-            this.attachedUserNicks.remove(nick);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception("Cannot remove the nick from the attached nicklist because the nick is not is there.");
-        }
-    }
-
-    /**
      * Sets the user chanlev
      * @param chanlev User chanlev
      */
     public void setUserChanlev(HashMap<String, Integer> chanlev) {
+        //System.out.println("BFN");
         this.userChanlev = chanlev;
     }
 
@@ -171,18 +151,19 @@ public class UserAccount {
      * @param channel Channel node
      * @param chanlev Chanlev
      */
-    public void setUserChanlev(String channel, Integer chanlev) {
-        if (this.userChanlev.containsKey(channel) == true) {
+    public void setUserChanlev(ChannelNode channel, Integer chanlev) {
+        //System.out.println("BFL");
+        if (this.userChanlev.containsKey(channel.getChanName()) == true) {
             if (chanlev != 0) {
-                this.userChanlev.replace(channel, chanlev);
+                this.userChanlev.replace(channel.getChanName(), chanlev);
             }
             else {
-                this.userChanlev.remove(channel);
+                this.userChanlev.remove(channel.getChanName());
             }
         }
         else {
             if (chanlev != 0) {
-                this.userChanlev.put(channel, chanlev);
+                this.userChanlev.put(channel.getChanName(), chanlev);
             }
         }
     }
@@ -192,7 +173,7 @@ public class UserAccount {
      * @param channel channel object
      */
     public void clearUserChanlev(ChannelNode channel) {
-        System.out.println("BFM");
+        //System.out.println("BFM");
         setUserChanlev(channel, 0);
     }
 
@@ -201,6 +182,7 @@ public class UserAccount {
      * @return Full user chanlev
      */
     public HashMap<String, Integer> getUserChanlev() {
+        //this.userChanlev.forEach( (chan, chanlev) -> { System.out.println("BFJ chan=" + chan + " chanlev=" + chanlev); });
         return this.userChanlev;
     }
 
@@ -210,14 +192,16 @@ public class UserAccount {
      * @return Chanlev of the user on that channel
      * @throws Exception
      */
-    public Integer getUserChanlev(ChannelNode channel) throws Exception {
-        try {
-            return this.userChanlev.get(channel);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception("Cannot fetch chanlev because it does not exist for that (user, channel).");
-        }
+    public Integer getUserChanlev(ChannelNode channel) {
+            return this.userChanlev.get(channel.getChanName());
+    }
+
+    /**
+     * Returns user account id
+     * @return user account id
+     */
+    public Integer getUserAccountId() {
+        return this.userAccountId;
     }
 
     /**
@@ -252,8 +236,20 @@ public class UserAccount {
         return this.userAccountFlags;
     }
 
+    /**
+     * Returns the user logins (attached nicks to the account)
+     * @return user nodes
+     */
     public HashSet<UserNode> getUserLogins() {
         return this.attachedUserNodes;
+    }
+
+    /**
+     * Sets the user flags
+     * @param userflags user flags
+     */
+    public void setUserAccountFlags(Integer userflags) {
+        this.userAccountFlags = userflags;
     }
 
 }

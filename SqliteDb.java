@@ -305,7 +305,7 @@ public class SqliteDb {
             throw new Exception("Could not get user " + username + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
         }
         statement.close();
-        userChanlev.forEach( (chan, chanlev2) -> { System.out.println("BFQ chan=" + chan + " -> chanlev=" + chanlev2); });
+        //userChanlev.forEach( (chan, chanlev2) -> { System.out.println("BFQ chan=" + chan + " -> chanlev=" + chanlev2); });
         return userChanlev;
     }
 
@@ -738,7 +738,7 @@ public class SqliteDb {
             e.printStackTrace(); 
         } 
         statement.close();
-        System.out.println("BFG accountFound=" + account.getUserAccountName());
+        //System.out.println("BFG accountFound=" + account.getUserAccountName());
         return account;
     }
 

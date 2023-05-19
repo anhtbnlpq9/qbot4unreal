@@ -17,6 +17,7 @@ public class Protocol extends Exception {
     private Map<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
     private Map<String, UserNode>        userList            = new HashMap<String, UserNode>();
     private HashMap<String, UserAccount> userAccounts        = new HashMap<String, UserAccount>();
+    private HashMap<String, ChannelNode> regChannels         = new HashMap<String, ChannelNode>();
     private Map<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
     private Map<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; XXX : to transform to <String, UserNode>
     private Map<String, String>          protocolProps       = new HashMap<String, String>();
@@ -46,7 +47,7 @@ public class Protocol extends Exception {
         //this.userAccounts = 
         sqliteDb.getRegUsers().forEach( (username, userHM) -> {
             this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (String) userHM.get("certfp")));
-            System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
+            //System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
         });
 
         this.regChannels  = sqliteDb.getRegChan();
@@ -530,16 +531,18 @@ public class Protocol extends Exception {
             // :ABC PRIVMSG  DEF :MESSAGE
             // | 0| |    1| |      2     |   
             String fromEntity = (command[0].split(":"))[1];
+            UserNode fromUser = userList.get(fromEntity);
 
             command = (command[2]).split(" ", 2);
             String toEntity   =  command[0];
+            UserNode toUser   = userList.get(toEntity);
             String message    =  command[1];
 
-            // Test for output performance
+            /* In here we forward to Chanservice the PRIVMSG if sent to them */
             if (toEntity.equals(config.getServerId() + config.getCServeUniq())) {
-                // Stripping message
+                // Stripping raw to keep only the message
                 message = (message.split(":",2))[1];
-                cservice.handleMessage(fromEntity, message);
+                cservice.handleMessage(fromUser, message);
             }
         }
         else if (command[1].equals("SID")) {
@@ -571,6 +574,14 @@ public class Protocol extends Exception {
             String str = ":" + config.getServerId() + " EOS";
             client.write(str);
             serverList.get(config.getServerId()).setEOS(true);
+
+
+
+
+            /* If our peer sends the EOS (so last to send EOS) */
+            if(server.getServerPeer() == true) {
+
+            }
         }
         else if (command[0].equals("NETINFO")) {
             //:ABC NETINFO 13        1683227483  6000                   SHA256:06aa55fd33c824d6132b0aebc1da0cd0e253473f68391a5ace8cf0bd 0 0 0 :Mjav
@@ -585,8 +596,8 @@ public class Protocol extends Exception {
             String str = ":" + config.getServerId() + " NETINFO " + netinfoParam[1] + " " + unixTime + " " + config.getSrvProtocolVersion() + " * 0 0 0 :" + config.getNetworkName();
             client.write(str);
 
-            //:ABC MD client lynx.      saslmechlist :EXTERNAL,PLAIN
-            //:ABC MD client <nick|uid> <varname>    <value>
+
+            /* Sending that we can handle SASL (in enabled in the config) */
             if (config.getFeature("sasl") == true) {
                 str = ":" + config.getServerId() + " MD client " + config.getServerName() + " saslmechlist :EXTERNAL,PLAIN";
                 client.write(str);
@@ -690,7 +701,7 @@ public class Protocol extends Exception {
             
 
         }
-        else if (command[1].equals("S-ASL")) {
+        else if (command[1].equals("S-A-S-L")) {
             /*
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 H 2401:d800:7e60:5bb:21e:10ff:fe1f:0 2401:d800:7e60:5bb:21e:10ff:fe1f:0
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 S PLAIN
@@ -1061,7 +1072,7 @@ public class Protocol extends Exception {
                                 break;
                             
                             default:
-                                 throw new Exception("Should not happen!!");
+                                 throw new Exception("Error: should not happen!!");
                         }
                         indexParam++;
                     }
@@ -1077,7 +1088,6 @@ public class Protocol extends Exception {
                             //System.out.println("MMB channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
                         }
                         indexParam++;
-                        
                     }
 
                     else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanModesGroup3 + "]") == true) { // matches modes (l/F/H) -> need parameter ONLY for set
@@ -1091,8 +1101,6 @@ public class Protocol extends Exception {
                             chan.delMode(String.valueOf(chanModeRaw.charAt(indexMode))); 
                             //System.out.println("MMD channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode))); 
                         }
-                        
-                        
                     }
 
                     else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanModesGroup4 + "]") == true) { // matches modes with no params (C/T/n/t/s/...)
@@ -1105,9 +1113,7 @@ public class Protocol extends Exception {
                             chan.delMode(String.valueOf(chanModeRaw.charAt(indexMode)));
                             //System.out.println("MMF channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) ); 
                          }
-                        
                     }
-
 
                     else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanUserModes + "]") == true) { // matches user modes (q/a/o/h/v)
                         // It is necessary to lookup the user nick because mode is applied on a nick and not a SID
@@ -1163,7 +1169,7 @@ public class Protocol extends Exception {
             }
         }
         else if (command[1].equals("KICK")) {
-            // :XXXXXXXXX KICK #1 SID :message
+            // :XXXXXXXXX KICK CHAN SID :message
 
             //System.out.println("DDD KICK " + command[2]);
 
