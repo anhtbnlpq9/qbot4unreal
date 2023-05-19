@@ -604,6 +604,11 @@ public class Protocol extends Exception {
             }
 
         }
+        else if (command[1].equals("MD")) {
+            //:ABC MD client lynx.      saslmechlist :EXTERNAL,PLAIN
+            //:ABC MD client <nick|uid> <varname>    <value>
+
+        }
         else if (command[1].equals("SINFO")) {
             //<<< :5PX SINFO 1683275149 6000 diopqrstwxzBDGHIRSTWZ beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ * :UnrealIRCd-6.1.0
 
