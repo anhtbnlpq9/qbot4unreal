@@ -27,6 +27,9 @@
 
 ## Advanced stuff
 
+### Protocol
+- [ ] IRCv3
+
 ### Accounts
 - [X] multi user auth
 - [ ] edit history (email, password)
@@ -37,7 +40,7 @@
 
 
 ### Channels
-- [ ] adapt to IRCd implementing +q/+a or not
+- [ ] adapt to IRCd implementing +q/+a/+o/+h/+v or not
 
 ## Oper stuff
 - [ ] account suspension
@@ -70,7 +73,6 @@
 - [ ] DELUSER
 - [ ] DEOPALL
 - [ ] DEVOICEALL
-- [ ] DIE
 - [ ] EMAIL
 - [ ] GIVEOWNER
 - [ ] HELLO
@@ -82,14 +84,10 @@
 - [ ] PERMBAN
 - [ ] RECOVER
 - [ ] REJOIN
-- [ ] REHASH
 - [ ] RENCHAN
 - [ ] REMOVEUSER
 - [ ] REQUESTOWNER
-- [ ] RESTART
 - [ ] SETTOPIC
-- [ ] SETUSERFLAGS => maybe rename to SAFLAGS
-- [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD
 - [X] SHOWCOMMANDS
 - [ ] SUSPENDCHAN
 - [ ] SUSPENDCHANLIST
@@ -107,16 +105,26 @@
 - [X] VERSION
 - [ ] VOICE
 - [ ] WELCOME
-- [ ] WHOAMI
+- [X] WHOAMI
 - [X] WHOIS
 
 ## Added commands
 - [X] CHANLIST
+- [ ] DIE
 - [X] DROP
 - [X] LOGOUT
+- [ ] REHASH
 - [X] REQUESTBOT
+- [ ] RESTART
 - [X] SERVERLIST
 - [X] USERLIST
 - [ ] HALFOP
 - [ ] ADMINMODE
 - [ ] OWNERMODE
+- [ ] SETUSERFLAGS => maybe rename to SAFLAGS
+- [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD
+
+### Coding
+- [ ] rework SJOIN handling
+- [ ] rework MODE handling
+- [ ] rework CHANLEV
