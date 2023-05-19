@@ -211,6 +211,9 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "There are " + protocol.getChanList().size() + " channels on the network.");
             protocol.sendNotice(client, myUserNode, fromNick, "End of list.");
         } 
+        else if (str.toUpperCase().startsWith("WHOAMI")) {
+            cServeWhois(fromNickRaw, fromNickRaw.getUserNick(), str);
+        }
         else if (str.toUpperCase().startsWith("WHOIS ")) {
             String nick = (str.split(" ", 2))[1];
             cServeWhois(fromNickRaw, nick, str);
