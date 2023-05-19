@@ -44,6 +44,8 @@ public class Config {
     private String cserviceReal;
     private String cserviceModes;
     private String cserviceStaticChan;
+    private String cserviceAccountHostPrefix;
+    private String cserviceAccountHostSuffix;
 
     /* Network parameters */
     private String networkName;
@@ -103,6 +105,9 @@ public class Config {
         cserviceReal                  = (String) confcservice.get("realname");
         cserviceModes                 = (String) confcservice.get("modes");
         cserviceStaticChan            = (String) confcservice.get("staticchan");
+        LinkedHashMap cserviceaccount = (LinkedHashMap) confcservice.get("accountsettings");
+        cserviceAccountHostPrefix     = (String) cserviceaccount.get("authvhostprefix");
+        cserviceAccountHostSuffix     = (String) cserviceaccount.get("authvhostsuffix");
 
         LinkedHashMap confNetwork     = (LinkedHashMap) data.get("network");
         networkName                   = (String) confNetwork.get("name");
@@ -371,4 +376,19 @@ public class Config {
         return sslTruststorePassword;
     }
 
+    /**
+     * Returns the configures vhost prefix for user authentication
+     * @return host prefix
+     */
+    public String getCserveHostPrefix() {
+        return this.cserviceAccountHostPrefix;
+    }
+
+    /**
+     * Returns the configures vhost suffix for user authentication
+     * @return host suffix
+     */
+    public String getCserveHostSuffix() {
+        return this.cserviceAccountHostSuffix;
+    }
 }

@@ -436,6 +436,11 @@ public class CService {
                 }
                 
                 fromNick.getUserAccount().setUserChanlev(userChanlev);
+
+                if (Flags.isUserNoAutoVhost(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+                    protocol.chgHost(client, fromNick, fromNick.getUserAccount().getUserAccountName());
+                }
+
                 protocol.sendNotice(client, myUserNode, fromNick, "Auth successful."); 
 
                 // Now we apply the modes of the user's chanlev as it was joining the channels

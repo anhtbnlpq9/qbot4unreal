@@ -488,6 +488,14 @@ public class Protocol extends Exception {
         setMode(client, who, target, modes, parameters);
     }
 
+    public void chgHost(Client client, UserNode toTarget, String vhost) {
+        String who = config.getServerId();
+        String vhostComplete = config.getCserveHostPrefix() + vhost + config.getCserveHostSuffix();
+        String str = ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
+        client.write(str);
+    }
+
+
     public Map<String, ServerNode> getServerList() {
         return this.serverList;
     }
