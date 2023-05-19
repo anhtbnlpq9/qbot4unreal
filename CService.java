@@ -374,6 +374,11 @@ public class CService {
             if (userToAuth.get("password").equals(pwHash)) {
 
                 UserAccount userAccount = protocol.getRegUserAccount(userToAuth.get("name"));
+
+                if (Flags.isUserSuspended(userAccount.getUserAccountFlags()) == true) {
+                    protocol.sendNotice(client, myUserNode, fromNick, "The user account " + userAccount.getUserAccountName() + " is suspended. Please contact a staff member for more information.");
+                    return;
+                }
                 
                 fromNick.setUserAuthed(true);
                 fromNick.setUserAccount(userAccount);
