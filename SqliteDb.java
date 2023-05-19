@@ -571,6 +571,27 @@ public class SqliteDb {
     }
 
     /**
+     * Sets the userflags for an user
+     * @param username user name
+     * @param channel channel name
+     * @param chanlev chanlev
+     * @throws Exception
+     */
+    public void setUserFlags(UserAccount userAccount, Integer userflags) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "UPDATE users SET userflags='" + userflags + "' WHERE name='" + userAccount.getUserAccountName() +"';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set user " + userAccount.getUserAccountName() + " flags."); }
+    }
+
+    /**
      * Returns the user email
      * @param username user name
      * @return user email
