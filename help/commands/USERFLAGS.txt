@@ -1,0 +1,8 @@
+Usage: USERFLAGS [flags]
+Changes your current user flags, where:
+  * flags - changes to apply, in the usual flag letters preceded by +/- format.
+Valid user flags are:
+  +v NOAUTOVHOST - Disable auto setting the user vhost when authing
+  +w WELCOME     - Hide the welcome message when the user join any channel (same effect
+                   as setting +w in all the channel CHANLEVs the user is in)
+End of help.
