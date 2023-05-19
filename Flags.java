@@ -31,8 +31,8 @@ abstract class Flags {
      *                     - access to any CHANLEV/CHANFLAGS/USERFLAGS information of any user,
      *                     - access to CHANLIST/USERLIST/SERVERLIST commands,
      *                     - access to GLINE/GZLINE/KILL commands,
-     *                     - access to SUSPEND/UNSUSPEND commands (except to +a uflag users),
-     *                     - modify CHANFLAGS of any channel,
+     *                     - access to SUSPEND/UNSUSPEND commands (except to +a uflag carriers),
+     *                     - modify CHANFLAGS of any channel (except for suspended channels),
      *                     - modify USERFLAGS of any user (except +az uflag users), except personal flags,
      *                     - modify CHANLEV of any channel (except +az uflag users), except personal flags.
      * +p PROTECT       :: TBD
@@ -43,11 +43,11 @@ abstract class Flags {
      * +v NOAUTOVHOST   :: Disable auto setting the user vhost when authing
      * +w WELCOME       :: Hide the welcome message when the user join any channel (same effect
      *                     as setting +w in all the channel CHANLEVs the user is in)
-     * +z SUSPENDED     :: Suspends and freezes the user account. Once set,
+     * +z SUSPENDED     :: Marks the user as suspended. At that moment the user account is frozen:
      *                     - it is not possible to auth with the account,
      *                     - it is not possible to perform USERFLAGS/CHANLEV modifications,
-     *                     - the user does not appear inside the CHANLEV of a channel,
-     *                     - the user WHOIS and CHANLEV will return an account-not-found error (except if performing user is +a or +o or +q).
+     *                     - the user does not appear inside the CHANLEV of any channel,
+     *                     - the user WHOIS and CHANLEV will return an account-not-found error (except if performed by a staff member).
      * 
      * Note: some flags cannot be set through USERFLAGS but with specific commands: +g, +z.
      */
@@ -159,9 +159,9 @@ abstract class Flags {
      * +v VOICEALL      :: Automatically voices all the users that join the channel whether they are in the channel CHANLEV or not.
      *                     Users with chanlev flag +u are not voiced.
      * +w WELCOME       :: Send the welcome notice to the users joining the channel.
-     * +z SUSPENDED     :: Suspends and freezes the channel. Once set,
+     * +z SUSPENDED     :: Marks the channel as suspended and frozen. Once set,
      *                     - the bot will leave the channel,
-     *                     - it is not possible to perform CHANFLAGS/CHANLEV modifications,
+     *                     - it is not possible to perform modifications inside the channel parameters (CHANLEV/CHANFLAGS/SETTOPIC...),
      *                     - the channel will not appear inside an user WHOIS,
      *                     - the CHANFLAGS and CHANLEV will return a channel-not-found error (except if performing user is +a or +o or +q),
      *                     - it is not possible to perform a REQUESTBOT nor DROP on a suspended channel.
