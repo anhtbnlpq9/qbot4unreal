@@ -386,7 +386,7 @@ public class CService {
                 
                 fromNick.getUserAccount().setUserChanlev(userChanlev);
 
-                if (Flags.isUserNoAutoVhost(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+                if (Flags.isUserAutoVhost(fromNick.getUserAccount().getUserAccountFlags()) == true) {
                     protocol.chgHost(client, fromNick, fromNick.getUserAccount().getUserAccountName());
                 }
 

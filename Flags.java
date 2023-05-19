@@ -79,7 +79,7 @@ abstract class Flags {
     //private static final Integer   UFLAG_SPARE_s       = 0x00000080; // +s
     //private static final Integer   UFLAG_SPARE_t       = 0x00000040; // +t
     //private static final Integer   UFLAG_SPARE_u       = 0x00000020; // +u
-    private static final Integer   UFLAG_NOAUTOVHOST   = 0x00000010; // +v
+    private static final Integer   UFLAG_AUTOVHOST     = 0x00000010; // +v
     private static final Integer   UFLAG_WELCOME       = 0x00000008; // +w
     //private static final Integer   UFLAG_SPARE_x       = 0x00000004; // +x
     //private static final Integer   UFLAG_SPARE_y       = 0x00000002; // +y
@@ -88,7 +88,7 @@ abstract class Flags {
     private static final Integer   UFLAG_ALL           = 0xffffffff;
 
     // User control
-    private static final Integer   UFLAGS_USERCON      = (UFLAG_WELCOME | UFLAG_NOAUTOVHOST);
+    private static final Integer   UFLAGS_USERCON      = (UFLAG_WELCOME | UFLAG_AUTOVHOST);
 
     // Oper control
     private static final Integer   UFLAGS_OPERCON      = ( UFLAG_NOAUTHLIMIT | UFLAG_PROTECT | UFLAG_STAFF);
@@ -101,6 +101,10 @@ abstract class Flags {
     private static final Integer   UFLAG_STAFF_PRIV    = (UFLAG_STAFF | UFLAG_OPER | UFLAG_ADMIN );
     private static final Integer   UFLAG_OPER_PRIV     = (UFLAG_OPER | UFLAG_ADMIN );
     private static final Integer   UFLAG_ADMIN_PRIV    = (UFLAG_ADMIN );
+    
+    private static final Integer   UFLAGS_PUBLIC       = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
+
+    private static final Integer   UFLAGS_NEW_ACCOUNT  = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
 
     private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE ); /* flags non-settable through USERFLAGS */
 
@@ -116,7 +120,7 @@ abstract class Flags {
         entry("o",   UFLAG_OPER),
         entry("p",   UFLAG_PROTECT),
         entry("q",   UFLAG_STAFF),
-        entry("v",   UFLAG_NOAUTOVHOST),
+        entry("v",   UFLAG_AUTOVHOST),
         entry("w",   UFLAG_WELCOME),
         entry("z",   UFLAG_SUSPENDED)
     );
@@ -132,7 +136,7 @@ abstract class Flags {
         entry(UFLAG_OPER,           "o"),
         entry(UFLAG_PROTECT,        "p"),
         entry(UFLAG_STAFF,          "q"),
-        entry(UFLAG_NOAUTOVHOST,    "v"),
+        entry(UFLAG_AUTOVHOST,    "v"),
         entry(UFLAG_WELCOME,        "w"),
         entry(UFLAG_SUSPENDED,      "z")
     );
@@ -1428,9 +1432,19 @@ abstract class Flags {
         catch (Exception e) { throw new Exception("The channel flag does not exists."); }
     }
 
+
     /*
      * Userflags-related methods
+     * =========================
      */
+
+    /**
+     * Returns the default flags for new user accounts
+     * @return default user flags
+     */
+    public static Integer getDefaultUserFlags() {
+        return UFLAGS_NEW_ACCOUNT;
+    }
 
     /**
      * Strips the unknown flags from the provided list
@@ -1605,8 +1619,8 @@ abstract class Flags {
      * @param userFlags use flags
      * @return true or false
      */
-    public static Boolean isUserNoAutoVhost(Integer userFlags) {
-        if ( (userFlags & UFLAG_NOAUTOVHOST) == 0) {
+    public static Boolean isUserAutoVhost(Integer userFlags) {
+        if ( (userFlags & UFLAG_AUTOVHOST) == 0) {
             return false;
         }
         else return true; 
@@ -1707,8 +1721,8 @@ abstract class Flags {
      * @param userFlags user flags
      * @return Resulting user flags
      */
-    public static Integer setUserNoAutoVhost(Integer userFlags) {
-        return (userFlags | UFLAG_NOAUTOVHOST); 
+    public static Integer setUserAutoVhost(Integer userFlags) {
+        return (userFlags | UFLAG_AUTOVHOST); 
     }
 
     /**
@@ -1770,8 +1784,8 @@ abstract class Flags {
      * @param userFlags user flags
      * @return Resulting user flags
      */
-    public static Integer clearUserNoAutoVhost(Integer userFlags) {
-        return (userFlags & ~UFLAG_NOAUTOVHOST); 
+    public static Integer clearUserAutoVhost(Integer userFlags) {
+        return (userFlags & ~UFLAG_AUTOVHOST); 
     }
 
     /**
@@ -1806,7 +1820,6 @@ abstract class Flags {
         }
         catch (Exception e) { return ""; }
     }
-
 
     /**
      * Converts a flags integer value to their textual format
