@@ -493,6 +493,9 @@ public class CService {
         else if (str.toUpperCase().startsWith("CHANLEV ")) { /* CHANLEV <channel> [<user> [<change>]] */
             cServeChanlev(fromNickRaw, str);
         }
+        else if (str.toUpperCase().startsWith("USERFLAGS")) { /* USERFLAGS [flags] */
+            cServeUserflags(fromNickRaw, str);
+        }
 
             String[] command = str.split(" ",5);
             String userNick = "";
@@ -754,82 +757,83 @@ public class CService {
     }
 
             userChanlevFilter = "";
+    public void cServeUserflags(UserNode fromNick, String str) {
+        String[] command = str.split(" ",5);
+        String flagsModRaw = "";
 
-            if (fromNick.getUserAuthed() == false) {
-                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
-                return;
-            }
+        HashMap<String, String> flagsModStr = new HashMap<String, String>(); 
+        HashMap<String, Integer> flagsModInt = new HashMap<String, Integer>(); 
 
-            try { flagsModRaw = command[1]; }
-            catch (ArrayIndexOutOfBoundsException e) { 
-                if (fromNick.getUserAccount().getUserAccountFlags() == 0) { 
-                    protocol.sendNotice(client, myUserNode, fromNick, "User flags for " + fromNick.getUserAccount().getUserAccountName() + ": (none)"); 
-                }
-                else protocol.sendNotice(client, myUserNode, fromNick, "User flags for " + fromNick.getUserAccount().getUserAccountName() + ": +" + Flags.flagsIntToChars("userflags", fromNick.getUserAccount().getUserAccountFlags()));
-                return;
-            }
-
-            flagsModStr = Flags.parseFlags(flagsModRaw);
-
-            flagsModInt.put("+", Flags.flagsCharsToInt("userflags", flagsModStr.get("+")));
-            flagsModInt.put("-", Flags.flagsCharsToInt("userflags", flagsModStr.get("-")));
-            flagsModInt.put("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
-
-            /* Stripping of unknown flags */
-            flagsModInt.replace("+", Flags.stripUnknownUserFlags(flagsModInt.get("+")));
-            flagsModInt.replace("-", Flags.stripUnknownUserFlags(flagsModInt.get("-")));
-            flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
-
-            /* Stripping only admin control flags if the user has admin privileges */
-            if (Flags.hasUserAdminPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
-                flagsModInt.replace("+", Flags.stripUserAdminConFlags(flagsModInt.get("+")));
-                flagsModInt.replace("-", Flags.stripUserAdminConFlags(flagsModInt.get("-")));
-                flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
-
-            }
-
-            /* Stripping only admin control flags if the user has oper privileges */
-            else if (Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
-                flagsModInt.replace("+", Flags.stripUserOperConFlags(flagsModInt.get("+")));
-                flagsModInt.replace("-", Flags.stripUserOperConFlags(flagsModInt.get("-")));
-                flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
-            }
-
-            /* Stripping only admin control flags if the user has no privileges */
-            else {
-                flagsModInt.replace("+", Flags.stripUserUserConFlags(flagsModInt.get("+")));
-                flagsModInt.replace("-", Flags.stripUserUserConFlags(flagsModInt.get("-")));
-                flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
-            }
-
-            if (flagsModInt.get("combined") == 0) {
-                protocol.sendNotice(client, myUserNode, fromNick, "You may have specified an invalid flags combination. Consult HELP USERFLAGS for valid flags."); 
-                return; 
-            }
-
-            try {
-                Integer userCurFlags = fromNick.getUserAccount().getUserAccountFlags();
-                Integer userNewFlags = Flags.applyFlagsFromInt("userflags", userCurFlags, flagsModInt);
-
-                sqliteDb.setUserFlags(fromNick.getUserAccount(), userNewFlags);
-                fromNick.getUserAccount().setUserAccountFlags(userNewFlags);
-
-                String userNewFlagsStr = "";
-                if (userNewFlags != 0) { userNewFlagsStr = "+" + Flags.flagsIntToChars("userflags", userNewFlags); }
-                else { userNewFlagsStr = "(none)"; }
-
-                protocol.sendNotice(client, myUserNode, fromNick, "Done.");
-                protocol.sendNotice(client, myUserNode, fromNick, "User flags for " + fromNick.getUserAccount().getUserAccountName() + " : " + userNewFlagsStr + ".");
-            }
-            catch (Exception e) {
-                e.printStackTrace(); 
-                protocol.sendNotice(client, myUserNode, fromNick, "Error setting userflags."); 
-                return; 
-            }            
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
         }
 
-        else { // Unknown command
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
+        try { flagsModRaw = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            if (fromNick.getUserAccount().getUserAccountFlags() == 0) { 
+                protocol.sendNotice(client, myUserNode, fromNick, "User flags for " + fromNick.getUserAccount().getUserAccountName() + ": (none)"); 
+            }
+            else protocol.sendNotice(client, myUserNode, fromNick, "User flags for " + fromNick.getUserAccount().getUserAccountName() + ": +" + Flags.flagsIntToChars("userflags", fromNick.getUserAccount().getUserAccountFlags()));
+            return;
+        }
+
+        flagsModStr = Flags.parseFlags(flagsModRaw);
+
+        flagsModInt.put("+", Flags.flagsCharsToInt("userflags", flagsModStr.get("+")));
+        flagsModInt.put("-", Flags.flagsCharsToInt("userflags", flagsModStr.get("-")));
+        flagsModInt.put("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
+
+        /* Stripping of unknown flags */
+        flagsModInt.replace("+", Flags.stripUnknownUserFlags(flagsModInt.get("+")));
+        flagsModInt.replace("-", Flags.stripUnknownUserFlags(flagsModInt.get("-")));
+        flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
+
+        /* Stripping only admin control flags if the user has admin privileges */
+        if (Flags.hasUserAdminPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+            flagsModInt.replace("+", Flags.stripUserAdminConFlags(flagsModInt.get("+")));
+            flagsModInt.replace("-", Flags.stripUserAdminConFlags(flagsModInt.get("-")));
+            flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
+
+        }
+
+        /* Stripping only admin control flags if the user has oper privileges */
+        else if (Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+            flagsModInt.replace("+", Flags.stripUserOperConFlags(flagsModInt.get("+")));
+            flagsModInt.replace("-", Flags.stripUserOperConFlags(flagsModInt.get("-")));
+            flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
+        }
+
+        /* Stripping only admin control flags if the user has no privileges */
+        else {
+            flagsModInt.replace("+", Flags.stripUserUserConFlags(flagsModInt.get("+")));
+            flagsModInt.replace("-", Flags.stripUserUserConFlags(flagsModInt.get("-")));
+            flagsModInt.replace("combined", (flagsModInt.get("+") | flagsModInt.get("-")));
+        }
+
+        if (flagsModInt.get("combined") == 0) {
+            protocol.sendNotice(client, myUserNode, fromNick, "You may have specified an invalid flags combination. Consult HELP USERFLAGS for valid flags."); 
+            return; 
+        }
+
+        try {
+            Integer userCurFlags = fromNick.getUserAccount().getUserAccountFlags();
+            Integer userNewFlags = Flags.applyFlagsFromInt("userflags", userCurFlags, flagsModInt);
+
+            sqliteDb.setUserFlags(fromNick.getUserAccount(), userNewFlags);
+            fromNick.getUserAccount().setUserAccountFlags(userNewFlags);
+
+            String userNewFlagsStr = "";
+            if (userNewFlags != 0) { userNewFlagsStr = "+" + Flags.flagsIntToChars("userflags", userNewFlags); }
+            else { userNewFlagsStr = "(none)"; }
+
+            protocol.sendNotice(client, myUserNode, fromNick, "Done.");
+            protocol.sendNotice(client, myUserNode, fromNick, "User flags for " + fromNick.getUserAccount().getUserAccountName() + " : " + userNewFlagsStr + ".");
+        }
+        catch (Exception e) {
+            e.printStackTrace(); 
+            protocol.sendNotice(client, myUserNode, fromNick, "Error setting userflags."); 
+            return; 
         }
         //return "";
     }
