@@ -38,6 +38,7 @@ public class UserAccount {
      * @param userFlags user flags
      * @param userAccountEmail user account email
      * @param userAccountCertFP user account certfp
+     * @param userAccountRegTS user account registration TS
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP, Long userAccountRegTS) {
         this.sqliteDb = sqliteDb;
@@ -54,6 +55,42 @@ public class UserAccount {
         catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error: could not retrieve chanlev");
+        }
+
+        try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve tokens");
+        }
+    }
+
+    /**
+     * Constructor for UserAccount
+     * @param sqliteDb database
+     * @param userAccountName user account name
+     * @param userFlags user flags
+     * @param userAccountEmail user account email
+     * @param userAccountRegTS user account registration TS
+     */
+    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userFlags, String userAccountEmail, Long userAccountRegTS) {
+        this.sqliteDb = sqliteDb;
+        this.userAccountName = userAccountName;
+        this.userAccountFlags = userFlags;
+        this.userAccountEmail = userAccountEmail;
+        this.userAccountRegTS = userAccountRegTS;
+
+        try {
+            this.userChanlev = sqliteDb.getUserChanlev(userAccountName); 
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve chanlev");
+        }
+
+        try { this.userAccountId = sqliteDb.getId(userAccountName); }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: could not retrieve user id");
         }
 
         try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }

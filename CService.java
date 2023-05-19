@@ -312,15 +312,16 @@ public class CService {
             }
             catch (Exception e) { e.printStackTrace();}
 
-            try { 
-                sqliteDb.addUser(fromNick.getUserNick(), email, pwHash, pwSalt, Instant.now().getEpochSecond()); 
+            try {
+                sqliteDb.addUser(fromNick.getUserNick(), email, pwHash, pwSalt, Instant.now().getEpochSecond(), Flags.getDefaultUserFlags()); 
+                UserAccount newUserAccount = new UserAccount(sqliteDb, fromNick.getUserNick(), Flags.getDefaultUserFlags(), email, Instant.now().getEpochSecond());
+                protocol.getRegUserList().put(fromNick.getUserNick(), newUserAccount);
             }
             catch (Exception e) { 
                 protocol.sendNotice(client, myUserNode, fromNick, "An account with that name already exists."); 
                 return;
             }
-
-            protocol.sendNotice(client, myUserNode, fromNick, "Your account has been created with username \"" + fromNick.getUserNick() + "\". You can now auth using AUTH " + fromNick.getUserNick() + " <password>");
+            protocol.sendNotice(client, myUserNode, fromNick, "Your account has been created with username \"" + fromNick.getUserNick() + "\" but you are not authed. You can now auth using AUTH " + fromNick.getUserNick() + " <password>");
 
         }
         else if (str.toUpperCase().startsWith("AUTH ")) { // AUTH <username> <password>

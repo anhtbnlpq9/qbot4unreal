@@ -192,7 +192,7 @@ public class SqliteDb {
      * @param salt user salt (base64)
      * @throws Exception
      */
-    public void addUser(String username, String email, String passwordHash, String salt, Long regTS) throws Exception {
+    public void addUser(String username, String email, String passwordHash, String salt, Long regTS, Integer userflags) throws Exception {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
@@ -202,8 +202,6 @@ public class SqliteDb {
             statement = connection.createStatement();
             sql = "SELECT name FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
-
-            
         }
         catch (Exception e) { e.printStackTrace(); }
 
@@ -213,7 +211,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "INSERT INTO users (name, email, password, salt, regTS) VALUES ('" + username + "', '" + email + "', '" + passwordHash + "', '" + salt + "', '" + regTS + "');";
+            sql = "INSERT INTO users (name, email, password, salt, regTS, userflags) VALUES ('" + username + "', '" + email + "', '" + passwordHash + "', '" + salt + "', '" + regTS + "', '" + userflags + "');";
             statement.executeUpdate(sql);
             statement.close();
             
@@ -657,6 +655,28 @@ public class SqliteDb {
         } 
         statement.close();
         return userCertFP;
+    }
+
+    public Integer getId(String username) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Integer userId           = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            userId = resultSet.getInt("uid");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + username + " userflags.");
+        } 
+        statement.close();
+        return userId;
     }
 
     /**
