@@ -2,6 +2,9 @@
 
 ## The basic stuff
 
+### General
+- [ ] conf REHASH
+
 ### Accounts
 - [X] account registration
 - [X] account auth with plain user/pass
@@ -9,6 +12,8 @@
 - [ ] account deletion
 - [ ] account editing
 - [ ] nick ownership
+- [ ] auth history
+- [ ] account expiry
 
 ### Channels
 - [X] channel registration
@@ -17,17 +22,18 @@
 - [ ] channel editing
 - [ ] MLOCK
 - [ ] bans, excepts, invites
+- [ ] chanlev history
+- [ ] channel expiry
 
 ## Advanced stuff
 
 ### Accounts
-- [ ] multi user auth
+- [X] multi user auth
 - [ ] edit history (email, password)
-- [ ] auth history
 - [ ] account auth with challenge auth
 - [ ] SASL PLAIN
 - [ ] SASL EXTERNAL
-- [ ] user auto vhost on auth
+- [X] user auto vhost on auth
 
 
 ### Channels
@@ -40,6 +46,8 @@
 
 
 ## Original Q bot commands
+- [ ] ACCOUNTHISTORY
+- [ ] ADDCHAN
 - [ ] ADDUSER
 - [X] AUTH
 - [ ] AUTHHISTORY
@@ -50,31 +58,51 @@
 - [ ] BANTIMER
 - [ ] CHANFLAGS
 - [X] CHANLEV
+- [ ] CHANLEVHISTORY
 - [ ] CHANMODE
+- [ ] CHANNELCOMMENT
 - [ ] CHANOPHISTORY
 - [ ] CHANSTAT
+- [ ] CHANTYPE
 - [ ] CLEARCHAN
 - [ ] CLEARTOPIC
+- [ ] DELCHAN
+- [ ] DELUSER
 - [ ] DEOPALL
 - [ ] DEVOICEALL
+- [ ] DIE
 - [ ] EMAIL
 - [ ] GIVEOWNER
 - [ ] HELLO
 - [X] HELP
 - [ ] INVITE
+- [ ] LISTFLAGS
 - [ ] NEWPASS
 - [ ] OP
 - [ ] PERMBAN
 - [ ] RECOVER
+- [ ] REJOIN
+- [ ] REHASH
+- [ ] RENCHAN
 - [ ] REMOVEUSER
 - [ ] REQUESTOWNER
+- [ ] RESTART
 - [ ] SETTOPIC
+- [ ] SETUSERFLAGS => maybe rename to SAFLAGS
+- [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD
 - [X] SHOWCOMMANDS
+- [ ] SUSPENDCHAN
+- [ ] SUSPENDCHANLIST
+- [ ] SUSPENDUSER
+- [ ] SUSPENDUSERLIST
 - [ ] TEMPBAN
 - [ ] UNBANALL
 - [ ] UNBANMASK
 - [ ] UNBANME
-- [ ] USERFLAGS
+- [ ] UNSUSPENDCHAN
+- [ ] UNSUSPENDUSER
+- [ ] USERCOMMENT
+- [X] USERFLAGS
 - [ ] USERS
 - [X] VERSION
 - [ ] VOICE
@@ -89,3 +117,6 @@
 - [X] REQUESTBOT
 - [X] SERVERLIST
 - [X] USERLIST
+- [ ] HALFOP
+- [ ] ADMINMODE
+- [ ] OWNERMODE
