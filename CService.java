@@ -542,7 +542,7 @@ public class CService {
 
             String spaceFill = " ";
 
-            var wrapper = new Object(){ String buffer = ""; };
+            var wrapper = new Object(){ String buffer = ""; String buffer2 = ""; };
             whoisUserAccount.getUserLogins().forEach( (userNode) -> {
                 wrapper.buffer += userNode.getUserNick() + " ";
             });
@@ -559,19 +559,18 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "User ID        : " + whoisUserAccount.getUserAccountId());
 
             if ( (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) || (fromNick.getUserAccount() == whoisUserAccount) ) {
-                wrapper.buffer = "";
-                if (whoisUserAccount.getUserAccountFlags() == 0) { wrapper.buffer = "+" + Flags.flagsIntToChars("userflags", whoisUserAccount.getUserAccountFlags()); }
-                else wrapper.buffer = "(none)";
+                if (whoisUserAccount.getUserAccountFlags() != 0) { wrapper.buffer2 = "+" + Flags.flagsIntToChars("userflags", whoisUserAccount.getUserAccountFlags()); }
+                else wrapper.buffer2 = "(none)";
 
-                protocol.sendNotice(client, myUserNode, fromNick, "User flags     : " + wrapper.buffer);
+                protocol.sendNotice(client, myUserNode, fromNick, "User flags     : " + wrapper.buffer2);
             }
-
             protocol.sendNotice(client, myUserNode, fromNick, "Account users  : " + wrapper.buffer);
+
             if ( (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) || (fromNick.getUserAccount() == whoisUserAccount) ) {
                 SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
                 jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-                Date date = new Date((fromNick.getUserAccount().getRegTS())*1000L);
+                Date date = new Date((whoisUserAccount.getRegTS())*1000L);
                 String accountCreationTS = jdf.format(date);
                 protocol.sendNotice(client, myUserNode, fromNick, "User created   : " + accountCreationTS);
                 //protocol.sendNotice(client, myUserNode, fromNick, "Last auth      : ");
