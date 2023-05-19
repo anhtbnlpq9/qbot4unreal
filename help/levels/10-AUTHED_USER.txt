@@ -35,7 +35,7 @@ SHOWCOMMANDS       Lists available commands.
 //UNBANALL           Removes all bans from a channel.
 //UNBANMASK          Removes bans matching a particular mask from a channel.
 //UNBANME            Removes any bans affecting you from a channel.
-//USERFLAGS          Shows or changes user flags.
+USERFLAGS          Shows or changes user flags.
 //USERS              Displays a list of users on the channel.
 VERSION            Show Version.
 //VOICE              Voices you or other users on channel(s).
