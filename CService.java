@@ -371,6 +371,10 @@ public class CService {
             }
             catch (Exception e) { e.printStackTrace(); }
 
+            /* Delay auth to slow down brute force attack */
+            try { Thread.sleep(3000); }
+            catch (Exception e) { e.printStackTrace(); }
+
             if (userToAuth.get("password").equals(pwHash)) {
 
                 UserAccount userAccount = protocol.getRegUserAccount(userToAuth.get("name"));
