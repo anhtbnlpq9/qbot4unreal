@@ -50,8 +50,6 @@ abstract class Flags {
      * Note: some flags cannot be set through USERFLAGS but with specific commands: +g, +z.
      */
 
-    private static final String    UFLAGS_LIST         = "aglopqw"; /* List of flags settable with USERFLAGS */
-
     //private static final Integer   UFLAG_SPARE_A       = 0x80000000; // +A
     //private static final Integer   UFLAG_SPARE_B       = 0x40000000; // +B
     //private static final Integer   UFLAG_SPARE_C       = 0x20000000; // +C
@@ -91,16 +89,18 @@ abstract class Flags {
     private static final Integer   UFLAGS_USERCON      = (UFLAG_WELCOME);
 
     // Oper control
-    private static final Integer   UFLAGS_OPERCON      = (UFLAG_GLINE | UFLAG_NOAUTHLIMIT | UFLAG_PROTECT | UFLAG_STAFF | UFLAG_WELCOME | UFLAG_SUSPENDED);
+    private static final Integer   UFLAGS_OPERCON      = ( UFLAG_NOAUTHLIMIT | UFLAG_PROTECT | UFLAG_STAFF);
 
     // Admin control
-    private static final Integer   UFLAGS_ADMINCON     = (UFLAG_ADMIN | UFLAG_OPER | UFLAG_ALL);
+    private static final Integer   UFLAGS_ADMINCON     = (UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON);
 
-    private static final Integer   UFLAG_STAFF_PRIV     = (UFLAG_STAFF | UFLAG_OPER | UFLAG_ADMIN );
+    private static final Integer   UFLAGS_ALLOWED      = (UFLAGS_USERCON | UFLAGS_OPERCON | UFLAGS_ADMINCON);
+
+    private static final Integer   UFLAG_STAFF_PRIV    = (UFLAG_STAFF | UFLAG_OPER | UFLAG_ADMIN );
     private static final Integer   UFLAG_OPER_PRIV     = (UFLAG_OPER | UFLAG_ADMIN );
-    private static final Integer   UFLAG_ADMIN_PRIV     = (UFLAG_ADMIN );
+    private static final Integer   UFLAG_ADMIN_PRIV    = (UFLAG_ADMIN );
 
-    private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED ); /* flags non-settable through USERFLAGS */
+    private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE ); /* flags non-settable through USERFLAGS */
 
 
 
@@ -1437,11 +1437,12 @@ abstract class Flags {
      */
 
     /**
-     * Returns the allowed user flags list
-     * @return Allowed user flags list
+     * Strips the unknown flags from the provided list
+     * @param userFlags user flags
+     * @return stripped user flags
      */
-    public static String getAllowedUserFlags() {
-        return UFLAGS_LIST;
+    public static Integer stripUnknownUserFlags(Integer userFlags) {
+        return (userFlags & UFLAGS_ALLOWED);
     }
 
     /**
@@ -1478,6 +1479,33 @@ abstract class Flags {
             return false;
         }
         else return true;
+    }
+
+    /**
+     * Strips requested userflags of non user-control flags
+     * @param userFlags
+     * @return stripped flags
+     */
+    public static Integer stripUserUserConFlags(Integer userFlags) {
+        return (userFlags & UFLAGS_USERCON);
+    }
+
+    /**
+     * Strips requested userflags of non oper-control flags
+     * @param userFlags
+     * @return stripped flags
+     */
+    public static Integer stripUserOperConFlags(Integer userFlags) {
+        return (userFlags & UFLAGS_OPERCON);
+    }
+
+    /**
+     * Strips requested userflags of non admin-control flags
+     * @param userFlags
+     * @return stripped flags
+     */
+    public static Integer stripUserAdminConFlags(Integer userFlags) {
+        return (userFlags & UFLAGS_ADMINCON);
     }
 
     /**
