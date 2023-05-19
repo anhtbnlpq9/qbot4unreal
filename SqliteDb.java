@@ -68,7 +68,7 @@ public class SqliteDb {
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name, uid, userFlags, email, certfp FROM users;";
+            sql = "SELECT * FROM users;";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 HashMap<String, Object> accountProperties = new HashMap<String, Object>();
@@ -78,6 +78,7 @@ public class SqliteDb {
                 accountProperties.put("email",     resultSet.getString("email"));
                 accountProperties.put("certfp",    resultSet.getString("certfp"));
                 accountProperties.put("name",      resultSet.getString("name"));
+                accountProperties.put("regTS",      resultSet.getLong("regTS"));
                 regUsers.put(resultSet.getString("name"), accountProperties);
             }
             statement.close();
@@ -191,7 +192,7 @@ public class SqliteDb {
      * @param salt user salt (base64)
      * @throws Exception
      */
-    public void addUser(String username, String email, String passwordHash, String salt) throws Exception {
+    public void addUser(String username, String email, String passwordHash, String salt, Long regTS) throws Exception {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
@@ -212,8 +213,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "INSERT INTO users (name, email, password, salt) VALUES ('" + username + "', '" + email + "', '" + passwordHash + "', '" + salt + "');";
-            //System.out.println(sql);
+            sql = "INSERT INTO users (name, email, password, salt, regTS) VALUES ('" + username + "', '" + email + "', '" + passwordHash + "', '" + salt + "', '" + regTS + "');";
             statement.executeUpdate(sql);
             statement.close();
             
@@ -601,6 +601,34 @@ public class SqliteDb {
         } 
         statement.close();
         return userEmail;
+    }
+
+    /**
+     * Returns the account registration TS
+     * @param username user name
+     * @return user account reg TS
+     * @throws Exception
+     */
+    public Long getUserRegTS(String username) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Long regTS               = 0L;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT regTS FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            regTS = resultSet.getLong("regTS");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + username + " userflags.");
+        } 
+        statement.close();
+        return regTS;
     }
 
     /**

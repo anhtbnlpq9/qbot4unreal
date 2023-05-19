@@ -14,6 +14,7 @@ public class UserAccount {
     private String   userAccountCertFP;
     private Integer  userAccountFlags;
     private String   userAccountEmail;
+    private Long     userAccountRegTS;
 
     /**
      * HS of the UserNodes loggued with the UserAccount
@@ -155,6 +156,10 @@ public class UserAccount {
      */
     public Integer getUserAccountId() {
         return this.userAccountId;
+    }
+
+    public Long getRegTS() {
+        return this.userAccountRegTS;
     }
 
     /**

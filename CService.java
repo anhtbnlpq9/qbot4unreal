@@ -376,7 +376,7 @@ public class CService {
             catch (Exception e) { e.printStackTrace();}
 
             try { 
-                sqliteDb.addUser(fromNick.getUserNick(), email, pwHash, pwSalt); 
+                sqliteDb.addUser(fromNick.getUserNick(), email, pwHash, pwSalt, Instant.now().getEpochSecond()); 
             }
             catch (Exception e) { 
                 protocol.sendNotice(client, myUserNode, fromNick, "An account with that name already exists."); 
@@ -589,7 +589,13 @@ public class CService {
             chanlevModStr = Flags.parseFlags(chanlevMod);
             chanlevModInt.put("+", Flags.flagsCharsToInt("chanlev", chanlevModStr.get("+")));
             chanlevModInt.put("-", Flags.flagsCharsToInt("chanlev", chanlevModStr.get("-")));
+            if ( (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) || (fromNick.getUserAccount() == whoisUserAccount) ) {
+                SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+                jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
+                Date date = new Date((fromNick.getUserAccount().getRegTS())*1000L);
+                String accountCreationTS = jdf.format(date);
+                protocol.sendNotice(client, myUserNode, fromNick, "User created   : " + accountCreationTS);
 
 
             if (userNick.startsWith("#")) { // direct access to account
