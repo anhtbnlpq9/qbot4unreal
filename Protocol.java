@@ -699,6 +699,25 @@ public class Protocol extends Exception {
 
             }
 
+            //cservice.cServeHandleConnect(user);
+
+
+            /* Trying to authenticate the user if it was alreadu authed (netjoin) */
+            UserAccount accountToReauth = null;
+            //System.out.println("BFA Looking up user in token list.");
+            try {
+                //System.out.println("BFC try: " + user.getUserNick() + " / " + user.getUserTS());
+                accountToReauth = sqliteDb.getUserLoginToken(user);
+            }
+            catch (Exception e) {
+    
+            }
+            if (accountToReauth != null) {
+                //System.out.println("BFB account found: " + accountToReauth.getUserAccountName());
+                user.setUserAuthed(true);
+                user.setUserAccount(accountToReauth);
+            }
+
 
             
             
