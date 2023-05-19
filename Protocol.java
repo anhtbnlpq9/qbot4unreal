@@ -25,13 +25,6 @@ public class Protocol extends Exception {
     String myPeerServerId;
     Long unixTime;
     String foundNickLookUpCi;
-    //UserAccount userAccountFound = null;
-
-    /**
-     * Class constructor
-     */
-    public Protocol() {
-    }  
 
     /**
      * Class constructor
@@ -44,9 +37,8 @@ public class Protocol extends Exception {
         this.sqliteDb = sqliteDb;
         sqliteDb.setProtocol(this);
 
-        //this.userAccounts = 
         sqliteDb.getRegUsers().forEach( (username, userHM) -> {
-            this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (String) userHM.get("certfp")));
+            this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (String) userHM.get("certfp"), (Long) userHM.get("regTS")));
             //System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
         });
 
@@ -425,7 +417,7 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // XXX: will not work because needs SVSMODE
+    public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getUserUniq();
         String target = toTarget.getUserNick();
         setMode(client, who, target, modes, parameters);
@@ -440,7 +432,7 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // XXX: will not work because needs SVSMODE
+    public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getServerId();
         String target = toTarget.getUserNick();
         setMode(client, who, target, modes, parameters);
@@ -589,7 +581,6 @@ public class Protocol extends Exception {
             //     NETINFO xx        unixTime    config.protocolversion *                                                               0 0 0 :config.netName
 
             String[] netinfoParam = raw.split(" ", 20);
-            //command = (command[1]).split(" ", 4);
 
             unixTime = Instant.now().getEpochSecond();
 
@@ -663,7 +654,7 @@ public class Protocol extends Exception {
             serverList.get(config.getServerId()).setServerPeerResponded(true);
         }
         else if (command[1].equals("UID")) {
-            // :XXXX UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
+            // :AAAAA UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
 
             fromEnt = (command[0].split(":"))[1];
             command = command[2].split(" ", 12);
@@ -698,9 +689,6 @@ public class Protocol extends Exception {
                 user.setUserModes(command[7]);                      // modes
 
             }
-
-            //cservice.cServeHandleConnect(user);
-
 
             /* Trying to authenticate the user if it was alreadu authed (netjoin) */
             UserAccount accountToReauth = null;
@@ -869,7 +857,6 @@ public class Protocol extends Exception {
             chanModeRawWithParams    = chanModeRaw.replaceAll("["+ networkChanmodesWithOutParams + "]", "");   // Contains only channel modes used with parameter
             chanModeRawWithOutParams = chanModeRaw.replaceAll("["+ networkChanmodesWithParams + "]", "");      // Contains only channel modes used withOut parameter
 
-            //chanMode                 = chanModeRaw.toCharArray();                                              // Contains all the channel ['m','o','d','e','s']
             chanModeWithParams       = chanModeRawWithParams.toCharArray();                                    // Contains only channel ['m','o','d','e','s'] used with parameter
             chanModeWithOutParams    = chanModeRawWithOutParams.toCharArray();                                 // Contains only channel ['m','o','d','e','s'] used withOut parameter
 
@@ -957,13 +944,7 @@ public class Protocol extends Exception {
                 }
             }
         
-            //chanUserMode.forEach( (user, mode) -> { System.out.println("BDA chan=" + channelName + " user=" + user + " -> mode=" + mode);  } );
-
             chanUserMode.remove("");
-
-            //chanUserCount = chanUserMode.size();
-
-            //chanUserMode.forEach( (key, value) -> { System.out.println("BBN chanUserMode chan=" + channelName + " " + userList.get(key).getUserNick() + " -> " + value); });
 
             if (chanUserMode.size() == 0) { chanUserCount = 0; }
             else { chanUserCount = chanUserMode.size(); }
@@ -1010,7 +991,7 @@ public class Protocol extends Exception {
         }
         else if (command[1].equals("MODE")) {
             // :5PX     MODE  #newChan      +ntCT         1683480448
-            // :XXXXXXX MODE  #Civilization +o AnhTay
+            // :AAAAAAA MODE  #Civilization +o AnhTay
 
             String[] modeList      = command[2].split(" ", 128);
 
@@ -1240,8 +1221,6 @@ public class Protocol extends Exception {
 
             fromEnt = (command[0].split(":"))[1];
             
-            //String oldNick = userList.get(fromEnt).getUserNick();
-            //userList.get(fromEnt).setOldNick(oldNick);
             userNickSidLookup.remove(userList.get(fromEnt).getUserNick());
             userNickSidLookup.put((command[2].split(" "))[0], fromEnt);
 

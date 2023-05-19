@@ -28,10 +28,6 @@ public class ServerNode {
     private Boolean serverIsPeer = false;
     private Boolean serverIsEOS  = false;
 
-    public ServerNode() {
-        
-    }
-
     public ServerNode(String serverName, String serverDistance, String serverId, String serverDescription) {
         this.serverName = serverName;
         this.serverDistance = serverDistance;

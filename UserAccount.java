@@ -29,49 +29,6 @@ public class UserAccount {
 
     private HashMap<String, Integer> userChanlev = null;// = new HashMap<String, Integer>();
 
-
-    /**
-     * Class constructor
-     */
-    public UserAccount() {
-    }
-
-    /**
-     * Class constructor
-     * @param userAccountName User account name
-     * @param userAccountId User account number
-     */
-    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId) {
-        this.sqliteDb = sqliteDb;
-        this.userAccountName = userAccountName;
-        this.userAccountId = userAccountId;
-
-        try { this.userChanlev = sqliteDb.getUserChanlev(userAccountName); }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: could not retrieve chanlev");
-        }
-        
-        try { this.userAccountFlags = sqliteDb.getUserFlags(userAccountName); }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: could not retrieve flags");
-        }
-
-        try { this.userAccountEmail = sqliteDb.getUserEmail(userAccountName); }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: could not retrieve email");
-        }
-
-        try { this.userAccountCertFP = sqliteDb.getUserCertFP(userAccountName); }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: could not retrieve email");
-        }
-    
-    }
-
     /**
      * Constructor for UserAccount
      * @param sqliteDb database
@@ -81,17 +38,16 @@ public class UserAccount {
      * @param userAccountEmail user account email
      * @param userAccountCertFP user account certfp
      */
-    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP) {
+    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP, Long userAccountRegTS) {
         this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
         this.userAccountId = userAccountId;
         this.userAccountFlags = userFlags;
         this.userAccountEmail = userAccountEmail;
         this.userAccountCertFP = userAccountCertFP;
+        this.userAccountRegTS = userAccountRegTS;
 
         try {
-            //sqliteDb.getUserChanlev(userAccountName).forEach( (chan, chanlev) -> { System.out.println("BFR chan=" + chan + " chanlev=" + chanlev); });
-
             this.userChanlev = sqliteDb.getUserChanlev(userAccountName); 
         }
         catch (Exception e) {
@@ -104,7 +60,6 @@ public class UserAccount {
             e.printStackTrace();
             System.out.println("Error: could not retrieve tokens");
         }
-        //this.userChanlev.forEach( (chan, chanlev) -> { System.out.println("BFO chan=" + chan + " chanlev=" + chanlev); });
     }
 
     /**
@@ -114,7 +69,6 @@ public class UserAccount {
     public void addUserAuth(UserNode user) throws Exception {
         if (this.attachedUserNodes.contains(user) == false) {
             this.attachedUserNodes.add(user);
-            //sqliteDb.addUserAuth(userAccountId, user.getUserUniq(), user.getUserTS());
         }
         else {
             throw new Exception("Cannot add the usernode to the list because it is already in there");
@@ -129,7 +83,6 @@ public class UserAccount {
     public void delUserAuth(UserNode user) throws Exception {
         try {
             this.attachedUserNodes.remove(user);
-            //sqliteDb.delUserAuth(user.getUserUniq());
         }
         catch (Exception e) {
             e.printStackTrace();

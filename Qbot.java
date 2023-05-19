@@ -51,7 +51,6 @@ public class Qbot {
         System.out.println("* Sending server ident");
         tlsClient.sendIdent();
 
-        //try { Thread.sleep(5000); } catch (Exception e) { e.printStackTrace(); }
         System.out.println("* Starting CService");
         tlsClient.launchCService(); 
     }    

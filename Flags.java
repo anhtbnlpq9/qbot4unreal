@@ -400,13 +400,6 @@ abstract class Flags {
     static String flagText  = "";
     static Integer flagInt  =  0;
 
-    /**
-     * Constructor
-     */
-    public Flags() {
-
-    }
-
     /*
      * Chanlev-related methods
      */

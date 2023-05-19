@@ -32,21 +32,6 @@ public class UserNode {
     private Boolean userNickRegistered = false;
 
     /**
-     * Class constructor
-     */
-    public UserNode() {
-        
-    }
-
-    /**
-     * Class constructor
-     * @param userUniq User SID
-     */
-    public UserNode(String userUniq) {
-        this.userUniq = userUniq;
-    } 
-
-    /**
      * User object contains information for connected users
      * @param userNick User nickname
      * @param userIdent User ident
@@ -174,12 +159,6 @@ public class UserNode {
      * @param mode User mode on the channel
      */
     public void addUserToChan(String channel, ChannelNode chanObj, String mode) /*throws Exception*/ {
-        //if (this.userChanList.contains(channel)) {
-        //    throw new Exception("Cannot add the user inside a channel they already are in"); 
-        //}
-        //else {
-        //    this.userChanList.add(channel);
-        //}
         userChanList.put(channel, chanObj);
         userChanModes.put(channel, mode);
     }
@@ -189,12 +168,6 @@ public class UserNode {
      * @param channel Channel name
      */
     public void delUserFromChan(String channel) /*throws Exception*/ {
-        //if (this.userChanList.contains(channel)) {
-        //    throw new Exception("Cannot add the user inside a channel they already are in"); 
-        //}
-        //else {
-        //    this.userChanList.add(channel);
-        //}
         userChanList.remove(channel);
         userChanModes.remove(channel);
     }
@@ -223,12 +196,7 @@ public class UserNode {
      * @param modes User channel modes
      */
     public void delUserChanMode(String chan, String modes) {
-
-        //this.userChanModes.forEach( (key, value) -> { System.out.println("AAB userChanModes map = " + key + " -> " + value); });
-        
         this.userChanModes.replace(chan, this.userChanModes.get(chan).replaceAll("[" + modes + "]", ""));
-
-        //this.userChanModes.forEach( (key, value) -> { System.out.println("AAC userChanModes map = " + key + " -> " + value); });
     }
 
     /**

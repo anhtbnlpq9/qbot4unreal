@@ -23,25 +23,16 @@ public class ChannelNode {
     private long channelTS;
     
     private Map<String, UserNode> chanUserList = new HashMap<String, UserNode>();
-    //private Map<String, ChannelMode> channelModes = new HashMap<String, ChannelMode>();
+   
     private Map<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
     
     private ArrayList<String> banList = new ArrayList<String>();
     private ArrayList<String> exceptList = new ArrayList<String>();
     private ArrayList<String> inviteList = new ArrayList<String>();
     
-    public ChannelNode() {
-        
-    }
     public ChannelNode(String channelName, long channelTS) {
         this.channelName = channelName;
         this.channelTS = channelTS;
-    }
-
-    public ChannelNode(String channelName, long channelTS, Map<String, String> channelModes) {
-        this.channelName = channelName;
-        this.channelTS = channelTS;
-        this.channelModes = channelModes;
     }
 
     public ChannelNode(String channelName, Long channelTS, Integer channelFlags) {

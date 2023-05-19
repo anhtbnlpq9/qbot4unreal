@@ -13,30 +13,23 @@ import javax.crypto.spec.PBEKeySpec;
 
 public class CService {
     
-    //Map<String, ServerNode> serverList;
+    String       myUniq;
+    UserNode     myUserNode;
+    
+    Client       client;
+    Protocol     protocol;
+    SqliteDb     sqliteDb;
+    Config       config;
+    
+    Boolean      cServiceReady = false;
 
-    /**
-     * {@link String} userSid -> {@link UserNode} user
-     */
-    //Map<String, UserNode> userList;
-    
-    String myUniq;
-    UserNode myUserNode;
-    
-    Client client;
-    Protocol protocol;
-    SqliteDb sqliteDb;
-    Config config;
-    
-    Boolean cServiceReady = false;
-
-    String bufferMode = "";
-    String bufferParam = "";
-    String userChanlevFilter = "";
-    UserNode fromNick;
-    UserAccount userAccount;
-    String channel = "";
-    ChannelNode chanNode;
+    String       bufferMode = "";
+    String       bufferParam = "";
+    String       userChanlevFilter = "";
+    UserNode     fromNick;
+    UserAccount  userAccount;
+    String       channel = "";
+    ChannelNode  chanNode;
 
     final String CHANLEV_FLAGS = "abdjkmnopqtvw";
     final String CHANLEV_SYMBS = "+-";
@@ -46,18 +39,13 @@ public class CService {
     long unixTime;
 
     interface Whois {
+        /**
+         * Displays the whois of an user
+         * @param whoisUserAccount user account
+         */
         void displayW(UserAccount whoisUserAccount);
     }
-    
-    public CService() {
-        
-    }
-    /**
-     * @param client
-     */
-    public CService(Client client) {
-        this.client = client;
-    }        
+
     /**
      * @param client
      * @param protocol
@@ -68,21 +56,12 @@ public class CService {
         this.protocol = protocol;
         this.sqliteDb = sqliteDb;
     }
-    /**
-     * @param client
-     * @param protocol
-     * @param userList
-     */
-    public CService(Client client, Protocol protocol, Map<String, UserNode> userList) {
-        this.client = client;
-        this.protocol = protocol;
-    }         
  
     public void runCService(Config config, Protocol protocol) {
 
         this.config = config;
         this.myUniq = config.getServerId()+config.getCServeUniq();
-        
+
         unixTime = Instant.now().getEpochSecond();
         client.write(":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName());
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
@@ -94,13 +73,12 @@ public class CService {
                                      myUniq,
                                      unixTime,
                                      config.getCServeModes());
-        
+
         this.myUserNode = user;
 
         user.setUserServer(protocol.getServerList().get(config.getServerId()));
         protocol.getUserList().put(myUniq, user);
         protocol.addNickLookupTable(config.getCServeNick(), myUniq);
-
 
         unixTime = Instant.now().getEpochSecond();
 
@@ -123,7 +101,7 @@ public class CService {
     }
     public void handleMessage(UserNode fromNickRaw, String str) {
         fromNick = fromNickRaw;
-        
+
 
         if (str.toUpperCase().startsWith("HELP ALL")) {                    Help.getHelp("commands", "ALL").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
         else if (str.toUpperCase().startsWith("HELP AUTH")) {              Help.getHelp("commands", "AUTH").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
@@ -328,7 +306,6 @@ public class CService {
                         protocol.sendNotice(client, myUserNode, fromNick, "|- is authed as " + user.getValue().getUserAccount().getUserAccountName());
                     }
 
-                    //bufferMode = "";
                     if (fromNick.isOper() == true || user.getValue().getUserNick().equals(fromNick.getUserNick()) ) {
                         protocol.sendNotice(client, myUserNode, fromNick, "|- on channels: ");
                         user.getValue().getUserChanModes().forEach( (key, value) -> {
@@ -543,7 +520,7 @@ public class CService {
             }
             
         }
-        else if (str.toUpperCase().startsWith("DROP ")) { // DROP #channel
+        else if (str.toUpperCase().startsWith("DROP ")) { /* DROP #channel */
             String channel = (str.split(" ", 2))[1];
             ChannelNode chanNode = protocol.getChannelNodeByName(channel);
 

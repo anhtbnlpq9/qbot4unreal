@@ -104,7 +104,6 @@ public class Client implements Runnable {
         this.write(":" + config.getServerId() + " " + "PROTOCTL NICKv2 VHP UMODE2 NICKIP SJOIN SJOIN2 SJ3 NOQUIT TKLEXT MLOCK SID MTAGS");
         // PROTOCTL EAUTH=my.server.name[,protocolversion[,versionflags,fullversiontext]]
         this.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getServerName() + "," + config.getSrvProtocolVersion() + "," + config.getSrvVersionFlags() + "," + config.getSrvFullVersionText());
-        //this.write(":" + config.getServerId() + " " + "PROTOCTL EAUTH=" + config.getEAUTH());
         this.write(":" + config.getServerId() + " " + "PROTOCTL SID=" + config.getServerId());
         this.write(":" + config.getServerId() + " " + "SERVER" + " " + config.getServerName() + " 1 :" + config.getServerDescription());
 

@@ -28,7 +28,6 @@ public class SqliteDb {
         }
     }
 
-
     /**
      * Returns the list of registered chans as an ArrayList<String>
      * @return registered chan list
@@ -38,7 +37,6 @@ public class SqliteDb {
         String sql = null;
         ResultSet resultSet = null;
 
-        //ArrayList<String> regChannels = new ArrayList<String>();
         HashMap<String, ChannelNode> regChannels = new HashMap<String, ChannelNode>();
 
         try { 
@@ -46,8 +44,6 @@ public class SqliteDb {
             sql = "SELECT name, regTS, chanflags FROM channels;";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                //String  name = resultSet.getString("name");
-                //regChannels.add(name);
                 ChannelNode channelnode = new ChannelNode(resultSet.getString("name"), resultSet.getLong("regTS"), resultSet.getInt("chanflags"));
                 regChannels.put(resultSet.getString("name"), channelnode);
             }
@@ -152,7 +148,6 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             sql = "SELECT name FROM channels WHERE lower(name)='" + channel.toLowerCase() + "';";
-            //System.out.println(sql);
             resultSet = statement.executeQuery(sql);
         }
         catch (Exception e) { e.printStackTrace(); }
@@ -279,21 +274,17 @@ public class SqliteDb {
         String sql               = null;
         ResultSet resultSet      = null;
         HashMap<String, Integer> userChanlev = new HashMap<String, Integer>();
-        Integer chanlev = 0;
-        String channel = "";
         Integer userId           = 0;
 
         try { 
             statement = connection.createStatement();
             
             sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "';";
-            //System.out.println("sql1=" + sql);
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
 
             sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
-            //System.out.println("sql2=" + sql);
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
                 //System.out.println("BFP chan=" + resultSet.getString("name") + " -> chanlev=" + resultSet.getInt("chanlev"));
@@ -305,7 +296,6 @@ public class SqliteDb {
             throw new Exception("Could not get user " + username + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
         }
         statement.close();
-        //userChanlev.forEach( (chan, chanlev2) -> { System.out.println("BFQ chan=" + chan + " -> chanlev=" + chanlev2); });
         return userChanlev;
     }
 
@@ -420,7 +410,6 @@ public class SqliteDb {
             resultSet.next();
             channelId = resultSet.getInt("cid");
 
-            //sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
             sql = "SELECT chanlev FROM chanlev WHERE channelId='"+ channelId +"' AND userId = " + userId + ";";
             resultSet = statement.executeQuery(sql);
 
@@ -428,7 +417,6 @@ public class SqliteDb {
                 if (chanlev != 0) {
                     //System.out.println("BAD user chanlev does not exist => creating it");
                     sql = "INSERT INTO chanlev (channelId, userId, chanlev) VALUES ('" + channelId + "', '" + userId + "', '" + chanlev + "');";
-                    //System.out.println(sql);
                     statement.executeUpdate(sql);
                 }
                 else {
@@ -441,13 +429,11 @@ public class SqliteDb {
                 if (chanlev != 0) {
                     //System.out.println("BAE user chanlev exists => updating it");
                     sql = "UPDATE chanlev SET chanlev='" + chanlev + "' WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
-                    //System.out.println(sql);
                     statement.executeUpdate(sql);
                 }
                 else {
                     //System.out.println("BAF user chanlev exists => deleting it");
                     sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
-                    //System.out.println(sql);
                     statement.executeUpdate(sql);
                 }
             }
@@ -494,7 +480,6 @@ public class SqliteDb {
             else {
                 //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
-                //System.out.println(sql);
                 statement.executeUpdate(sql);
             }
             statement.close();
@@ -534,7 +519,6 @@ public class SqliteDb {
             else {
                 //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "';";
-                //System.out.println(sql);
                 statement.executeUpdate(sql);
             }
             statement.close();
@@ -702,7 +686,6 @@ public class SqliteDb {
             if(resultSet.next() == true) {
                 //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM logins WHERE userSid='" + userSid + "';";
-                //System.out.println(sql);
                 statement.executeUpdate(sql);
             }
 
@@ -749,7 +732,6 @@ public class SqliteDb {
             statement = connection.createStatement();
             
             sql = "SELECT userId FROM logins WHERE userSid='" + user.getUserUniq() + "' AND userTS='" + user.getUserTS()  + "';";
-            //System.out.println("BFF sql=" + sql);
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             //System.out.println("BFG userId=" + resultSet.getInt("userId"));
