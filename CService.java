@@ -622,7 +622,7 @@ public class CService {
                         whois.displayW(foundUser.getUserAccount());
                         protocol.sendNotice(client, myUserNode, fromNick, "End of list.");
                     }
-                    else { protocol.sendNotice(client, myUserNode, fromNick, "The user " + nick + "is not authed."); }
+                    else { protocol.sendNotice(client, myUserNode, fromNick, "The user " + nick + " is not authed."); }
                 }
             }
             if (foundNick == 0) { protocol.sendNotice(client, myUserNode, fromNick, "Can't find user " + nick + ".");  }
