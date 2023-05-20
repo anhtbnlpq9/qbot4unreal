@@ -345,7 +345,7 @@ abstract class Flags {
     private static final Integer   CLFLAG_MASTERCON     = (CLFLAG_AUTO | CLFLAG_BANNED | CLFLAG_DENYOP | CLFLAG_OP | CLFLAG_HALFOP | 
                                                            CLFLAG_DENYVOICE | CLFLAG_TOPIC | CLFLAG_VOICE | CLFLAG_PROTECT);
 
-    private static final Integer   CLFLAG_OWNERCON     = (CLFLAG_MASTERCON | CLFLAG_OWNER);
+    private static final Integer   CLFLAG_OWNERCON     = (CLFLAG_MASTERCON | CLFLAG_OWNER | CLFLAG_MASTER);
 
     private static final Integer   CLFLAG_SELFCON       = (CLFLAG_OP | CLFLAG_VOICE | CLFLAG_AUTO | CLFLAG_TOPIC);
 
