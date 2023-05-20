@@ -822,6 +822,12 @@ public class CService {
 
                         protocol.sendNotice(client, myUserNode, fromNick, "Done.");
                         protocol.sendNotice(client, myUserNode, fromNick, "Chanlev set. Chanlev for user account " + userAccount.getUserAccountName() + " is now +" + Flags.flagsIntToChars("chanlev", userNewChanlev) + ".");
+
+                        userAccount.getUserLogins().forEach( (usernode) -> {
+                            if (usernode.getUserChanList().containsKey(chanNode.getChanName())) {
+                                this.handleJoin(usernode, chanNode);
+                            }
+                        });
                     }
                     catch (Exception e) {
                         e.printStackTrace(); 
