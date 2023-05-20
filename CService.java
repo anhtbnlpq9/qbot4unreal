@@ -180,9 +180,12 @@ public class CService {
             for (Map.Entry<String, ServerNode> server : protocol.getServerList().entrySet()) {
                 String serverPeerStatus = "";
                 if (server.getValue().getServerPeer()==true) { serverPeerStatus = "@";  }
+                else { serverPeerStatus = "*"; }
                 String serverEOS = "no";
                 if (server.getValue().getServerEOS()==true) { serverEOS = "yes";  }
-                protocol.sendNotice(client, myUserNode, fromNick, " * " + serverPeerStatus + server.getValue().getServerName() + " (" + server.getValue().getServerId() + ") /  EOS:" + serverEOS);
+                String introducedBy = "(none)";
+                if (server.getValue().getIntroducedBy() != null) { introducedBy = server.getValue().getIntroducedBy().getServerName(); }
+                protocol.sendNotice(client, myUserNode, fromNick, serverPeerStatus + " " + server.getValue().getServerName() + " (" + server.getValue().getServerId() + ") /  EOS:" + serverEOS + " / introduced by: " + introducedBy);
             }
             protocol.sendNotice(client, myUserNode, fromNick, "There are " + protocol.getServerList().size() + " servers on the network.");
             protocol.sendNotice(client, myUserNode, fromNick, "End of list.");
