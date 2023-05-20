@@ -22,7 +22,8 @@ public class ChannelNode {
 
     private long channelTS;
     
-    private Map<String, UserNode> chanUserList = new HashMap<String, UserNode>();
+    /* Contains the UserNodes inside the chan */
+    private HashMap<String, UserNode> chanUserList = new HashMap<String, UserNode>();
    
     private Map<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
     

@@ -776,8 +776,6 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + channel + " to use chanlev."); 
                 return;
             }
-
-
         }
         else { 
             if (    chanlevMod.matches("^(?=.*["+ CHANLEV_FLAGS +"])(?=.*["+ CHANLEV_SYMBS +"]).+$")    ) {

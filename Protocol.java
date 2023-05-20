@@ -23,7 +23,7 @@ public class Protocol extends Exception {
     private Map<String, String>          protocolProps       = new HashMap<String, String>();
     
     String myPeerServerId;
-    Long unixTime;
+    Long   unixTime;
     String foundNickLookUpCi;
 
     /**
@@ -534,7 +534,7 @@ public class Protocol extends Exception {
 
             command = (command[2]).split(" ", 2);
             String toEntity   =  command[0];
-            UserNode toUser   = userList.get(toEntity);
+
             String message    =  command[1];
 
             /* In here we forward to Chanservice the PRIVMSG if sent to them */
@@ -674,10 +674,14 @@ public class Protocol extends Exception {
                     server.setPeer(true);
                     server.setIntroducedBy(server);
                     serverList.put((prop[i].split("="))[1], server);
-                    //System.out.println("@@@ " + (prop[i].split("="))[1] + " introduced itself");
                 }
+
             }
             serverList.get(config.getServerId()).setServerPeerResponded(true);
+            //protocolProps.forEach( (property, value) -> {
+            //    System.out.println("BGA Protocol property " + property + " -> " + value);
+            //});
+
         }
         else if (command[0].equals("SERVER")) {
             //<<< SERVER ocelot. 1 :U6000-Fhn6OoEmM-5P0 Mjav Network IRC server
@@ -1260,7 +1264,6 @@ public class Protocol extends Exception {
             //System.out.println("DDD KICK " + command[2]);
 
             fromEnt = (command[0].split(":"))[1];
-            UserNode fromUser = userList.get(fromEnt);
             UserNode kickedUSer = userList.get((command[2].split(" "))[1]);
 
             String kickChannelName = (command[2].split(" "))[0];

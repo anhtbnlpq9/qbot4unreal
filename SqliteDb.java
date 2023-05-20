@@ -1,9 +1,7 @@
 import java.sql.*;
 //import org.sqlite.JDBC;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.HashMap;
 import java.time.Instant;
 
 public class SqliteDb {
