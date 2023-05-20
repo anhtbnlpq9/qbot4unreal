@@ -21,6 +21,7 @@ public class ServerNode {
     private String serverDescription;
     private String serverTS;
     private String serverDistance;
+    private ServerNode introducedBy;
     
     // Only used for me (detect that server peer has responded => it exists in serverList)
     private Boolean serverPeerResponded = null;
@@ -82,5 +83,15 @@ public class ServerNode {
     }
     public Boolean getServerPeerResponded() {
         return this.serverPeerResponded;
-    }    
+    }
+
+    public ServerNode getIntroducedBy() {
+        return this.introducedBy;
+    }
+
+    public void setIntroducedBy(ServerNode introducer) {
+        this.introducedBy = introducer;
+    }
+
+
 }
