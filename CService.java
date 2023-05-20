@@ -692,6 +692,7 @@ public class CService {
         HashMap<String, Integer> chanlevModInt = new HashMap<String, Integer>(); 
         String userAccountStr = "";
         userChanlevFilter = "";
+        String spaceFill = " ";
 
         if (fromNick.getUserAuthed() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
@@ -761,10 +762,11 @@ public class CService {
             try {
                 if (  Flags.hasChanLSignificant(fromNick.getUserAccount().getUserChanlev(chanNode))  ) {
                     protocol.sendNotice(client, myUserNode, fromNick, "Displaying CHANLEV for channel " + chanNode.getChanName() + ":"); 
+                    protocol.sendNotice(client, myUserNode, fromNick, "Account             Chanlev");
                     chanNode.getChanlev().forEach( (user, chanlev) -> {
                         //System.out.println("BCD userChanlevFilter=" +userChanlevFilter+ " user=" + user + " chanlev=" + chanlev);
                         if ( (userChanlevFilter.isEmpty() == false && user.toLowerCase().equals(userChanlevFilter.toLowerCase())) || userChanlevFilter.isEmpty() == true) {
-                            protocol.sendNotice(client, myUserNode, fromNick, user + "     +" + Flags.flagsIntToChars("chanlev", chanlev)); 
+                            protocol.sendNotice(client, myUserNode, fromNick, " " + user + spaceFill.repeat(19-user.length()) + "+" + Flags.flagsIntToChars("chanlev", chanlev)); 
                         }
                     });
                     protocol.sendNotice(client, myUserNode, fromNick, "End of list."); 
