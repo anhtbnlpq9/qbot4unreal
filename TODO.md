@@ -8,7 +8,7 @@
 ### Accounts
 - [X] account registration
 - [X] account auth with plain user/pass
-- [ ] user flags
+- [X] user flags
 - [ ] account deletion
 - [ ] account editing
 - [ ] nick ownership
@@ -18,7 +18,7 @@
 ### Channels
 - [X] channel registration
 - [X] chanlev
-- [ ] chanflags
+- [X] chanflags
 - [ ] channel editing
 - [ ] MLOCK
 - [ ] bans, excepts, invites
@@ -40,7 +40,7 @@
 
 
 ### Channels
-- [ ] adapt to IRCd implementing +q/+a/+o/+h/+v or not
+- [X] adapt to IRCd implementing +q/+a/+o/+h/+v or not
 
 ## Oper stuff
 - [ ] account suspension
@@ -59,7 +59,7 @@
 - [ ] BANDEL
 - [ ] BANLIST
 - [ ] BANTIMER
-- [ ] CHANFLAGS
+- [X] CHANFLAGS
 - [X] CHANLEV
 - [ ] CHANLEVHISTORY
 - [ ] CHANMODE
@@ -109,6 +109,7 @@
 - [X] WHOIS
 
 ## Added commands
+- [ ] CHANINFO
 - [X] CHANLIST
 - [ ] DIE
 - [X] DROP
@@ -119,8 +120,8 @@
 - [X] SERVERLIST
 - [X] USERLIST
 - [ ] HALFOP
-- [ ] ADMINMODE
-- [ ] OWNERMODE
+- [ ] MODEADMIN
+- [ ] MODEOWNER
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD
 
