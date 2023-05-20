@@ -102,6 +102,22 @@ public class CService {
             protocol.chanJoin(client, myUserNode, regChannelNode);
             try { protocol.setMode(client, regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getUserNick()); }
             catch (Exception e) { e.printStackTrace(); }
+
+            /* Look into every user account belonging to the channel chanlev and applying rights to authed logins of accounts */
+            regChannelNode.getChanlev().forEach( (username, chanlev) -> {
+
+                UserAccount useraccount;
+                try { useraccount = protocol.getRegUserAccount(username); }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
+                useraccount.getUserLogins().forEach( (usernode) -> {
+                    if (usernode.getUserChanList().containsKey(regChannelNode.getChanName())) {
+                        this.handleJoin(usernode, regChannelNode);
+                    }
+                });
+            });
         });
 
         cServiceReady = true;
