@@ -110,6 +110,7 @@ public class Client implements Runnable {
         ServerNode server = new ServerNode(config.getServerName(), "0", config.getServerId(), config.getServerDescription());
         server.setEOS(false);
         server.setServerPeerResponded(false);
+        server.setIntroducedBy(server);
         serverList.put(config.getServerId(), server);
     }
 

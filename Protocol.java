@@ -543,6 +543,8 @@ public class Protocol extends Exception {
             //<<< :5P0 SID sandcat. 2 5PX :Mjav Network IRC server
 
             fromEnt = (command[0].split(":"))[1];
+
+            ServerNode fromEntNode = serverList.get(fromEnt);
             
             command = (command[2]).split(" ", 4);
             String name = command[0];
@@ -550,9 +552,8 @@ public class Protocol extends Exception {
             String sid = command[2];
             String desc = (command[3].split(":"))[1];
             server = new ServerNode(name, hop, sid, desc);
+            server.setIntroducedBy(fromEntNode);
             serverList.put(sid, server);
-            
-            //System.out.println("@@@ " + fromEnt + " introduced new server " + name + " / " + hop + " / " + sid + " / " + desc);
         }
         else if (command[1].equals("EOS")) {
             //<<< :5PX EOS
@@ -637,6 +638,7 @@ public class Protocol extends Exception {
                     myPeerServerId = (prop[i].split("="))[1];
                     server = new ServerNode((prop[i].split("="))[1]);
                     server.setPeer(true);
+                    server.setIntroducedBy(server);
                     serverList.put((prop[i].split("="))[1], server);
                     //System.out.println("@@@ " + (prop[i].split("="))[1] + " introduced itself");
                 }
@@ -652,6 +654,51 @@ public class Protocol extends Exception {
             server.setServerDescription((string[3].split(":"))[1]);
             
             serverList.get(config.getServerId()).setServerPeerResponded(true);
+        }
+        else if (command[0].equals("SQUIT")) { // XXX: to be (largely) improved
+            //<<< SQUIT ocelot. :squit message
+            String serverName = command[1];
+            var wrapper = new Object(){ ServerNode sQuittedServer; };
+            ServerNode sQuittedServer;
+            serverList.forEach( (sid, servernode) -> {
+                if (servernode.getServerName().equals(serverName)) { wrapper.sQuittedServer = servernode; }
+            });
+            sQuittedServer = wrapper.sQuittedServer;
+
+            ArrayList<ServerNode> affectedServers = new ArrayList<>();
+            ArrayList<UserNode>   affectedUsers = new ArrayList<>();
+
+            // SQUITted server is first affected
+            affectedServers.add(sQuittedServer);
+
+            // Then we need to find all the servers introduced by the SQUITted server
+            serverList.forEach( (sid, servernode) -> {
+                if (servernode.getIntroducedBy().equals(sQuittedServer)) {
+                    affectedServers.add(servernode);
+                }
+            });
+
+            // List usernodes on those servers
+            userList.forEach( (uniq, usernode) -> {
+                if(affectedServers.contains(usernode.getUserServer())) {
+                    affectedUsers.add(usernode);
+                }
+            });
+
+            // Delete the usernodes
+            for(UserNode user : affectedUsers) {
+                // Deauth user if needed
+                if (user.getUserAuthed() == true) {
+                    user.getUserAccount().delUserAuth(user);
+                    user.setUserAuthed(false);
+                }
+                userList.remove(user.getUserUniq());
+            }
+
+            // Delete the servers
+            for(ServerNode servernode : affectedServers) {
+                serverList.remove(servernode.getServerName());
+            }
         }
         else if (command[1].equals("UID")) {
             // :AAAAA UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
