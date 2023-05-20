@@ -546,21 +546,44 @@ public class CService {
                     }
                     catch (Exception e) { e.printStackTrace(); }
                 }
-                else if (   Flags.isChanLAuto( user.getUserAccount().getUserChanlev(channel))  ) {
-                    if (  Flags.isChanLOp( user.getUserAccount().getUserChanlev(channel)) ) {
+
+                else if (   Flags.isChanLAuto( user.getUserAccount().getUserChanlev(channel))  ) { /* Sets the auto channel modes */
+
+                    if (  Flags.isChanLOwner( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanOwner") == true) {
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+q", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                    else if (  Flags.isChanLMaster( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanAdmin") == true) {
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+a", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                    else if (  Flags.isChanLOp( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanOp") == true) {
                         //System.out.println("BBD chanlev op");
                         try {
                             protocol.setMode(client, myUniq, channel.getChanName(), "+o", user.getUserNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
-                    else if (  Flags.isChanLVoice( user.getUserAccount().getUserChanlev(channel))  ) {
+                    else if (  Flags.isChanLHalfOp( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanHalfop") == true) {
+                        try {
+                            protocol.setMode(client, myUniq, channel.getChanName(), "+h", user.getUserNick());
+                        }
+                        catch (Exception e) { e.printStackTrace(); }
+                    }
+                    else if (  Flags.isChanLVoice( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanVoice") == true ) {
                         //System.out.println("BBE chanlev voice");
                         try {
                             protocol.setMode(client, myUniq, channel.getChanName(), "+v", user.getUserNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
+
+
+
                 }
             }
         }
