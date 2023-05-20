@@ -488,6 +488,12 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
+    public Boolean getFeature(String feature) {
+        Boolean featureValue = false;
+        if (featureList.containsKey(feature)) { featureValue = featureList.get(feature); }
+        return featureValue;
+    }
+
 
     public Map<String, ServerNode> getServerList() {
         return this.serverList;
@@ -568,12 +574,39 @@ public class Protocol extends Exception {
             client.write(str);
             serverList.get(config.getServerId()).setEOS(true);
 
-
-
-
             /* If our peer sends the EOS (so last to send EOS) */
             if(server.getServerPeer() == true) {
 
+                // Identify what are the available channel modes
+                if (protocolProps.containsKey("PREFIX")) {
+                    String chanPrefix = protocolProps.get("PREFIX"); /* PREFIX = (modelist)prefixlist, e.g PREFIX=(qaohv)~&@%+ */
+                    String chanModes = "";
+                    Pattern pattern = Pattern.compile("\\((.*?)\\)");
+                    Matcher matcher = pattern.matcher(chanPrefix);
+
+                    if (matcher.find() == true) {
+                        chanModes = matcher.group(1);
+                        if (chanModes.contains("q") == true) featureList.put("chanOwner", true);
+                        else featureList.put("chanOwner", false);
+
+                        if (chanModes.contains("a") == true) featureList.put("chanAdmin", true);
+                        else featureList.put("chanAdmin", false);
+
+                        if (chanModes.contains("o") == true) featureList.put("chanOp", true);
+                        else featureList.put("chanOp", false);
+
+                        if (chanModes.contains("h") == true) featureList.put("chanHalfop", true);
+                        else featureList.put("chanHalfop", false);
+
+                        if (chanModes.contains("v") == true) featureList.put("chanVoice", true);
+                        else featureList.put("chanVoice", false);
+                    }
+                    //featureList.forEach( (property, value) -> {
+                    //    System.out.println("BGC Features " + property + " -> " + value);
+                    //});
+                    //System.out.println("BGB Chanmodes " + chanModes);
+
+                }
             }
         }
         else if (command[0].equals("NETINFO")) {
@@ -1176,9 +1209,9 @@ public class Protocol extends Exception {
                         }
                         else {
                             userList.get(userNickSidLookup.get(modeList[indexParam])).delUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
-                            //System.out.println("MMH channel " + channelName + " user mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                            if (userList.get(userNickSidLookup.get(modeList[indexParam])).getUserNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == 'o') {
-                                this.setMode(client, chan, "+o", config.getCServeNick());
+                            //System.out.println("MMH channel " + channelName + " user mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]);
+                            if (userList.get(userNickSidLookup.get(modeList[indexParam])).getUserNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == CService.getChanJoinModes().toCharArray()[0]) {
+                                this.setMode(client, chan, "+" + CService.getChanJoinModes(), config.getCServeNick());
                             }
                         }
                         indexParam++;

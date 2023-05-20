@@ -31,6 +31,8 @@ public class CService {
     String       channel = "";
     ChannelNode  chanNode;
 
+    static String chanJoinModes = "";
+
     final String CHANLEV_FLAGS = "abdjkmnopqtvw";
     final String CHANLEV_SYMBS = "+-";
 
@@ -82,10 +84,23 @@ public class CService {
 
         unixTime = Instant.now().getEpochSecond();
 
+        String chanJoinModes = "";
+        if (protocol.getFeature("chanOwner") == true) chanJoinModes += "q";
+        else if (protocol.getFeature("chanAdmin") == true) chanJoinModes += "a";
+        else if (protocol.getFeature("chanOp") == true) chanJoinModes += "o";
+        else if (protocol.getFeature("chanHalfop") == true) chanJoinModes += "h";
+        else if (protocol.getFeature("chanVoice") == true) chanJoinModes += "v";
+        CService.chanJoinModes = chanJoinModes;
+
+ 
+        var wrapper = new Object(){ String chanJoinModes; };
+        wrapper.chanJoinModes = chanJoinModes;
+
         HashMap<String, ChannelNode> regChannels = protocol.getRegChanList();
         regChannels.forEach( (regChannelName, regChannelNode) -> {
+            /* Making the bot join the registered channels */
             protocol.chanJoin(client, myUserNode, regChannelNode);
-            try { protocol.setMode(client, regChannelNode, "+o", myUserNode.getUserNick()); }
+            try { protocol.setMode(client, regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getUserNick()); }
             catch (Exception e) { e.printStackTrace(); }
         });
 
@@ -99,6 +114,11 @@ public class CService {
     public Boolean isReady() {
         return this.cServiceReady;
     }
+
+    public static String getChanJoinModes() {
+        return chanJoinModes;
+    }
+
     public void handleMessage(UserNode fromNickRaw, String str) {
         fromNick = fromNickRaw;
 
@@ -453,7 +473,7 @@ public class CService {
                     chanNode.setChanChanlev(chanNewChanlev);
                     
                     protocol.chanJoin(client, myUserNode, chanNode);
-                    protocol.setMode(client, chanNode, "+ro", myUserNode.getUserNick());
+                    protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
                     protocol.sendNotice(client, myUserNode, fromNick, "Channel successfully registered."); 
                 }
                 catch (Exception e) { 
