@@ -1,6 +1,8 @@
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.HashMap;
 
 import java.time.Instant;
@@ -14,13 +16,14 @@ public class Protocol extends Exception {
     private CService    cservice;
     private SqliteDb    sqliteDb;
     
-    private Map<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
-    private Map<String, UserNode>        userList            = new HashMap<String, UserNode>();
-    private HashMap<String, UserAccount> userAccounts        = new HashMap<String, UserAccount>();
-    private HashMap<String, ChannelNode> regChannels         = new HashMap<String, ChannelNode>();
-    private Map<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
-    private Map<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; XXX : to transform to <String, UserNode>
-    private Map<String, String>          protocolProps       = new HashMap<String, String>();
+    private HashMap<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
+    private HashMap<String, UserNode>        userList            = new HashMap<String, UserNode>();
+    private HashMap<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
+    private HashMap<String, ChannelNode>     regChannels         = new HashMap<String, ChannelNode>();
+    private HashMap<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
+    private HashMap<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; XXX : to transform to <String, UserNode>
+    private HashMap<String, String>          protocolProps       = new HashMap<String, String>();
+    private HashMap<String, Boolean>          featureList         = new HashMap<>();
     
     String myPeerServerId;
     Long   unixTime;
