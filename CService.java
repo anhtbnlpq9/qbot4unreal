@@ -821,7 +821,7 @@ public class CService {
                         chanNode.setChanChanlev(sqliteDb.getChanChanlev(chanNode));
 
                         protocol.sendNotice(client, myUserNode, fromNick, "Done.");
-                        protocol.sendNotice(client, myUserNode, fromNick, "Chanlev set. Chanlev for user account " + userAccount + " is now +" + Flags.flagsIntToChars("chanlev", userNewChanlev) + ".");
+                        protocol.sendNotice(client, myUserNode, fromNick, "Chanlev set. Chanlev for user account " + userAccount.getUserAccountName() + " is now +" + Flags.flagsIntToChars("chanlev", userNewChanlev) + ".");
                     }
                     catch (Exception e) {
                         e.printStackTrace(); 
