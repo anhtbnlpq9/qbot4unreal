@@ -632,9 +632,9 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, config.getNetworkName() + " Staff     : Staff Member");
             }
 
-            protocol.sendNotice(client, myUserNode, fromNick, "User ID        : " + whoisUserAccount.getUserAccountId());
-
             if ( (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) || (fromNick.getUserAccount() == whoisUserAccount) ) {
+                protocol.sendNotice(client, myUserNode, fromNick, "User ID        : " + whoisUserAccount.getUserAccountId());
+
                 if (whoisUserAccount.getUserAccountFlags() != 0) { wrapper.buffer2 = "+" + Flags.flagsIntToChars("userflags", whoisUserAccount.getUserAccountFlags()); }
                 else wrapper.buffer2 = "(none)";
 
