@@ -782,8 +782,10 @@ public class CService {
         }
         else { 
             if (    chanlevMod.matches("^(?=.*["+ CHANLEV_FLAGS +"])(?=.*["+ CHANLEV_SYMBS +"]).+$")    ) {
-                if (   (  Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) && ( Flags.containsChanLMasterConFlags(chanlevModInt.get("+")) || Flags.containsChanLMasterConFlags(chanlevModInt.get("-")) )) ||
-                (  Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) && ( Flags.containsChanLOwnerConFlags(chanlevModInt.get("+")) || Flags.containsChanLOwnerConFlags(chanlevModInt.get("-")) ))  ) {
+                chanlevModInt.put("combined", chanlevModInt.get("+") | chanlevModInt.get("-"));
+
+                if (   (  (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLMasterConFlags(chanlevModInt.get("combined"))  ) == true) ||
+                (  (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLOwnerConFlags(chanlevModInt.get("combined"))  ) == true)  ) {
 
                     // user wants to modify chanlev by account name directly
                     // in this case, we need to update the db + check if the account is online and update that nick chanlev
