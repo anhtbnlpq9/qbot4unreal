@@ -794,4 +794,18 @@ public class SqliteDb {
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
+
+    public void setChanFlags(ChannelNode chan, Integer flags) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "UPDATE channels SET chanflags='" + flags + "' WHERE name='" + chan.getChanName() +"';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getChanName() + " flags."); }
+    }
 }

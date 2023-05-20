@@ -487,6 +487,9 @@ public class CService {
             if (fromNick.getUserChanMode(channel).matches("(.*)o(.*)")) {
                 try {
                     sqliteDb.addRegChan(chanNode, ownerAccount);
+                    
+                    sqliteDb.setChanFlags(chanNode, Flags.getDefaultChanFlags());
+
 
                     sqliteDb.setUserChanlev(ownerAccount, chanNode, CHANLEV_FOUNDER_DEFAULT);
 
@@ -495,6 +498,7 @@ public class CService {
                     // updating channel chanlev as well
                     Map<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(chanNode);
                     chanNode.setChanChanlev(chanNewChanlev);
+                    chanNode.setChanFlags(Flags.getDefaultChanFlags());
                     
                     protocol.chanJoin(client, myUserNode, chanNode);
                     protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
@@ -549,6 +553,9 @@ public class CService {
         }
         else if (str.toUpperCase().startsWith("USERFLAGS")) { /* USERFLAGS [flags] */
             cServeUserflags(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("CHANFLAGS")) { /* CHANFLAGS [flags] */
+            cServeChanflags(fromNickRaw, str);
         }
 
         else { // Unknown command
@@ -939,6 +946,165 @@ public class CService {
             return; 
         }
     }
+
+    public void cServeChanflags(UserNode fromNick, String str) {
+        String[] command = str.split(" ",5);
+        String chanFlagsModRaw = "";
+        Integer chanNewFlagsInt = 0;
+        Integer chanCurFlagsInt = 0;
+
+        HashMap<String, String> chanFlagsModSepStr;
+        HashMap<String, Integer> chanFlagsModSepInt = new HashMap<>();
+
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CHANFLAGS <channel> [flags]."); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Can't find this channel."); 
+            return;
+        }
+
+        try {  chanFlagsModRaw =  command[2]; }
+        catch (ArrayIndexOutOfBoundsException e) {
+            Integer applicableChFlagsInt = 0;
+            String applicableChFlagsStr = "";
+
+            if ( Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true ) {
+                applicableChFlagsInt = chanNode.getChanFlags();
+            }
+            else { applicableChFlagsInt = Flags.stripChanNonPublicFlags(chanNode.getChanFlags()); } 
+
+            if (applicableChFlagsInt > 0) {
+                applicableChFlagsStr = "+" + Flags.flagsIntToChars("chanflags", applicableChFlagsInt);
+            }
+            else { applicableChFlagsStr = "(none)"; }
+
+            protocol.sendNotice(client, myUserNode, fromNick, "Channel flags for " + chanNode.getChanName() + ": " + applicableChFlagsStr); 
+            return;
+
+        }
+
+        chanFlagsModSepStr = Flags.parseFlags(chanFlagsModRaw);
+        chanFlagsModSepInt.put("+", Flags.flagsCharsToInt("chanflags", chanFlagsModSepStr.get("+")));
+        chanFlagsModSepInt.put("-", Flags.flagsCharsToInt("chanflags", chanFlagsModSepStr.get("-")));
+        chanFlagsModSepInt.put("combined", 0);
+
+        /* Stripping the unknown and readonly flags */
+        chanFlagsModSepInt.replace("+", Flags.stripUnknownChanFlags(chanFlagsModSepInt.get("+")));
+        chanFlagsModSepInt.replace("-", Flags.stripUnknownChanFlags(chanFlagsModSepInt.get("-")));
+
+        /* Keeping admin editable flags if the user is admin */
+        if (Flags.hasUserAdminPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+            chanFlagsModSepInt.replace("+", Flags.keepChanAdminConFlags(chanFlagsModSepInt.get("+")));
+            chanFlagsModSepInt.replace("-", Flags.keepChanAdminConFlags(chanFlagsModSepInt.get("-")));
+            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
+        }
+        /* Keeping oper editable flags if the user is oper */
+        else if (Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+            chanFlagsModSepInt.replace("+", Flags.keepChanOperConFlags(chanFlagsModSepInt.get("+")));
+            chanFlagsModSepInt.replace("-", Flags.keepChanOperConFlags(chanFlagsModSepInt.get("-")));
+            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
+        }
+
+        /* Keeping chanowner editable flags if the user is owner of the than */
+        else if (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev().get(chanNode.getChanName())) == true) {
+            chanFlagsModSepInt.replace("+", Flags.keepChanOwnerConFlags(chanFlagsModSepInt.get("+")));
+            chanFlagsModSepInt.replace("-", Flags.keepChanOwnerConFlags(chanFlagsModSepInt.get("-")));
+            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
+        }
+        /* Keeping chanmaster editable flags if the user is master of the than */
+        else if (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev().get(chanNode.getChanName())) == true) {
+            chanFlagsModSepInt.replace("+", Flags.keepChanMasterConFlags(chanFlagsModSepInt.get("+")));
+            chanFlagsModSepInt.replace("-", Flags.keepChanMasterConFlags(chanFlagsModSepInt.get("-")));
+            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
+        }
+        /* User has no rights on the chan */
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use chanflags."); 
+            return;
+        }
+
+        chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
+
+        if (chanFlagsModSepInt.get("combined") == 0) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Nothing changed. Your requested flag combination change was either the same as the existing flags, impossible, or you don't have enough access."); 
+            return; 
+        }
+
+        try {
+
+            chanCurFlagsInt = chanNode.getChanFlags();
+            chanNewFlagsInt = Flags.applyFlagsFromInt("chanflags", chanCurFlagsInt, chanFlagsModSepInt);
+
+            sqliteDb.setChanFlags(chanNode, chanNewFlagsInt);
+            chanNode.setChanFlags(chanNewFlagsInt);
+
+            String chanNewFlagsStr = "";
+            if (chanNewFlagsInt > 0) { chanNewFlagsStr = "+" + Flags.flagsIntToChars("userflags", chanNode.getChanFlags()); }
+            else { chanNewFlagsStr = "(none)"; }
+
+            protocol.sendNotice(client, myUserNode, fromNick, "Done.");
+            protocol.sendNotice(client, myUserNode, fromNick, " - New chan flags for " + chanNode.getChanName() + " : " + chanNewFlagsStr + ".");
+        }
+
+        catch (Exception e) {
+            e.printStackTrace(); 
+            protocol.sendNotice(client, myUserNode, fromNick, "Error setting chanflags."); 
+            return; 
+        }
+
     }
+
+    public void cServeDrop() {
+
+    }
+
+    public void cServeRequestbot() {
+
+    }
+
+    public void cServeHello() {
+
+    }
+
+    public void cServeAuth() {
+
+    }
+
+    public void cServeChanlist() {
+
+    }
+
+    public void cServeUserlist () {
+
+    }
+
+    public void cServeServerlist() {
+
+    }
+
+    public void cServeLogout() {
+
+    }
+
+    public void cServeHelp() {
+
+    }
+
+    public void cServeVersion() {
+
+    }
+
+
 
 }

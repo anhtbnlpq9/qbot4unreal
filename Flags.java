@@ -173,8 +173,6 @@ abstract class Flags {
      * Note: some flags cannot be set through CHANFLAGS but with specific commands: +z.
      */
 
-    private static final String    CHFLAGS_LIST         = "bcefkptvw"; /* List of flags settable with CHANFLAGS */
-
     //private static final Integer   CHFLAG_SPARE_A       = 0x80000000; // +A
     //private static final Integer   CHFLAG_SPARE_B       = 0x40000000; // +B
     //private static final Integer   CHFLAG_SPARE_C       = 0x20000000; // +C
@@ -210,13 +208,23 @@ abstract class Flags {
 
     private static final Integer   CHFLAG_ALL           = 0xfffeffff; // except +j
 
-    private static final Integer   CHFLAG_USERCONTROL   = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
+    private static final Integer   CHFLAG_MASTERCONTROL  = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_PROTECT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
                                                            CHFLAG_TOPICSAVE | CHFLAG_VOICEALL);
-                                            
+
+    private static final Integer   CHFLAG_OWNERCONTROL   = (CHFLAG_MASTERCONTROL ); 
+
+    private static final Integer   CHFLAG_OPERCONTROL   = ( CHFLAG_OWNERCONTROL | CHFLAG_MASTERCONTROL );
+    private static final Integer   CHFLAG_ADMINCONTROL  = ( CHFLAG_OPERCONTROL );
+                                                           
     private static final Integer   CHFLAGS_READONLY     = ( CHFLAG_SUSPENDED | CHFLAG_JOINED ); /* flags non-settable through CHANFLAGS */
 
     private static final Integer   CHFLAGS_PUBLIC       = ( CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_JOINED | CHFLAG_KNOWNONLY | 
                                                             CHFLAG_TOPICSAVE | CHFLAG_VOICEALL | CHFLAG_WELCOME);
+
+    private static final Integer   CHFLAGS_ALLOWED      = ( CHFLAG_MASTERCONTROL | CHFLAG_OWNERCONTROL | CHFLAG_ADMINCONTROL | CHFLAG_OPERCONTROL );
+
+    private static final Integer   CHFLAGS_NEW_CHAN     = (CHFLAG_WELCOME | CHFLAG_JOINED);
+
 
     /**
      * Maps chan flag char to constant
@@ -1053,23 +1061,19 @@ abstract class Flags {
      */
 
     /**
-     * Returns the allowed channel flags list
-     * @return Allowed channel flags list
+     * Returns the public channel flags list
+     * @return Public channel flags list
      */
-    public static String getAllowedChanFlags() {
-        return CHFLAGS_LIST;
+    public static Integer getPublicChanFlags() {
+        return CHFLAGS_PUBLIC;
     }
 
     /**
-     * Returns if the channel flags contain user-controlled flags
-     * @param chanFlags Channel flags
-     * @return True or False
+     * Returns the default flags for new user accounts
+     * @return default user flags
      */
-    public static Boolean containsChanUserControlFlags(Integer chanFlags) {
-        if ((chanFlags & CHFLAG_USERCONTROL) == 0) {
-            return false;
-        }
-        else { return true; }
+    public static Integer getDefaultChanFlags() {
+        return CHFLAGS_NEW_CHAN;
     }
 
     /**
@@ -1433,6 +1437,60 @@ abstract class Flags {
             return chanFlagCharRevMap.get(chanFlag);
         }
         catch (Exception e) { throw new Exception("The channel flag does not exists."); }
+    }
+
+    /**
+     * Strips the unknown flags from the provided list
+     * @param chanFlags chan flags
+     * @return stripped chan flags
+     */
+    public static Integer stripUnknownChanFlags(Integer chanFlags) {
+        return (chanFlags & CHFLAGS_ALLOWED);
+    }
+
+    /**
+     * Keeps requested chanflags of chanmaster control flags
+     * @param chanFlags
+     * @return stripped flags
+     */
+    public static Integer keepChanMasterConFlags(Integer chanFlags) {
+        return (chanFlags & CHFLAG_MASTERCONTROL);
+    }
+
+    /**
+     * Keeps requested chanflags of chanowner-control flags
+     * @param chanFlags
+     * @return stripped flags
+     */
+    public static Integer keepChanOwnerConFlags(Integer chanFlags) {
+        return (chanFlags & CHFLAG_OWNERCONTROL);
+    }    
+
+    /**
+     * Keeps requested chanflags of oper-control flags
+     * @param chanFlags
+     * @return stripped flags
+     */
+    public static Integer keepChanOperConFlags(Integer chanFlags) {
+        return (chanFlags & CHFLAG_OPERCONTROL);
+    }
+
+    /**
+     * Keeps requested chanflags of admin-control flags
+     * @param chanFlags
+     * @return stripped flags
+     */
+    public static Integer keepChanAdminConFlags(Integer chanFlags) {
+        return (chanFlags & CHFLAG_ADMINCONTROL);
+    }
+
+    /**
+     * Strips non-public flags
+     * @param chanFlags
+     * @return stripped flags
+     */
+    public static Integer stripChanNonPublicFlags(Integer chanFlags) {
+        return (chanFlags & CHFLAGS_PUBLIC);
     }
 
 
