@@ -181,4 +181,7 @@ public class ChannelNode {
     public Integer getChanFlags() {
         return this.channelFlags;
     }
+    public HashMap<String, UserNode> getUsers() {
+        return this.chanUserList;
+    }
 }
