@@ -211,7 +211,7 @@ abstract class Flags {
     private static final Integer   CHFLAG_ALL           = 0xfffeffff; // except +j
 
     private static final Integer   CHFLAG_USERCONTROL   = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
-                                                           CHFLAG_PROTECT | CHFLAG_TOPICSAVE | CHFLAG_VOICEALL);
+                                                           CHFLAG_TOPICSAVE | CHFLAG_VOICEALL);
                                             
     private static final Integer   CHFLAGS_READONLY     = ( CHFLAG_SUSPENDED | CHFLAG_JOINED ); /* flags non-settable through CHANFLAGS */
 
