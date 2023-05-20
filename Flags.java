@@ -1,11 +1,10 @@
 import java.util.Map;
 import java.util.Set;
-
-import static java.util.Map.entry;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+
+import static java.util.Map.entry;
 
 /**
  * Flags class to host all methods regarding flags
@@ -136,7 +135,7 @@ abstract class Flags {
         entry(UFLAG_OPER,           "o"),
         entry(UFLAG_PROTECT,        "p"),
         entry(UFLAG_STAFF,          "q"),
-        entry(UFLAG_AUTOVHOST,    "v"),
+        entry(UFLAG_AUTOVHOST,      "v"),
         entry(UFLAG_WELCOME,        "w"),
         entry(UFLAG_SUSPENDED,      "z")
     );
@@ -163,7 +162,7 @@ abstract class Flags {
      * +v VOICEALL      :: Automatically voices all the users that join the channel whether they are in the channel CHANLEV or not.
      *                     Users with chanlev flag +u are not voiced.
      * +w WELCOME       :: Send the welcome notice to the users joining the channel.
-     * +z SUSPENDED     :: Marks the channel as suspended and frozen. Once set,
+     * +z SUSPENDED     :: Marks the channel as suspended and frozen. Also the +j flag will be cleared. Once set,
      *                     - the bot will leave the channel,
      *                     - it is not possible to perform modifications inside the channel parameters (CHANLEV/CHANFLAGS/SETTOPIC...),
      *                     - the channel will not appear inside an user WHOIS,
@@ -264,8 +263,8 @@ abstract class Flags {
 
     
     /* 
-     * Channel user ("chanlev") flags
-     * ==============================
+     * Channel user level ("chanlev") flags
+     * ====================================
      * 
      * The following is the description of the chanlev flags. Chanlev flags do not take argument.
      * +a AUTO          :: Auto voices/halfops/ops/admins/owners the user upon authing/joining the chan.
@@ -420,7 +419,7 @@ abstract class Flags {
      */
 
     /**
-     * Returns the allowed chanlev flags list
+     * Returns the allowed chanlev flags list XXX: to reimplement with numeric
      * @return Allowed chanlev flags list
      */
     public static String getAllowedChanLFlags() {
@@ -1870,6 +1869,12 @@ abstract class Flags {
         catch (Exception e) { return 0; }
     }
     
+
+    /*
+     * General methods
+     * ===============
+     */
+
     /**
      * Fetches the user flag character
      * @param userFlag User flag int
@@ -1979,7 +1984,7 @@ abstract class Flags {
      * Applies the modification flags (+/-) to the input flags depending on flags type.
      * @param type Flags type (chanlev, chanflags, userflags)
      * @param flagsInput Input flags (numeric)
-     * @param flagsMod Input change flags (+xyz / -xyz) (numeric)
+     * @param flagsMod Input change Integer flags (+xyz / -xyz) has a HashMap with a "+" key containing +flags and a "-" key containing -flags
      * @return
      */
     public static Integer applyFlagsFromInt(String type, Integer flagsInput, HashMap<String, Integer> flagsMod) {
@@ -2080,5 +2085,5 @@ abstract class Flags {
 
         return flagsTemp;
     }
-
 }
+
