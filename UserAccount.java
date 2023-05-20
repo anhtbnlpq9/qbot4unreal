@@ -184,7 +184,10 @@ public class UserAccount {
      * @throws Exception
      */
     public Integer getUserChanlev(ChannelNode channel) {
+        if (this.userChanlev.containsKey(channel.getChanName()) == true) {
             return this.userChanlev.get(channel.getChanName());
+        }
+        else return 0;
     }
 
     /**

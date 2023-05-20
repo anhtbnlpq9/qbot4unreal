@@ -62,8 +62,9 @@ public class Protocol extends Exception {
      * @param userAccountName user account name
      * @return user account object
      */
-    public UserAccount getRegUserAccount(String userAccountName) {
-        return userAccounts.get(userAccountName);
+    public UserAccount getRegUserAccount(String userAccountName) throws Exception {
+        if (userAccounts.containsKey(userAccountName) == true) return userAccounts.get(userAccountName);
+        else throw new Exception("User account not found.");
     }
 
     /**
