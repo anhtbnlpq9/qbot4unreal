@@ -1499,6 +1499,14 @@ abstract class Flags {
      */
 
     /**
+     * Returns the public user flags list
+     * @return Public user flags list
+     */
+    public static Integer getPublicUserFlags() {
+        return UFLAGS_PUBLIC;
+    }
+
+    /**
      * Returns the default flags for new user accounts
      * @return default user flags
      */
