@@ -215,6 +215,9 @@ abstract class Flags {
                                             
     private static final Integer   CHFLAGS_READONLY     = ( CHFLAG_SUSPENDED | CHFLAG_JOINED ); /* flags non-settable through CHANFLAGS */
 
+    private static final Integer   CHFLAGS_PUBLIC       = ( CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_JOINED | CHFLAG_KNOWNONLY | 
+                                                            CHFLAG_TOPICSAVE | CHFLAG_VOICEALL | CHFLAG_WELCOME);
+
     /**
      * Maps chan flag char to constant
      */
