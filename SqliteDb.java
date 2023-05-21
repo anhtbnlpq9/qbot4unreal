@@ -851,6 +851,32 @@ public class SqliteDb {
         return account;
     }
 
+    /**
+     * Returns the list of user UID in the token list
+     * @return HS of the UIDs
+     * @throws Exception
+     */
+    public HashSet<String> getUserLoginToken() throws Exception {
+        Statement statement          = null;
+        String sql                   = null;
+        ResultSet resultSet          = null;
+        HashSet<String> uidTokenList = new HashSet<>();
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT userSid FROM logins;";
+            resultSet = statement.executeQuery(sql);
+            while(resultSet.next()) {
+                uidTokenList.add(resultSet.getString("userSid"));
+            }
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        } 
+        statement.close();
+        return uidTokenList;
+    }
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
@@ -874,4 +900,37 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getChanName() + " flags."); }
     }
+
+    /**
+     * Cleans the "expired" tokens in the database, ie it deletes the stored user UID that does not match
+     * user UIDs on the network, meaning that the user has disconnected and will not be able to recover his auth.
+     * This is to prevent the table to grow indefinitely.
+     * Do not run this method too often because sometimes users are temporarily "disconnected" (ie during splits).
+     */
+    public void cleanInvalidLoginTokens() {
+        HashSet<String> userUidTokens = null;
+        HashSet<String> userUidNetwork = new HashSet<>();
+
+        /* Getting the list of user UIDs in the DB */
+        try {
+            userUidTokens = this.getUserLoginToken();
+        }
+        catch (Exception e) { e.printStackTrace();}
+        
+        /* Getting the list of user UIDs on the network */
+        protocol.getUserList().forEach((userUid, userNode) -> {
+            userUidNetwork.add(userUid);
+        });
+
+        /* Parsing the DB token list and removing the tokens corresponding of users present on the network  */
+        /* We can remove the ones corresponding to nobody on the network */
+        for(String userUid : userUidTokens) {
+            if (userUidNetwork.contains(userUid) == false) {
+                System.out.println("* DB cleanup: deleting expired user UID " + userUid);
+                try { this.delUserAuth(userUid); }
+                catch (Exception e) { e.printStackTrace(); }
+            }
+        }
+    }
+
 }

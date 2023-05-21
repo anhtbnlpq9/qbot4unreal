@@ -58,5 +58,11 @@ public class Qbot {
 
         System.out.println("* Starting CService");
         tlsClient.launchCService(); 
+
+        /* Thread to manage the database schedules tasks */
+        SqliteDbTasks sqliteDbCleanup = new SqliteDbTasks(sqliteDb);
+        Thread sqliteDbCleanupThread = new Thread(sqliteDbCleanup);
+        sqliteDbCleanupThread.start();
+
     }    
 }
