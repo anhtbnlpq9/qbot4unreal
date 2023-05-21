@@ -13,7 +13,7 @@
 - [ ] account editing
 - [ ] nick ownership
 - [ ] auth history
-- [ ] account expiry
+- [ ] account auto expiry
 
 ### Channels
 - [X] channel registration
@@ -23,7 +23,7 @@
 - [ ] MLOCK
 - [ ] bans, excepts, invites
 - [ ] chanlev history
-- [ ] channel expiry
+- [ ] channel auto expiry
 
 ## Advanced stuff
 
@@ -125,7 +125,7 @@
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD
 
-### Coding
+# Coding
 - [ ] rework SJOIN handling
 - [ ] rework MODE handling
 - [ ] rework CHANLEV

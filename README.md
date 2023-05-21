@@ -58,7 +58,7 @@ Plan for some other features:
 
 ## Roadmap
 
-There is no roadmap, the development just goes as my ideas flow.
+There is no roadmap, the development just goes as my ideas flow, but I have created a [To Do](TODO.md) list.
 
 ## License
 
