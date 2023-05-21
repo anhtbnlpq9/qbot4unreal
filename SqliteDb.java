@@ -1,6 +1,7 @@
 import java.sql.*;
 //import org.sqlite.JDBC;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.time.Instant;
 
@@ -30,20 +31,28 @@ public class SqliteDb {
      * Returns the list of registered chans as an ArrayList<String>
      * @return registered chan list
      */
-    public HashMap<String, ChannelNode> getRegChan(){
+    public HashMap<String, HashMap<String, Object>> getRegChans(){
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
 
-        HashMap<String, ChannelNode> regChannels = new HashMap<String, ChannelNode>();
+        HashMap<String, HashMap<String, Object>> regChannels = new HashMap<String, HashMap<String, Object>>();
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT name, regTS, chanflags FROM channels;";
+            sql = "SELECT * FROM channels;";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                ChannelNode channelnode = new ChannelNode(resultSet.getString("name"), resultSet.getLong("regTS"), resultSet.getInt("chanflags"));
-                regChannels.put(resultSet.getString("name"), channelnode);
+                HashMap<String, Object> channelProperties = new HashMap<>();
+                channelProperties.put("name",         resultSet.getString("name") );
+                channelProperties.put("channelId",    resultSet.getInt("cid") );
+                channelProperties.put("regTS",        resultSet.getLong("regTS") );
+                channelProperties.put("chanflags",    resultSet.getInt("chanflags") );
+                channelProperties.put("welcome",      resultSet.getString("welcome") );
+                channelProperties.put("topic",        resultSet.getString("topic") );
+                channelProperties.put("bantime",      resultSet.getInt("bantime") );
+                channelProperties.put("autolimit",    resultSet.getInt("autolimit") );
+                regChannels.put(resultSet.getString("name"), channelProperties);
             }
             statement.close();
         }

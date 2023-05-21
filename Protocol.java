@@ -45,11 +45,26 @@ public class Protocol extends Exception {
             //System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
         });
 
-        this.regChannels  = sqliteDb.getRegChan();
+        sqliteDb.getRegChans().forEach( (chanName, chanHM) -> {
+            this.regChannels.put(chanName, 
+                                 new ChannelNode(sqliteDb, 
+                                 (String) chanHM.get("name"), 
+                                 (Long) chanHM.get("regTS"), 
+                                 (Integer) chanHM.get("chanflags"), 
+                                 (Integer) chanHM.get("channelId"), 
+                                 (String) chanHM.get("welcome"),
+                                 (String) chanHM.get("topic"),
+                                 (Integer) chanHM.get("bantime"),
+                                 (Integer) chanHM.get("autolimit")
+                                   )
+            );
 
-        this.regChannels.forEach( (regChannelName, regChannelNode) -> {
-            channelList.put(regChannelName, regChannelNode);
         });
+
+        this.channelList = this.regChannels;
+        //this.regChannels.forEach( (regChannelName, regChannelNode) -> {
+        //    channelList.put(regChannelName, regChannelNode);
+        //});
     }
 
     /**
