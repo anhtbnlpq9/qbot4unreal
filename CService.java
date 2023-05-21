@@ -1078,7 +1078,7 @@ public class CService {
             chanNode.setChanFlags(chanNewFlagsInt);
 
             String chanNewFlagsStr = "";
-            if (chanNewFlagsInt > 0) { chanNewFlagsStr = "+" + Flags.flagsIntToChars("userflags", chanNode.getChanFlags()); }
+            if (chanNewFlagsInt > 0) { chanNewFlagsStr = "+" + Flags.flagsIntToChars("chanflags", chanNode.getChanFlags()); }
             else { chanNewFlagsStr = "(none)"; }
 
             protocol.sendNotice(client, myUserNode, fromNick, "Done.");
