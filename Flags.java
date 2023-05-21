@@ -345,8 +345,8 @@ abstract class Flags {
     private static final Integer   CLFLAG_ALL           = 0xffffffff;
 
     private static final Integer   CLFLAG_VOICE_PRIV    = (CLFLAG_VOICE | CLFLAG_OP | CLFLAG_HALFOP | CLFLAG_MASTER | CLFLAG_OWNER);
-    private static final Integer   CLFLAG_OP_PRIV       = (CLFLAG_OP | CLFLAG_HALFOP | CLFLAG_MASTER | CLFLAG_OWNER);
-    private static final Integer   CLFLAG_HALFOP_PRIV   = (CLFLAG_HALFOP | CLFLAG_MASTER | CLFLAG_OWNER);
+    private static final Integer   CLFLAG_HALFOP_PRIV   = (CLFLAG_HALFOP | CLFLAG_OP | CLFLAG_MASTER | CLFLAG_OWNER);
+    private static final Integer   CLFLAG_OP_PRIV       = (CLFLAG_OP | CLFLAG_MASTER | CLFLAG_OWNER);
     private static final Integer   CLFLAG_MASTER_PRIV   = (CLFLAG_MASTER | CLFLAG_OWNER);
     private static final Integer   CLFLAG_OWNER_PRIV    = (CLFLAG_OWNER);
 
