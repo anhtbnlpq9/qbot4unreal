@@ -383,7 +383,7 @@ public class Config {
      * Returns the configures vhost prefix for user authentication
      * @return host prefix
      */
-    public String getCserveHostPrefix() {
+    public String getCServeHostPrefix() {
         return this.cserviceAccountHostPrefix;
     }
 
@@ -391,7 +391,7 @@ public class Config {
      * Returns the configures vhost suffix for user authentication
      * @return host suffix
      */
-    public String getCserveHostSuffix() {
+    public String getCServeHostSuffix() {
         return this.cserviceAccountHostSuffix;
     }
 

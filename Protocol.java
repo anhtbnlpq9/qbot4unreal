@@ -487,7 +487,7 @@ public class Protocol extends Exception {
 
     public void chgHost(Client client, UserNode toTarget, String vhost) {
         String who = config.getServerId();
-        String vhostComplete = config.getCserveHostPrefix() + vhost + config.getCserveHostSuffix();
+        String vhostComplete = config.getCServeHostPrefix() + vhost + config.getCServeHostSuffix();
         String str = ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
         client.write(str);
     }
