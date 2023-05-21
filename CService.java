@@ -144,20 +144,16 @@ public class CService {
     public void handleMessage(UserNode fromNickRaw, String str) {
         fromNick = fromNickRaw;
 
+        if (str.toUpperCase().startsWith("HELP")) { 
+            String[] helpCommandNameSplit = str.toUpperCase().split(" ", 3);
+            String helpCommandName;
 
-        if (str.toUpperCase().startsWith("HELP ALL")) {                    Help.getHelp("commands", "ALL").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP AUTH")) {              Help.getHelp("commands", "AUTH").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP AUTHHISTORY")) {       Help.getHelp("commands", "AUTHHISTORY").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP CHANFLAGS")) {         Help.getHelp("commands", "CHANFLAGS").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP CHANLEV")) {           Help.getHelp("commands", "CHANLEV").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP DROP")) {              Help.getHelp("commands", "DROP").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP HELLO")) {             Help.getHelp("commands", "HELLO").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP LOGOUT")) {            Help.getHelp("commands", "LOGOUT").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP REQUESTBOT")) {        Help.getHelp("commands", "HELLO").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP SHOWCOMMANDS")) {      Help.getHelp("commands", "SHOWCOMMANDS").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP USERFLAGS")) {         Help.getHelp("commands", "USERFLAGS").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP VERSION")) {           Help.getHelp("commands", "VERSION").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-        else if (str.toUpperCase().startsWith("HELP WHOIS")) {             Help.getHelp("commands", "WHOIS").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
+            if(helpCommandNameSplit[0].equals("HELP") == true) {
+                try { helpCommandName = helpCommandNameSplit[1]; }
+                catch (ArrayIndexOutOfBoundsException e) {  protocol.sendNotice(client, myUserNode, fromNick, "Nope."); return; }
+                cServeHelp(fromNick, helpCommandName);
+            }
+        }
         else if (str.toUpperCase().startsWith("SHOWCOMMANDS")) {
             if (fromNick.getUserAuthed() == false) {  Help.getHelp("levels", "0-UNAUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
             else if (fromNick.getUserAuthed() == true) { Help.getHelp("levels", "10-AUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
@@ -1129,8 +1125,13 @@ public class CService {
 
     }
 
-    public void cServeHelp() {
-
+    /**
+     * Handles the help
+     * @param fromNick requester user node
+     * @param commandName command string
+     */
+    public void cServeHelp(UserNode fromNick, String commandName) {
+        Help.getHelp("commands", commandName).forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} );
     }
 
     public void cServeVersion() {
