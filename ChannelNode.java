@@ -19,8 +19,14 @@ public class ChannelNode {
     private Map<String, Integer> chanChanlev; // Map username -> chanlev
     private Integer chanUserCount = 0;
     private Integer channelFlags = 0;
+    private Integer autoLimit = 10;
+    private Integer banTime = 0;
+    private String chanRegisteredTopic = "";
+    private String chanWelcomeMsg = "";
 
-    private long channelTS;
+    private Integer channelId;
+
+    private long channelTS; /* If channel is registered, channel TS = registration TS */
     
     /* Contains the UserNodes inside the chan */
     private HashMap<String, UserNode> chanUserList = new HashMap<String, UserNode>();
@@ -36,11 +42,16 @@ public class ChannelNode {
         this.channelTS = channelTS;
     }
 
-    public ChannelNode(String channelName, Long channelTS, Integer channelFlags) {
+    public ChannelNode(SqliteDb sqliteDb, String channelName, Long channelTS, Integer channelFlags, Integer chanId, String chanWelcomeMsg, String chanRegTopic, Integer banTime, Integer autoLimit) {
         this.channelName = channelName;
         this.channelTS = channelTS;
         this.channelFlags = channelFlags;
         this.channelRegistered = true;
+        this.channelId = chanId;
+        this.chanWelcomeMsg = chanWelcomeMsg;
+        this.chanRegisteredTopic = chanRegTopic;
+        this.banTime = banTime;
+        this.autoLimit = autoLimit;
     }
 
     public ChannelNode( String channelName, 
@@ -184,5 +195,13 @@ public class ChannelNode {
     }
     public HashMap<String, UserNode> getUsers() {
         return this.chanUserList;
+    }
+
+    public Integer getChanAutoLimit() {
+        return this.autoLimit;
+    }
+
+    public void setAutoLimit(Integer autolimit) {
+        this.autoLimit = autolimit;
     }
 }
