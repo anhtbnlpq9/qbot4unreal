@@ -89,6 +89,18 @@ public class ServerNode {
         return this.introducedBy;
     }
 
+    public String getDescription() {
+        return this.serverDescription;
+    }
+
+    public String getTS() {
+        return serverTS;
+    }
+
+    public String getDistance() {
+        return serverDistance;
+    }
+
     public void setIntroducedBy(ServerNode introducer) {
         this.introducedBy = introducer;
     }

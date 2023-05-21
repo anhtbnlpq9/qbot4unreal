@@ -886,6 +886,11 @@ public class SqliteDb {
         statement.close();
         return uidTokenList;
     }
+
+    /**
+     * Sets the reference of the protocol object
+     * @param protocol protocol object
+     */
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }

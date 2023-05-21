@@ -44,6 +44,7 @@ public class Client implements Runnable {
     }
 
     public void run() {
+        System.out.println("* Starting client thread");
         try {
             SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
             clientSocket = ssf.createSocket(config.getLinkPeerHost(), config.getLinkPeerPort());
