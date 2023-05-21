@@ -74,7 +74,8 @@ public class ChannelNode {
     }
 
     public void setMode(String mode, String param) {
-        this.channelModes.replace(mode, param);
+        if (this.channelModes.containsKey(mode)) { this.channelModes.replace(mode, param); }
+        else { this.channelModes.put(mode, param); }
     }
 
     public void delMode(String mode) {
@@ -82,7 +83,7 @@ public class ChannelNode {
     }
 
     public void delMode(String mode, String param) {
-        this.channelModes.remove(mode);
+        delMode(mode);
     }
 
     public void setTopic(String topic) {
