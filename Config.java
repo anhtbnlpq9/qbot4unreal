@@ -46,6 +46,7 @@ public class Config {
     private String cserviceStaticChan;
     private String cserviceAccountHostPrefix;
     private String cserviceAccountHostSuffix;
+    private Integer   cserviceChanAutoLimitFreq;
 
     /* Network parameters */
     private String networkName;
@@ -108,6 +109,8 @@ public class Config {
         LinkedHashMap cserviceaccount = (LinkedHashMap) confcservice.get("accountsettings");
         cserviceAccountHostPrefix     = (String) cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix     = (String) cserviceaccount.get("authvhostsuffix");
+        LinkedHashMap cservicechan    = (LinkedHashMap) confcservice.get("chansettings");
+        cserviceChanAutoLimitFreq     = (Integer) cservicechan.get("autolimitfreq");
 
         LinkedHashMap confNetwork     = (LinkedHashMap) data.get("network");
         networkName                   = (String) confNetwork.get("name");
@@ -390,5 +393,13 @@ public class Config {
      */
     public String getCserveHostSuffix() {
         return this.cserviceAccountHostSuffix;
+    }
+
+    /**
+     * Returns the frequency in seconds of the channel autolimit auto settings
+     * @return frequency in seconds
+     */
+    public Integer getCServeAutoLimitFreq(){
+        return this.cserviceChanAutoLimitFreq;
     }
 }

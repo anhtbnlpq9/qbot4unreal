@@ -1,0 +1,14 @@
+Usage: AUTOLIMIT <channel> [<threshold>]
+The autolimit feature maintains a user limit (+l) on the channel which is
+regularly updated to keep a fixed number of spaces free on the channel for
+people to join.  This is useful since it prevents a large number of "clones"
+joining at the same time.  However, if the number of free spaces is too small
+it's possible that legitimate users won't be able to join.  This command allows
+you to adjust the number of free spaces to maintain when autolimit is enabled.  
+To actually turn the autolimit feature on or off, see CHANFLAGS.  Where:
+ * channel   - the channel to use.
+ * threshold - specifies the new threshold.  If not specified, the current threshold 
+               is displayed.
+Viewing the current threshold requires operator (+o) access on the named channel.
+Updating the threshold requires master (+m) access on the named channel.
+End of help.

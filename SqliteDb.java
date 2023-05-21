@@ -655,6 +655,60 @@ public class SqliteDb {
         return userCertFP;
     }
 
+    /**
+     * Returns the channel AutoLimit value
+     * @param channel channel node
+     * @return autolimit value
+     * @throws Exception
+     */
+    public Integer getChanAutoLimit(ChannelNode channel) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Integer autoLimit        = 10;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT autolimit FROM channels WHERE lower(name)='" + channel.getChanName().toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            autoLimit = resultSet.getInt("autolimit");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get channel " + channel.getChanName() + " autolimit.");
+        }
+        statement.close();
+        return autoLimit;
+    }
+
+    /**
+     * Sets the channel AutoLimit value
+     * @param channel channel node
+     * @param autolimit autolimit value
+     * @throws Exception
+     */
+    public void setChanAutoLimit(ChannelNode channel, Integer autolimit) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "UPDATE channels SET autolimit='" + String.valueOf(autolimit) + "' WHERE lower(name)='" + channel.getChanName().toLowerCase() +"';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set channel " + channel.getChanName() + " autolimit."); }
+    }
+
+    /**
+     * Returns the user account id
+     * @param username username
+     * @return user id
+     * @throws Exception
+     */
     public Integer getId(String username) throws Exception {
         Statement statement      = null;
         String sql               = null;

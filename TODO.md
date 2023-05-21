@@ -54,7 +54,7 @@
 - [ ] ADDUSER
 - [X] AUTH
 - [ ] AUTHHISTORY
-- [ ] AUTOLIMIT
+- [X] AUTOLIMIT
 - [ ] BANCLEAR
 - [ ] BANDEL
 - [ ] BANLIST

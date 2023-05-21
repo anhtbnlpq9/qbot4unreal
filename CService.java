@@ -123,6 +123,12 @@ public class CService {
         cServiceReady = true;
         this.protocol = protocol;
         protocol.setCService(this);
+
+        /* Starting thread for channel auto limit */
+        ChanAutoLimit chanAutoLimit = new ChanAutoLimit(this, config);
+        Thread chanAutoLimitThread = new Thread(chanAutoLimit);
+        chanAutoLimitThread.start();
+
     }
     public void setClient(Client client) {
         this.client = client;
@@ -557,7 +563,9 @@ public class CService {
         else if (str.toUpperCase().startsWith("CHANFLAGS")) { /* CHANFLAGS [flags] */
             cServeChanflags(fromNickRaw, str);
         }
-
+        else if (str.toUpperCase().startsWith("AUTOLIMIT")) { /* CHANFLAGS [flags] */
+            cServeAutoLimit(fromNickRaw, str);
+        }
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
         }
@@ -1105,6 +1113,98 @@ public class CService {
 
     }
 
+    /**
+     * Sets the channel limit based on the channel autolimit feature
+     */
+    public void cServeSetAutolimit() {
 
+        //ChannelNode chanNode;
+        protocol.getRegChanList().forEach( (chanName, chanNode) -> {
 
+            Integer curChanUserCount = chanNode.getChanUserCount();
+            Integer curChanModeLimit;
+            Integer chanAutoLimit = chanNode.getChanAutoLimit();
+            Integer newLimit = (chanAutoLimit + curChanUserCount);
+
+            try {
+                curChanModeLimit = Integer.valueOf(chanNode.getMode("l"));
+            }
+            catch (Exception e) {
+                curChanModeLimit = 0;
+            }
+            
+            if ((Flags.isChanAutolimit(chanNode.getChanFlags()) == true) && newLimit != curChanModeLimit) {
+                try {
+                    protocol.setMode(client, myUserNode, chanNode, "+l", String.valueOf(newLimit));
+                    System.out.println("* Autolimit: set limit of " + chanName + " to " + String.valueOf(newLimit));
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+    /**
+     * Handles the setting of channel autolimit
+     * @param fromNick requester user node
+     * @param str command string
+     */
+    public void cServeAutoLimit(UserNode fromNick, String str) {
+        String[] command = str.split(" ",5);
+        Integer chanAutoLimitInt = 0;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. AUTOLIMIT <channel> [limit]]."); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Channel " + channel + " is unknown or suspended."); 
+            return;
+        }
+
+        try {  chanAutoLimitInt =  Integer.valueOf(command[2]); }
+        catch (ArrayIndexOutOfBoundsException e) {
+            Integer chanCurAutoLimit = 0;
+
+            if ( Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true || Flags.hasChanLOpPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true ) {
+                chanCurAutoLimit = chanNode.getChanAutoLimit();
+                protocol.sendNotice(client, myUserNode, fromNick, "Current autolimit setting on " + chanNode.getChanName() + ": " + chanCurAutoLimit); 
+            }
+            else { protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use autolimit."); } 
+            return;
+
+        }
+        if (Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true || Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) {
+
+            try {
+                sqliteDb.setChanAutoLimit(chanNode, chanAutoLimitInt);
+                chanNode.setAutoLimit(chanAutoLimitInt);
+
+                protocol.sendNotice(client, myUserNode, fromNick, "Done.");
+                protocol.sendNotice(client, myUserNode, fromNick, " - Autolimit for " + chanNode.getChanName() + " : " + chanAutoLimitInt + ".");
+
+            }
+            catch (Exception e) {
+                e.printStackTrace(); 
+                protocol.sendNotice(client, myUserNode, fromNick, "Error setting autolimit."); 
+                return; 
+            }
+
+        }
+        /* User has no rights on the chan */
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use autolimit.");
+            return;
+        }
+    }
 }

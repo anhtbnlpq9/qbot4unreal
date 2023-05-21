@@ -64,3 +64,4 @@ cservice:
         infolen: 100
         maxchanlevs: 500
         maxbans: 100
+        autolimitfreq: 30

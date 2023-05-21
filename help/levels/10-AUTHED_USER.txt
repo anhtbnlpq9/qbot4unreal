@@ -2,7 +2,7 @@ The following commands are available to you as authenticated user.
 For more information on a specific command, type HELP <command>:
 //ADDUSER            Adds one or more users to a channel.
 //AUTHHISTORY        View auth history for an account.
-//AUTOLIMIT          Shows or changes the autolimit threshold on a channel.
+AUTOLIMIT          Shows or changes the autolimit threshold on a channel.
 //BANCLEAR           Removes all bans from a channel including persistent bans.
 //BANDEL             Removes a single ban from a channel.
 //BANLIST            Displays all persistent bans on a channel.
