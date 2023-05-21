@@ -37,15 +37,14 @@ public class Config {
     private String  linkPassword;    
 
     /* Chanservice parameters */
-    private String cserviceNick;
-    private String cserviceUniq;
-    private String cserviceIdent;
-    private String cserviceHost;
-    private String cserviceReal;
-    private String cserviceModes;
-    private String cserviceStaticChan;
-    private String cserviceAccountHostPrefix;
-    private String cserviceAccountHostSuffix;
+    private String    cserviceNick;
+    private String    cserviceUniq;
+    private String    cserviceIdent;
+    private String    cserviceHost;
+    private String    cserviceReal;
+    private String    cserviceModes;
+    private String    cserviceAccountHostPrefix;
+    private String    cserviceAccountHostSuffix;
     private Integer   cserviceChanAutoLimitFreq;
 
     /* Network parameters */
@@ -105,7 +104,6 @@ public class Config {
         cserviceHost                  = (String) confcservice.get("host");
         cserviceReal                  = (String) confcservice.get("realname");
         cserviceModes                 = (String) confcservice.get("modes");
-        cserviceStaticChan            = (String) confcservice.get("staticchan");
         LinkedHashMap cserviceaccount = (LinkedHashMap) confcservice.get("accountsettings");
         cserviceAccountHostPrefix     = (String) cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix     = (String) cserviceaccount.get("authvhostsuffix");

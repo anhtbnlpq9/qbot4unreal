@@ -89,7 +89,7 @@ public class SqliteDb {
     /**
      * Add a channel into the databse
      * @param channel channel name
-     * @param owner owner user id //XXX to be deleted because ownership can be handled by chanlev
+     * @param owner owner user id //TODO to be deleted because ownership can be handled by chanlev
      * @throws Exception
      */
     public void addRegChan(ChannelNode channel, UserAccount owner) throws Exception {
@@ -822,6 +822,12 @@ public class SqliteDb {
         return tokenList;
     }
 
+    /**
+     * Returns the user account associated to a login token
+     * @param user user node
+     * @return user account
+     * @throws Exception
+     */
     public UserAccount getUserLoginToken(UserNode user) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -849,6 +855,12 @@ public class SqliteDb {
         this.protocol = protocol;
     }
 
+    /**
+     * Sets the chan flags inside the database
+     * @param chan channel node
+     * @param flags flags
+     * @throws Exception
+     */
     public void setChanFlags(ChannelNode chan, Integer flags) throws Exception {
         Statement statement      = null;
         String sql               = null;

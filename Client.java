@@ -10,6 +10,9 @@ import java.net.Socket;
 import java.util.Map;
 import javax.net.ssl.SSLSocketFactory;
 
+/**
+ * Client class
+ */
 public class Client implements Runnable {
     
     public Config config;

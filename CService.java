@@ -165,7 +165,6 @@ public class CService {
 
             if (fromNick.getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
         }
-
         else if (str.equalsIgnoreCase("USERLIST")) {
 
             if (fromNick.getUserModes().matches("(.*)o(.*)") == false) {
@@ -569,9 +568,13 @@ public class CService {
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
         }
-
     }
 
+    /**
+     * Triggers the activities to perform when an user joins a channel
+     * @param user user node joining channel
+     * @param channel channel node joined
+     */
     public void handleJoin(UserNode user, ChannelNode channel) {
         //System.out.println("BBA chanjoin");
         // check if user is authed
@@ -628,6 +631,12 @@ public class CService {
         }
     }
 
+    /**
+     * 
+     * @param fromNick requester user node
+     * @param nick requested nick or account
+     * @param str command string
+     */
     public void cServeWhois(UserNode fromNick, String nick, String str) {
         Whois whois = (whoisUserAccount) -> {
 
@@ -715,6 +724,11 @@ public class CService {
         }
     }
 
+    /**
+     * Handles the setting of chanlev
+     * @param fromNick requester user node
+     * @param str command string
+     */
     public void cServeChanlev(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
         String userNick = "";
@@ -875,6 +889,11 @@ public class CService {
 
     }
 
+    /**
+     * Handles the setting of userflags
+     * @param fromNick requester user node
+     * @param str command string
+     */
     public void cServeUserflags(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
         String flagsModRaw = "";
@@ -955,6 +974,11 @@ public class CService {
         }
     }
 
+    /**
+     * Handles the setting of chanflags
+     * @param fromNick requester user node
+     * @param str command string
+     */
     public void cServeChanflags(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
         String chanFlagsModRaw = "";

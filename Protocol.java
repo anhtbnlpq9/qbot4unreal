@@ -21,9 +21,9 @@ public class Protocol extends Exception {
     private HashMap<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
     private HashMap<String, ChannelNode>     regChannels         = new HashMap<String, ChannelNode>();
     private HashMap<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
-    private HashMap<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; XXX : to transform to <String, UserNode>
+    private HashMap<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; TODO : to transform to <String, UserNode>
     private HashMap<String, String>          protocolProps       = new HashMap<String, String>();
-    private HashMap<String, Boolean>          featureList         = new HashMap<>();
+    private HashMap<String, Boolean>         featureList         = new HashMap<>();
     
     String myPeerServerId;
     Long   unixTime;
@@ -497,7 +497,6 @@ public class Protocol extends Exception {
         if (featureList.containsKey(feature)) { featureValue = featureList.get(feature); }
         return featureValue;
     }
-
 
     public Map<String, ServerNode> getServerList() {
         return this.serverList;

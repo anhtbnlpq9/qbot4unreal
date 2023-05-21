@@ -198,6 +198,10 @@ public class UserAccount {
         return this.userAccountId;
     }
 
+    /**
+     * Returns the account registration timestamp
+     * @return registration timestamp
+     */
     public Long getRegTS() {
         return this.userAccountRegTS;
     }

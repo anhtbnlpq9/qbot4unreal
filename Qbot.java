@@ -1,8 +1,15 @@
 
+/**
+ * Main class
+ */
 public class Qbot {
 
     private static final String CONFIG_FILE = "./conf/config.yml";
 
+    /**
+     * Main method
+     * @param args no arguments
+     */
     public static void main(String[] args) {
         System.out.println("+----------------------------------------------------------------+\n"
 + "|                                                                |\n"
@@ -27,14 +34,14 @@ public class Qbot {
 + "+----------------------------------------------------------------+\n"
                 );
 
-        System.out.println("* Loading conf");
+        System.out.println("* Loading configuration file");
         Config config = new Config(CONFIG_FILE);
 
         System.out.println("* Opening database");
         SqliteDb sqliteDb = new SqliteDb(config);
-        sqliteDb.getRegChan();
 
-        System.out.println("* Starting client socket");
+
+        /* Client thread */
         Client tlsClient = new Client(config, sqliteDb);
         Thread thread = new Thread(tlsClient);
         thread.start();
@@ -42,9 +49,7 @@ public class Qbot {
         tlsClient.setThread(thread);
 
         while (tlsClient.getReady() == false) {
-            try {
-                Thread.sleep(1000);
-            }
+            try { Thread.sleep(1000); }
             catch (Exception e) { e.printStackTrace(); }
         }
 

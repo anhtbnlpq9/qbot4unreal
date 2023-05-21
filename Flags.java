@@ -419,7 +419,7 @@ abstract class Flags {
      */
 
     /**
-     * Returns the allowed chanlev flags list XXX: to reimplement with numeric
+     * Returns the allowed chanlev flags list TODO: to reimplement with numeric
      * @return Allowed chanlev flags list
      */
     public static String getAllowedChanLFlags() {
