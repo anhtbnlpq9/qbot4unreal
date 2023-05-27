@@ -263,6 +263,19 @@ public class Protocol extends Exception {
 
         chan.setChanUserCount(chanUserCount+1);
         client.write(str);
+
+        /* Set topic when joining the chan (if cflag SAVETOPIC) */
+        if (Flags.isChanTopicSave(chan.getChanFlags()) == true) {
+            String savedTopic = "";
+
+            try {
+                savedTopic = sqliteDb.getTopic(chan);
+            }
+            catch (Exception e) { return; }
+ 
+            str = ":" + who.getUserUniq() + " TOPIC " + chan.getChanName() + " :" + savedTopic;
+            client.write(str);
+        }
     }
    
     /**
@@ -499,6 +512,12 @@ public class Protocol extends Exception {
         String target = toTarget.getChanName();
         setMode(client, who, target, modes, parameters);
     }
+
+    public void setTopic(Client client, UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
+        String str = ":" + from.getUserUniq() + " TOPIC " + to.getChanName() + " :" + topic;
+        client.write(str);
+    }
+
 
     public void chgHost(Client client, UserNode toTarget, String vhost) {
         String who = config.getServerId();
@@ -1329,6 +1348,40 @@ public class Protocol extends Exception {
 
 
         }
+        else if (command[0].equals("TOPIC")) { /* only at syncing */
+            //TOPIC #chan w!h@h ts :topic
+
+
+            String[] topicRawStr = raw.split(" ", 5);
+            ChannelNode chanNode;
+            String chanTopic = "";
+            
+            /* Normally TOPIC is always sent after SJOIN, so the channel should be created. */
+            chanNode = getChannelNodeByName(topicRawStr[1]);
+
+            chanNode.setTopic(String.valueOf(topicRawStr[4]).replaceFirst(":", ""));
+            chanNode.setTopicTS(Long.valueOf(topicRawStr[3]));
+            chanNode.setTopicBy(topicRawStr[2]);
+        }
+        else if (command[1].equals("TOPIC")) { /* only after syncing */
+            //:ABC TOPIC #chan w!h@h ts :topic
+
+            String[] topicRawStr = command[2].split(" ", 4);
+            ChannelNode chanNode;
+            String chanTopic = "";
+            
+            chanNode = getChannelNodeByName(topicRawStr[0]);
+
+            chanNode.setTopic(String.valueOf(topicRawStr[3]).replaceFirst(":", ""));
+            chanNode.setTopicTS(Long.valueOf(topicRawStr[2]));
+            chanNode.setTopicBy(topicRawStr[1]);
+
+            try {
+                cservice.handleTopic(chanNode);
+            }
+            catch (Exception e) { /* CServe not yet connected */ }
+        }
+
 
         else {
             if (command[0].equals("PING")) {

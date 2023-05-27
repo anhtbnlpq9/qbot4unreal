@@ -13,7 +13,9 @@ import java.util.Map;
 public class ChannelNode {
     
     private String channelName;
-    private String channelTopic;
+    private String topic = "";
+    private Long   topicTS;
+    private String topicBy;
     private Boolean channelRegistered;
     private UserNode channelOwner;
     private Map<String, Integer> chanChanlev; // Map username -> chanlev
@@ -23,6 +25,7 @@ public class ChannelNode {
     private Integer banTime = 0;
     private String chanRegisteredTopic = "";
     private String chanWelcomeMsg = "";
+
 
     private Integer channelId;
 
@@ -87,7 +90,15 @@ public class ChannelNode {
     }
 
     public void setTopic(String topic) {
-        this.channelTopic = topic;
+        this.topic = topic;
+    }
+
+    public void setTopicTS(Long ts) {
+        this.topicTS = ts;
+    }
+
+    public void setTopicBy(String mask) {
+        this.topicBy = mask;
     }
     
     public void setRegistered(Boolean registered) {
@@ -183,7 +194,8 @@ public class ChannelNode {
     }
 
     public String getTopic() {
-        return this.channelTopic;
+        //if (this.topic == null) { return ""; }
+        return this.topic;
     }
 
     public Boolean getRegistered() {

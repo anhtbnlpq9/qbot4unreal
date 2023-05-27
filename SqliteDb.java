@@ -760,8 +760,28 @@ public class SqliteDb {
 
         if (resultSet.next() == true) {
             throw new Exception("Error: cannot reauth '" + userId + "' with '" + userSid + "'.");
+    public String getTopic(ChannelNode channelNode) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        String topic;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT topic FROM channels WHERE name='" + channelNode.getChanName() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            topic = resultSet.getString("topic");
         }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            //throw new Exception("Could not get user " + channelNode.getChanName() + " welcome.");
+            topic = "";
+        } 
         statement.close();
+        return topic;
+    }
 
         try {
             statement = connection.createStatement();
@@ -913,6 +933,20 @@ public class SqliteDb {
             statement.close();
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getChanName() + " flags."); }
+    }
+
+    public void setTopic(ChannelNode chan, String msg) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        try { 
+            statement = connection.createStatement();
+
+            sql = "UPDATE channels SET topic='" + msg + "' WHERE name='" + chan.getChanName() +"';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getChanName() + " topic message."); }
     }
 
     /**

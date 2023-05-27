@@ -561,6 +561,12 @@ public class CService {
         else if (str.toUpperCase().startsWith("AUTOLIMIT")) { /* CHANFLAGS [flags] */
             cServeAutoLimit(fromNickRaw, str);
         }
+        else if (str.toUpperCase().startsWith("SETTOPIC")) { /* SETTOPIC <chan> [topic] */
+            cServeSetTopic(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("CLEARTOPIC")) { /* CLEARTOPIC <chan> */
+            cServeSetTopic(fromNickRaw, str);
+        }
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
         }
@@ -625,6 +631,17 @@ public class CService {
                 }
             }
         }
+    }
+
+    public void handleTopic(ChannelNode chanNode) {
+        String savedTopic = "";
+        try {
+            savedTopic = sqliteDb.getTopic(chanNode);
+        }
+
+        catch (Exception e) { }
+
+        if (Flags.isChanForceTopic(chanNode.getChanFlags()) == true) protocol.setTopic(client, myUserNode, chanNode, savedTopic);
     }
 
     /**
@@ -1125,6 +1142,87 @@ public class CService {
 
     }
 
+    public void cServeSetTopic(UserNode fromNick, String str) {
+        String[] command = str.split(" ",3);
+        String newTopic;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. SETTOPIC <channel> [topic]."); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Can't find this channel."); 
+            return;
+        }
+
+
+        try { newTopic = command[2]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+                newTopic = chanNode.getTopic();
+        }
+
+        if (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true || Flags.isChanLTopic(fromNick.getUserAccount().getUserChanlev(chanNode)) == true ) {
+
+            try {
+                if (newTopic == null) { chanNode.getTopic();}
+                sqliteDb.setTopic(chanNode, newTopic);
+                if (newTopic.equals(chanNode.getTopic()) == false)  protocol.setTopic(client, myUserNode, chanNode, newTopic);
+                protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, "Error setting topic for " + chanNode.getChanName() + "."); 
+                return;
+            }
+
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use topic."); 
+        }
+    }
+    public void cServeClearTopic(UserNode fromNick, String str) {
+        String[] command = str.split(" ",3);
+        String newTopic = "";
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. SETTOPIC <channel> [topic]."); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Can't find this channel."); 
+            return;
+        }
+
+        if (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true || Flags.isChanLTopic(fromNick.getUserAccount().getUserChanlev(chanNode)) == true ) {
+            try {
+                sqliteDb.setTopic(chanNode, newTopic);
+                if (newTopic.equals(chanNode.getTopic()) == false)  protocol.setTopic(client, myUserNode, chanNode, newTopic);
+                protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, "Error setting topic for " + chanNode.getChanName() + "."); 
+                return;
+            }
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use topic."); 
+        }
+    }
     /**
      * Handles the help
      * @param fromNick requester user node
