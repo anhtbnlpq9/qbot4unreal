@@ -2,7 +2,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * UserNode class to store the connected users.
@@ -30,6 +32,8 @@ public class UserNode {
 
     private Boolean userAuthed         = false;
     private Boolean userNickRegistered = false;
+    private Long    authTS;
+    private UUID authSessUUID;
 
     /**
      * User object contains information for connected users
@@ -205,6 +209,18 @@ public class UserNode {
      */
     public void setUserAuthed(Boolean state) {
         this.userAuthed = state;
+
+        if (state == true) {
+            UUID uuid = UUID.randomUUID();
+
+            this.authTS = Instant.now().getEpochSecond();
+            this.authSessUUID = uuid;
+        }
+        else {
+            this.authTS = null;
+            this.authSessUUID = null;
+        }
+
     }
 
     /**
@@ -392,4 +408,11 @@ public class UserNode {
         return new String(charArray);
     }
     
+    public UUID getUserAuth() {
+        return this.authSessUUID;
+    }
+
+    public Long getUserAuthTS() {
+        return this.authTS;
+    }
 }

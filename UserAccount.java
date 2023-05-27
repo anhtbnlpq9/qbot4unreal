@@ -26,7 +26,7 @@ public class UserAccount {
      * HM of the previously authed SIDs to the UserAccount, from the db
      * Table used to restore auth after Chanserv disconnect
      */
-    private HashMap<String, Integer> attachedLoginTokens;
+    //private HashMap<String, Integer> attachedLoginTokens;
 
     private HashMap<String, Integer> userChanlev = null;// = new HashMap<String, Integer>();
 

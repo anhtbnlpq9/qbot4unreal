@@ -2,6 +2,7 @@
 import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.time.Instant;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -432,7 +433,7 @@ public class CService {
                 fromNick.setUserAuthed(true);
                 fromNick.setUserAccount(userAccount);
 
-                try { sqliteDb.addUserAuth(userAccount.getUserAccountId(), fromNick.getUserUniq(), fromNick.getUserTS());}
+                try { sqliteDb.addUserAuth(fromNick, Const.AUTH_TYPE_PLAIN);}
                 catch (Exception e) {
                     e.printStackTrace();
                     protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing the auth.");
@@ -461,7 +462,7 @@ public class CService {
                 return;
             }
             else {
-                try { sqliteDb.delUserAuth(fromNick.getUserUniq()); }
+                try { sqliteDb.delUserAuth(fromNick, Const.DEAUTH_TYPE_MANUAL, ""); }
                 catch (Exception e) {
                     e.printStackTrace();
                     protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing unauth."); 
@@ -561,6 +562,9 @@ public class CService {
         }
         else if (str.toUpperCase().startsWith("AUTOLIMIT")) { /* CHANFLAGS [flags] */
             cServeAutoLimit(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("AUTHHISTORY")) { /* AUTHHISTORY */
+            cServeAuthHistory(fromNickRaw, str);
         }
         else if (str.toUpperCase().startsWith("WELCOME")) { /* WELCOME <chan> [msg] */
             cServeWelcome(fromNickRaw, str);
@@ -1126,6 +1130,90 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "Error setting chanflags."); 
             return; 
         }
+
+    }
+
+    public void cServeAuthHistory(UserNode fromNick, String str) {
+        String[] command = str.split(" ",5);
+        String target = "";
+        ArrayList<HashMap<String, Object>> authHistList; 
+        UserAccount userAccount;
+        String authType;
+        String deAuthType;
+        SimpleDateFormat jdf = new SimpleDateFormat("dd/MM/yy HH:mm z");
+        jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String strFiller = " ";
+
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        
+        try {
+            target = command[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            target = "";
+        }
+
+        if (target.isEmpty() == false) {
+            if ( Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true ) {
+                /* STAFF PARAMETER */
+                /* target begins with # => lookup account */
+                /* target does not => lookup nick then account */
+                if (target.startsWith("#") == true) {
+                    userAccount = protocol.getUserAccount(target.replaceFirst("#", ""));
+                    if (userAccount == null) {
+                        protocol.sendNotice(client, myUserNode, fromNick, "This account does not exist."); 
+                        return;
+                    }
+                }
+                else {
+                    try { userAccount = protocol.getUserNodeByNick(target).getUserAccount(); }
+                    catch (NullPointerException e) { protocol.sendNotice(client, myUserNode, fromNick, "This nick does not exist."); return; }
+                }
+
+                try { authHistList = sqliteDb.getAuthHistory(userAccount); }
+                catch (Exception e) { authHistList = new ArrayList<>(); }
+
+
+
+            }
+            else {
+                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
+        }
+        else {
+            userAccount = fromNick.getUserAccount();
+            try { authHistList = sqliteDb.getAuthHistory(userAccount); }
+            catch (Exception e) { authHistList = new ArrayList<>(); }
+        }
+        protocol.sendNotice(client, myUserNode, fromNick, "#:  User:                                             Authed:                         Disconnected:       Reason:");
+        int i=1;
+        for(HashMap<String, Object> authLine : authHistList) {
+            Date dateAuthTS = new Date( (Long) authLine.get("authTS")*1000L);
+            Date dateDeAuthTS = new Date( (Long) authLine.get("deAuthTS")*1000L);
+            authType = Const.getAuthTypeString((Integer) authLine.get("authType"));
+            Object deAuthResult;
+            if ((Long) authLine.get("deAuthTS") == 0L) { deAuthResult = "(never)"; }
+            else deAuthResult = jdf.format(dateDeAuthTS);
+
+            String quitResult = (authLine.get("deAuthReason")) == null ? "(none)" : (String)authLine.get("deAuthReason");
+           //deAuthType = Const.getDeAuthTypeString(authLine.get("authType"));
+
+            protocol.sendNotice(client, myUserNode, fromNick, 
+              "#" + String.valueOf(i) + strFiller.repeat(3 - String.valueOf(i).length()) 
+              + authLine.get("maskFrom") + strFiller.repeat(50 - String.valueOf(authLine.get("maskFrom")).length())
+              + jdf.format(dateAuthTS) + " (" + authType + ")" + strFiller.repeat(42 - String.valueOf(dateAuthTS).length() - String.valueOf(" (" + authType + ")").length())
+              + String.valueOf(deAuthResult) + strFiller.repeat(20 - (String.valueOf(deAuthResult).length())) + quitResult); 
+            i++;
+        }
+        protocol.sendNotice(client, myUserNode, fromNick, "End of list."); 
+        
+
 
     }
 

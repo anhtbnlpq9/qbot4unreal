@@ -1,8 +1,11 @@
 import java.sql.*;
+import java.util.ArrayList;
 //import org.sqlite.JDBC;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.time.Instant;
 
 public class SqliteDb {
@@ -783,24 +786,48 @@ public class SqliteDb {
         return topic;
     }
 
-        try {
+    public void addUserAuth(UserNode userNode, Integer authType) throws Exception {
+        Statement statement = null;
+        String sql = null;
+        ResultSet resultSet = null;
+
+        /* Check if we are re-authing the user or not, in case of reauth there is no need to add the token in the db again */
+        if (authType.equals(Const.AUTH_TYPE_REAUTH) == false) {
+            try { 
+                statement = connection.createStatement();
+                sql = "SELECT id FROM logins WHERE userSid='" + userNode.getUserUniq() + "';";
+                resultSet = statement.executeQuery(sql);
+                
+            }
+            catch (Exception e) { e.printStackTrace(); }
+
+            if (resultSet.next() == true) {
+                throw new Exception("Error: cannot reauth '" + userNode.getUserAccount().getUserAccountId() + "' with '" + userNode.getUserUniq() + "'.");
+            }
+            statement.close();
+
+            try {
+                statement = connection.createStatement();
+                sql = "INSERT INTO logins (userId, userSid, userTS) VALUES ('" + userNode.getUserAccount().getUserAccountId() + "', '" + userNode.getUserUniq() + "', '" + userNode.getUserTS().toString() + "');";
+                statement.executeUpdate(sql);
+                statement.close();
+            }
+            catch (Exception e) { 
+                e.printStackTrace(); 
+                throw new Exception("Error: cannot map login token '" + userNode.getUserUniq() + "' -> '" + userNode.getUserAccount().getUserAccountId() + "'."); 
+            }
+        }
+
+        try { 
             statement = connection.createStatement();
-            sql = "INSERT INTO logins (userId, userSid, userTS) VALUES ('" + userId + "', '" + userSid + "', '" + userTS.toString() + "');";
+            
+            sql = "INSERT INTO authhistory (userId, maskFrom, authType, authTS, sessionUuid) VALUES ('" + userNode.getUserAccount().getUserAccountId() + "', '" + userNode.getUserIdent() + "@" + userNode.getUserRealHost() + "', '" + Integer.valueOf(authType) + "', '" + userNode.getUserAuthTS() + "', '" + userNode.getUserAuth() + "');";
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { 
-            e.printStackTrace(); 
-            throw new Exception("Error: cannot map login token '" + userSid + "' -> '" + userId + "'."); 
-        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add auth for user " + userNode.getUserAccount() + "."); }
     }
 
-    /**
-     * Deletes an authentication token in the db between a (SID, TS) and a user account
-     * @param username
-     * @param userSid
-     * @param userTS
-     */
     public void delUserAuth(String userSid) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -821,7 +848,24 @@ public class SqliteDb {
             statement.close();
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unauth " + userSid + " chanlev."); }
+    }
 
+    public void delUserAuth(UserNode userNode, Integer deAuthType, String quitMsg) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        this.delUserAuth(userNode.getUserUniq());
+
+        unixTime = Instant.now().getEpochSecond();
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "UPDATE authhistory SET deAuthTS='" + unixTime + "', deAuthType='" + deAuthType + "', deAuthReason='" + quitMsg + "', sessionUuid='' WHERE sessionUuid='" + userNode.getUserAuth().toString() + "'";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + userNode.getUserAccount() + "."); }
     }
 
     /**
@@ -979,6 +1023,67 @@ public class SqliteDb {
                 catch (Exception e) { e.printStackTrace(); }
             }
         }
+    }
+
+    public void openUserAuthSessionHistory(UserNode user, Integer authType) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "INSERT INTO authhistory (userId, maskFrom, authType, authTS, sessionUuid) VALUES ('" + user.getUserAccount().getUserAccountId() + "', '" + user.getUserIdent() + "@" + user.getUserRealHost() + "', '" + Integer.valueOf(authType) + "', '" + user.getUserAuthTS() + "', '" + user.getUserAuth() + "');";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add auth for user " + user.getUserAccount() + "."); }
+    }
+
+    public void closeUserAuthSessionHistory(UserNode user, Integer authType, Integer deAuthType, String quitMsg) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        unixTime = Instant.now().getEpochSecond();
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "UPDATE authhistory SET deAuthTS='" + unixTime + "', deAuthType='" + deAuthType + "', deAuthReason='" + quitMsg + "', sessionUuid='' WHERE sessionUuid='" + user.getUserAuth().toString() + "'";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + user.getUserAccount() + "."); }
+    }
+
+    public ArrayList<HashMap<String, Object>> getAuthHistory(UserAccount userAccount) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        ArrayList<HashMap<String, Object>> authHist = new ArrayList<>();
+        HashMap<String, Object> authLine;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT * FROM authhistory WHERE userId='" + userAccount.getUserAccountId() + "' ORDER BY authTS DESC LIMIT 0,10;";
+            resultSet = statement.executeQuery(sql);
+            while(resultSet.next()) {
+                authLine = new HashMap<>();
+                authLine.put("maskFrom", resultSet.getString("maskFrom"));
+                authLine.put("authType", resultSet.getInt("authType"));
+                authLine.put("authTS", resultSet.getLong("authTS")); 
+                authLine.put("deAuthType", resultSet.getInt("deAuthType")); 
+                authLine.put("deAuthTS", resultSet.getLong("deAuthTS")); 
+                authLine.put("deAuthReason", resultSet.getString("deAuthReason"));
+                authHist.add(authLine);
+            }
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get auth history for account " + userAccount.getUserAccountEmail() + ".");
+        }
+        statement.close();
+        return authHist;
     }
 
 }

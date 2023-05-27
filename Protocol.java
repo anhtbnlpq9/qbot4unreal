@@ -825,14 +825,10 @@ public class Protocol extends Exception {
                 //System.out.println("BFB account found: " + accountToReauth.getUserAccountName());
                 user.setUserAuthed(true);
                 user.setUserAccount(accountToReauth);
+
+                sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
             }
-
-
-            
-            
             //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
-            
-
         }
         else if (command[1].equals("S-A-S-L")) {
             /*
@@ -1327,7 +1323,7 @@ public class Protocol extends Exception {
             
             UserNode userToRemove = userList.get(fromEnt);
 
-            sqliteDb.delUserAuth(fromEnt);
+            sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             userToRemove.setUserAccount(null);
 
             userNickSidLookup.remove(userToRemove.getUserNick());
