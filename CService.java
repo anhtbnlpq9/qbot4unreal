@@ -447,8 +447,9 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "Auth successful."); 
 
                 // Now we apply the modes of the user's chanlev as it was joining the channels
+                // But no welcome message
                 fromNick.getUserChanList().forEach( (chanName, chanObj) -> {
-                    this.handleJoin(fromNick, chanObj);
+                    this.handleJoin(fromNick, chanObj, false);
                 });
 
             }
@@ -561,6 +562,9 @@ public class CService {
         else if (str.toUpperCase().startsWith("AUTOLIMIT")) { /* CHANFLAGS [flags] */
             cServeAutoLimit(fromNickRaw, str);
         }
+        else if (str.toUpperCase().startsWith("WELCOME")) { /* WELCOME <chan> [msg] */
+            cServeWelcome(fromNickRaw, str);
+        }
         else if (str.toUpperCase().startsWith("SETTOPIC")) { /* SETTOPIC <chan> [topic] */
             cServeSetTopic(fromNickRaw, str);
         }
@@ -577,7 +581,7 @@ public class CService {
      * @param user user node joining channel
      * @param channel channel node joined
      */
-    public void handleJoin(UserNode user, ChannelNode channel) {
+    public void handleJoin(UserNode user, ChannelNode channel, Boolean dispWelcome) {
         //System.out.println("BBA chanjoin");
         // check if user is authed
         if (user.getUserAuthed() == true) {
@@ -625,12 +629,27 @@ public class CService {
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
-
-
-
                 }
             }
         }
+
+        if (Flags.isChanWelcome(channel.getChanFlags()) == true && dispWelcome == true) {
+            if (user.getUserAuthed() == false || ( user.getUserAuthed() == true && Flags.isUserWelcome(user.getUserAccount().getUserAccountFlags()) == false && Flags.isChanLHideWelcome(user.getUserAccount().getUserChanlev(channel)) == false) ) {
+                String welcomeMsg = "";
+                try { welcomeMsg = sqliteDb.getWelcomeMsg(channel); }
+                catch (Exception e) { }
+                if (welcomeMsg == null) { welcomeMsg = ""; }
+
+                if (welcomeMsg.isEmpty() == false) {
+                    protocol.sendNotice(client, myUserNode, fromNick, welcomeMsg);
+                }
+            }
+        }
+    }
+
+
+    public void handleJoin(UserNode user, ChannelNode channel) {
+        handleJoin(user, channel, true); 
     }
 
     public void handleTopic(ChannelNode chanNode) {
@@ -1140,6 +1159,59 @@ public class CService {
 
     public void cServeLogout() {
 
+    }
+
+    public void cServeWelcome(UserNode fromNick, String str) {
+        String[] command = str.split(" ",3);
+        String newWelcomeMsg;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. WELCOME <channel> [message]."); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Can't find this channel."); 
+            return;
+        }
+
+        try { newWelcomeMsg = command[2]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            String curWelcomeMsg = "";
+            try {
+                curWelcomeMsg = sqliteDb.getWelcomeMsg(chanNode);
+                if (curWelcomeMsg.isEmpty() == true) { curWelcomeMsg = "(none)"; }
+            }
+            catch (Exception f) { }
+            if (Flags.hasChanLSignificant(fromNick.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+                protocol.sendNotice(client, myUserNode, fromNick, "Welcome message for " + chanNode.getChanName() + ": " + curWelcomeMsg); 
+            }
+            else protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use welcome."); 
+            return; 
+        }
+
+        if (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true ) {
+
+            try {
+                sqliteDb.setWelcomeMsg(chanNode, newWelcomeMsg);
+                protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+                protocol.sendNotice(client, myUserNode, fromNick, "Welcome message for " + chanNode.getChanName() + ": " + newWelcomeMsg); 
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, "Error setting welcome for " + chanNode.getChanName() + "."); 
+                return;
+            }
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use welcome."); 
+        }
     }
 
     public void cServeSetTopic(UserNode fromNick, String str) {
