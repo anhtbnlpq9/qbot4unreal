@@ -243,7 +243,9 @@ public class Protocol extends Exception {
      * @param chan target channel
      */
     public void chanJoin(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
-        String str = ":" + who.getUserUniq() + " JOIN " + chan.getChanName();
+        String str;
+
+        str = ":" + who.getUserUniq() + " JOIN " + chan.getChanName();
         int chanUserCount=0;
 
         if (channelList.containsKey(chan.getChanName())) {

@@ -7,9 +7,12 @@ public class SqliteDbTasks implements Runnable {
     public SqliteDb sqliteDb;
     public Boolean threadRunning = true;
     
+    /**
+     * Class constructor
+     * @param sqliteDb 
+     */
     public SqliteDbTasks(SqliteDb sqliteDb) {
         this.sqliteDb = sqliteDb;
-
     }
 
     public void run() {

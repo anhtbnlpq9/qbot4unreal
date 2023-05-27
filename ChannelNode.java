@@ -40,11 +40,28 @@ public class ChannelNode {
     private ArrayList<String> exceptList = new ArrayList<String>();
     private ArrayList<String> inviteList = new ArrayList<String>();
     
+    /**
+     * Constructor used when a local user joins an empty channel => creates the new channel
+     * @param channelName
+     * @param channelTS
+     */
     public ChannelNode(String channelName, long channelTS) {
         this.channelName = channelName;
         this.channelTS = channelTS;
     }
 
+    /**
+     * Constructor used to create the registered channels at initiation of the protocol
+     * @param sqliteDb
+     * @param channelName
+     * @param channelTS
+     * @param channelFlags
+     * @param chanId
+     * @param chanWelcomeMsg
+     * @param chanRegTopic
+     * @param banTime
+     * @param autoLimit
+     */
     public ChannelNode(SqliteDb sqliteDb, String channelName, Long channelTS, Integer channelFlags, Integer chanId, String chanWelcomeMsg, String chanRegTopic, Integer banTime, Integer autoLimit) {
         this.channelName = channelName;
         this.channelTS = channelTS;
@@ -57,6 +74,15 @@ public class ChannelNode {
         this.autoLimit = autoLimit;
     }
 
+    /**
+     * Constructor used at SJOIN when remote user joins empty channels
+     * @param channelName
+     * @param channelTS
+     * @param channelModes
+     * @param banList
+     * @param exceptList
+     * @param inviteList
+     */
     public ChannelNode( String channelName, 
                         long channelTS,
                         Map<String, String> channelModes,

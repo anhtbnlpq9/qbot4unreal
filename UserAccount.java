@@ -7,7 +7,7 @@ import java.util.HashSet;
 */
 public class UserAccount {
 
-    private SqliteDb sqliteDb;
+    //private SqliteDb sqliteDb;
 
     private Integer  userAccountId;
     private String   userAccountName;
@@ -41,7 +41,7 @@ public class UserAccount {
      * @param userAccountRegTS user account registration TS
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP, Long userAccountRegTS) {
-        this.sqliteDb = sqliteDb;
+        //this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
         this.userAccountId = userAccountId;
         this.userAccountFlags = userFlags;
@@ -57,11 +57,11 @@ public class UserAccount {
             System.out.println("Error: could not retrieve chanlev");
         }
 
-        try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: could not retrieve tokens");
-        }
+        //try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
+        //catch (Exception e) {
+        //    e.printStackTrace();
+        //    System.out.println("Error: could not retrieve tokens");
+        //}
     }
 
     /**
@@ -73,7 +73,7 @@ public class UserAccount {
      * @param userAccountRegTS user account registration TS
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userFlags, String userAccountEmail, Long userAccountRegTS) {
-        this.sqliteDb = sqliteDb;
+        //this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
         this.userAccountFlags = userFlags;
         this.userAccountEmail = userAccountEmail;
@@ -93,11 +93,11 @@ public class UserAccount {
             System.out.println("Error: could not retrieve user id");
         }
 
-        try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: could not retrieve tokens");
-        }
+        //try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
+        //catch (Exception e) {
+        //    e.printStackTrace();
+        //    System.out.println("Error: could not retrieve tokens");
+        //}
     }
 
     /**

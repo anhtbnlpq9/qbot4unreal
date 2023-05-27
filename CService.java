@@ -551,7 +551,7 @@ public class CService {
                 return;
             }
         }
-        else if (str.toUpperCase().startsWith("CHANLEV ")) { /* CHANLEV <channel> [<user> [<change>]] */
+        else if (str.toUpperCase().startsWith("CHANLEV ")) { /* CHANLEV <channel> [user [change]] */
             cServeChanlev(fromNickRaw, str);
         }
         else if (str.toUpperCase().startsWith("USERFLAGS")) { /* USERFLAGS [flags] */
@@ -581,7 +581,7 @@ public class CService {
 
 
         else { // Unknown command
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str.split(" ",2)[0] + "\". Type SHOWCOMMANDS for a list of available commands.");
         }
     }
 
@@ -1029,7 +1029,6 @@ public class CService {
         HashMap<String, String> chanFlagsModSepStr;
         HashMap<String, Integer> chanFlagsModSepInt = new HashMap<>();
 
-
         if (fromNick.getUserAuthed() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
             return;
@@ -1064,7 +1063,6 @@ public class CService {
 
             protocol.sendNotice(client, myUserNode, fromNick, "Channel flags for " + chanNode.getChanName() + ": " + applicableChFlagsStr); 
             return;
-
         }
 
         chanFlagsModSepStr = Flags.parseFlags(chanFlagsModRaw);
@@ -1080,26 +1078,22 @@ public class CService {
         if (Flags.hasUserAdminPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
             chanFlagsModSepInt.replace("+", Flags.keepChanAdminConFlags(chanFlagsModSepInt.get("+")));
             chanFlagsModSepInt.replace("-", Flags.keepChanAdminConFlags(chanFlagsModSepInt.get("-")));
-            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
         }
         /* Keeping oper editable flags if the user is oper */
         else if (Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
             chanFlagsModSepInt.replace("+", Flags.keepChanOperConFlags(chanFlagsModSepInt.get("+")));
             chanFlagsModSepInt.replace("-", Flags.keepChanOperConFlags(chanFlagsModSepInt.get("-")));
-            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
         }
 
         /* Keeping chanowner editable flags if the user is owner of the than */
         else if (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev().get(chanNode.getChanName())) == true) {
             chanFlagsModSepInt.replace("+", Flags.keepChanOwnerConFlags(chanFlagsModSepInt.get("+")));
             chanFlagsModSepInt.replace("-", Flags.keepChanOwnerConFlags(chanFlagsModSepInt.get("-")));
-            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
         }
         /* Keeping chanmaster editable flags if the user is master of the than */
         else if (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev().get(chanNode.getChanName())) == true) {
             chanFlagsModSepInt.replace("+", Flags.keepChanMasterConFlags(chanFlagsModSepInt.get("+")));
             chanFlagsModSepInt.replace("-", Flags.keepChanMasterConFlags(chanFlagsModSepInt.get("-")));
-            //chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
         }
         /* User has no rights on the chan */
         else {
@@ -1387,6 +1381,7 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use topic."); 
         }
     }
+
     public void cServeClearTopic(UserNode fromNick, String str) {
         String[] command = str.split(" ",3);
         String newTopic = "";
@@ -1423,6 +1418,7 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use topic."); 
         }
     }
+
     /**
      * Handles the help
      * @param fromNick requester user node
@@ -1455,7 +1451,7 @@ public class CService {
             catch (Exception e) {
                 curChanModeLimit = 0;
             }
-            
+
             if ((Flags.isChanAutolimit(chanNode.getChanFlags()) == true) && newLimit != curChanModeLimit) {
                 try {
                     protocol.setMode(client, myUserNode, chanNode, "+l", String.valueOf(newLimit));

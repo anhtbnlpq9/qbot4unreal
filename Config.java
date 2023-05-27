@@ -3,10 +3,8 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -78,63 +76,62 @@ public class Config {
         catch (FileNotFoundException e) { e.printStackTrace(); }
 
         Yaml yaml = new Yaml();
-        Map<String, Object> data = yaml.load(inputStream);
+        HashMap<String, Object> data  = yaml.load(inputStream);
         
+        adminInformation               = (ArrayList<String>) data.get("admin");
         
-        adminInformation              = (ArrayList<String>) data.get("admin");
+        HashMap<String, Object> confme   = (HashMap<String, Object>) data.get("me");
+        serverName                       = (String) confme.get("name");
+        serverId                         = (String) confme.get("sid");
+        serverDescription                = (String) confme.get("description");
+        serverProtocolVersion            = (String) confme.get("protocolversion");
+        serverVersionFlags               = (String) confme.get("versionflags");
+        serverFullVersionText            = (String) confme.get("fullversiontext");
+
+        HashMap<String, Object> conflink    = (HashMap<String, Object>) data.get("link");
+        linkPeer                            = (String)  conflink.get("peer");
+        linkHost                            = (String)  conflink.get("host");
+        linkPassword                        = (String)  conflink.get("password");
+        linkPort                            = (Integer) conflink.get("port"); 
         
-        LinkedHashMap confme          = (LinkedHashMap) data.get("me");
-        serverName                    = (String) confme.get("name");
-        serverId                      = (String) confme.get("sid");
-        serverDescription             = (String) confme.get("description");
-        serverProtocolVersion         = (String) confme.get("protocolversion");
-        serverVersionFlags            = (String) confme.get("versionflags");
-        serverFullVersionText         = (String) confme.get("fullversiontext");
+        HashMap<String, Object> confcservice   = (HashMap<String, Object>) data.get("cservice");
+        cserviceNick                           = (String) confcservice.get("nick");
+        cserviceUniq                           = (String) confcservice.get("uniq");
+        cserviceIdent                          = (String) confcservice.get("ident");
+        cserviceHost                           = (String) confcservice.get("host");
+        cserviceReal                           = (String) confcservice.get("realname");
+        cserviceModes                          = (String) confcservice.get("modes");
+        HashMap<String, Object> cserviceaccount   = (HashMap<String, Object>) confcservice.get("accountsettings");
+        cserviceAccountHostPrefix                 = (String) cserviceaccount.get("authvhostprefix");
+        cserviceAccountHostSuffix                 = (String) cserviceaccount.get("authvhostsuffix");
+        HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
+        cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
 
-        LinkedHashMap conflink        = (LinkedHashMap) data.get("link");
-        linkPeer                      = (String)  conflink.get("peer");
-        linkHost                      = (String)  conflink.get("host");
-        linkPassword                  = (String)  conflink.get("password");
-        linkPort                      = (Integer) conflink.get("port"); 
-        
-        LinkedHashMap confcservice    = (LinkedHashMap) data.get("cservice");
-        cserviceNick                  = (String) confcservice.get("nick");
-        cserviceUniq                  = (String) confcservice.get("uniq");
-        cserviceIdent                 = (String) confcservice.get("ident");
-        cserviceHost                  = (String) confcservice.get("host");
-        cserviceReal                  = (String) confcservice.get("realname");
-        cserviceModes                 = (String) confcservice.get("modes");
-        LinkedHashMap cserviceaccount = (LinkedHashMap) confcservice.get("accountsettings");
-        cserviceAccountHostPrefix     = (String) cserviceaccount.get("authvhostprefix");
-        cserviceAccountHostSuffix     = (String) cserviceaccount.get("authvhostsuffix");
-        LinkedHashMap cservicechan    = (LinkedHashMap) confcservice.get("chansettings");
-        cserviceChanAutoLimitFreq     = (Integer) cservicechan.get("autolimitfreq");
+        HashMap<String, Object> confNetwork  = (HashMap<String, Object>) data.get("network");
+        networkName                          = (String) confNetwork.get("name");
 
-        LinkedHashMap confNetwork     = (LinkedHashMap) data.get("network");
-        networkName                   = (String) confNetwork.get("name");
+        HashMap<String, Object> confLogging  = (HashMap<String, Object>) data.get("logging");
+        logDebugIn                           = (Boolean) confLogging.get("debugIn");
+        logDebugOut                          = (Boolean) confLogging.get("debugOut");
 
-        LinkedHashMap confLogging     = (LinkedHashMap) data.get("logging");
-        logDebugIn                    = (Boolean) confLogging.get("debugIn");
-        logDebugOut                   = (Boolean) confLogging.get("debugOut");
-
-        LinkedHashMap confFeatures    = (LinkedHashMap) data.get("features");
-        featureSasl                   = (Boolean) confFeatures.get("sasl");
+        HashMap<String, Object> confFeatures  = (HashMap<String, Object>) data.get("features");
+        featureSasl                           = (Boolean) confFeatures.get("sasl");
 
         if (featureSasl == true) featuresList.put("sasl", true);
         else featuresList.put("sasl", false);
 
-        LinkedHashMap confDatabase    = (LinkedHashMap) data.get("database");
-        databasePath                  = (String) confDatabase.get("path");
+        HashMap<String, Object> confDatabase    = (HashMap<String, Object>) data.get("database");
+        databasePath                            = (String) confDatabase.get("path");
 
-        LinkedHashMap confSsl         = (LinkedHashMap) data.get("ssl");
+        HashMap<String, Object> confSsl     = (HashMap<String, Object>) data.get("ssl");
 
-        LinkedHashMap sslKeystore     = (LinkedHashMap) confSsl.get("keystore");
-        sslKeystorePath               = (String) sslKeystore.get("path");
-        sslKeystorePassword           = (String) sslKeystore.get("password");
+        HashMap<String, Object> sslKeystore     = (HashMap<String, Object>) confSsl.get("keystore");
+        sslKeystorePath                         = (String) sslKeystore.get("path");
+        sslKeystorePassword                     = (String) sslKeystore.get("password");
 
-        LinkedHashMap sslTuststore    = (LinkedHashMap) confSsl.get("truststore");
-        sslTruststorePath             = (String) sslTuststore.get("path");
-        sslTruststorePassword         = (String) sslTuststore.get("password");
+        HashMap<String, Object> sslTuststore    = (HashMap<String, Object>) confSsl.get("truststore");
+        sslTruststorePath                       = (String) sslTuststore.get("path");
+        sslTruststorePassword                   = (String) sslTuststore.get("password");
 
 
         System.out.println("* Config:\n"
