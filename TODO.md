@@ -12,7 +12,7 @@
 - [ ] account deletion
 - [ ] account editing
 - [ ] nick ownership
-- [ ] auth history
+- [X] auth history
 - [ ] account auto expiry
 
 ### Channels
@@ -53,7 +53,7 @@
 - [ ] ADDCHAN
 - [ ] ADDUSER
 - [X] AUTH
-- [ ] AUTHHISTORY
+- [X] AUTHHISTORY
 - [X] AUTOLIMIT
 - [ ] BANCLEAR
 - [ ] BANDEL
@@ -68,26 +68,27 @@
 - [ ] CHANSTAT
 - [ ] CHANTYPE
 - [ ] CLEARCHAN
-- [ ] CLEARTOPIC
-- [ ] DELCHAN
+- [X] CLEARTOPIC
+- [X] DELCHAN => DROP?
 - [ ] DELUSER
 - [ ] DEOPALL
 - [ ] DEVOICEALL
 - [ ] EMAIL
 - [ ] GIVEOWNER
-- [ ] HELLO
+- [X] HELLO
 - [X] HELP
 - [ ] INVITE
+- [ ] JUPE
 - [ ] LISTFLAGS
 - [ ] NEWPASS
 - [ ] OP
 - [ ] PERMBAN
 - [ ] RECOVER
-- [ ] REJOIN
+- [X] REJOIN
 - [ ] RENCHAN
 - [ ] REMOVEUSER
 - [ ] REQUESTOWNER
-- [ ] SETTOPIC
+- [X] SETTOPIC
 - [X] SHOWCOMMANDS
 - [ ] SUSPENDCHAN
 - [ ] SUSPENDCHANLIST
@@ -104,12 +105,13 @@
 - [ ] USERS
 - [X] VERSION
 - [ ] VOICE
-- [ ] WELCOME
+- [X] WELCOME
 - [X] WHOAMI
 - [X] WHOIS
 
 ## Added commands
 - [ ] CHANINFO
+- [ ] CHANORPHANS
 - [X] CHANLIST
 - [ ] DIE
 - [X] DROP
@@ -122,10 +124,20 @@
 - [ ] HALFOP
 - [ ] MODEADMIN
 - [ ] MODEOWNER
-- [ ] SETUSERFLAGS => maybe rename to SAFLAGS
-- [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD
+- [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
+- [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
+- [ ] CERTFP
+
+## Interesting commands/features
+- [ ] user modes setting on auth
+- [ ] user/channel account privacy
+- [ ] channel banning
+- [ ] DEFCON (operserv, anope)
+- [ ] Qline manipulation
+- [ ] searching data (for users, for opers)
 
 # Coding
 - [ ] rework SJOIN handling
 - [ ] rework MODE handling
 - [ ] rework CHANLEV
+- [ ] rework DROP command to include some "safety integrity"
