@@ -743,26 +743,29 @@ public class SqliteDb {
         return userId;
     }
 
-    /**
-     * Add an authentication token in the db between a (SID, TS) and a user account
-     * @param userNick user nickname
-     * @param userTS user timestamp
-     */
-    public void addUserAuth(Integer userId, String userSid, Long userTS) throws Exception {
-        Statement statement = null;
-        String sql = null;
-        ResultSet resultSet = null;
+    public String getWelcomeMsg(ChannelNode channelNode) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        String welcomeMsg = "";
 
         try { 
             statement = connection.createStatement();
-            sql = "SELECT id FROM logins WHERE userSid='" + userSid + "';";
-            resultSet = statement.executeQuery(sql);
             
+            sql = "SELECT welcome FROM channels WHERE name='" + channelNode.getChanName() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            welcomeMsg = resultSet.getString("welcome");
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            //throw new Exception("Could not get user " + channelNode.getChanName() + " welcome.");
+            //welcomeMsg = "";
+        } 
+        statement.close();
+        return welcomeMsg;
+    }
 
-        if (resultSet.next() == true) {
-            throw new Exception("Error: cannot reauth '" + userId + "' with '" + userSid + "'.");
     public String getTopic(ChannelNode channelNode) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -977,6 +980,20 @@ public class SqliteDb {
             statement.close();
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getChanName() + " flags."); }
+    }
+
+    public void setWelcomeMsg(ChannelNode chan, String msg) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        try { 
+            statement = connection.createStatement();
+
+            sql = "UPDATE channels SET welcome='" + msg + "' WHERE name='" + chan.getChanName() +"';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getChanName() + " welcome message."); }
     }
 
     public void setTopic(ChannelNode chan, String msg) throws Exception {
