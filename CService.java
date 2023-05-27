@@ -846,7 +846,7 @@ public class CService {
             //System.out.println("BCB no chanlev => list userChanlevFilter=" +userChanlevFilter);
 
             try {
-                if (  Flags.hasChanLSignificant(fromNick.getUserAccount().getUserChanlev(chanNode))  ) {
+                if (  Flags.hasChanLSignificant(fromNick.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true  ) {
                     protocol.sendNotice(client, myUserNode, fromNick, "Displaying CHANLEV for channel " + chanNode.getChanName() + ":"); 
                     protocol.sendNotice(client, myUserNode, fromNick, "Account             Chanlev");
                     chanNode.getChanlev().forEach( (user, chanlev) -> {
@@ -873,7 +873,7 @@ public class CService {
                 chanlevModInt.put("combined", chanlevModInt.get("+") | chanlevModInt.get("-"));
 
                 if (   (  (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLMasterConFlags(chanlevModInt.get("combined"))  ) == true) ||
-                (  (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLOwnerConFlags(chanlevModInt.get("combined"))  ) == true)  ) {
+                (  (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLOwnerConFlags(chanlevModInt.get("combined"))  ) == true)  || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true ) {
 
                     // user wants to modify chanlev by account name directly
                     // in this case, we need to update the db + check if the account is online and update that nick chanlev
