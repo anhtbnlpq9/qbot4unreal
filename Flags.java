@@ -239,7 +239,7 @@ abstract class Flags {
         entry("t",   CHFLAG_TOPICSAVE),
         entry("v",   CHFLAG_VOICEALL),
         entry("w",   CHFLAG_WELCOME),
-        entry("z",   UFLAG_SUSPENDED)
+        entry("z",   CHFLAG_SUSPENDED)
     );
 
 
@@ -257,7 +257,7 @@ abstract class Flags {
         entry(CHFLAG_TOPICSAVE,     "t"),
         entry(CHFLAG_VOICEALL,      "v"),
         entry(CHFLAG_WELCOME,       "w"),
-        entry(UFLAG_SUSPENDED,      "z")
+        entry(CHFLAG_SUSPENDED,     "z")
     );
 
 
@@ -1676,7 +1676,7 @@ abstract class Flags {
      * @return True or False
      */
     public static Boolean isUserSuspended(Integer userFlags) {
-        if ( (userFlags & UFLAG_PROTECT) == 0) {
+        if ( (userFlags & UFLAG_SUSPENDED) == 0) {
             return false;
         }
         else return true;
