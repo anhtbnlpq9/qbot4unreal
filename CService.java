@@ -575,6 +575,11 @@ public class CService {
         else if (str.toUpperCase().startsWith("CLEARTOPIC")) { /* CLEARTOPIC <chan> */
             cServeSetTopic(fromNickRaw, str);
         }
+        else if (str.toUpperCase().startsWith("REJOIN")) { /* REJOIN <chan> */
+            cServeRejoin(fromNickRaw, str);
+        }
+
+
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str + "\". Type SHOWCOMMANDS for a list of available commands.");
         }
@@ -1246,6 +1251,41 @@ public class CService {
     }
 
     public void cServeLogout() {
+
+    }
+
+    public void cServeRejoin(UserNode userNode, String str) {
+        String[] command = str.split(" ",5);
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        if (Flags.hasUserOperPriv(userNode.getUserAccount().getUserAccountFlags()) == true) {
+
+            try { channel = command[1]; }
+            catch (ArrayIndexOutOfBoundsException e) { 
+                protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CHANFLAGS <channel> [flags]."); 
+                return; 
+            }
+    
+            try { chanNode = protocol.getChannelNodeByName(channel); }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, "Can't find this channel."); 
+                return;
+            }
+            protocol.chanPart(client, myUserNode, chanNode);
+            protocol.chanJoin(client, myUserNode, chanNode);
+            try {
+                protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
+            }
+            catch (Exception e) { e.printStackTrace(); System.out.println("* Could not set mode for "+ chanNode.getChanName() + " after REJOIN command"); return; }
+            protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
 
     }
 
