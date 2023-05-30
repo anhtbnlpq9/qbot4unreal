@@ -65,7 +65,11 @@ public class Protocol extends Exception {
 
         });
 
-        this.channelList = this.regChannels;
+        //this.channelList = (HashMap<String, ChannelNode>) this.regChannels.clone();
+
+        // Copy the hashmap, else regChannels will also be modified
+        this.channelList = new HashMap<String, ChannelNode>(this.regChannels);
+
         //this.regChannels.forEach( (regChannelName, regChannelNode) -> {
         //    channelList.put(regChannelName, regChannelNode);
         //});
