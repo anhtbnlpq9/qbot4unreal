@@ -4,18 +4,25 @@ import static java.util.Map.entry;
 
 public abstract class Const {
 
-    public static final Integer      AUTH_TYPE_PLAIN         = 0x0001;
-    public static final Integer      AUTH_TYPE_REAUTH        = 0x0002;
-    public static final Integer      AUTH_TYPE_CERTFP        = 0x0003;
-    public static final Integer      AUTH_TYPE_SASL_PLAIN    = 0x0004;
-    public static final Integer      AUTH_TYPE_SASL_EXT      = 0x0005;
+    public static final Integer      AUTH_TYPE_PLAIN                = 0x0001;
+    public static final Integer      AUTH_TYPE_REAUTH               = 0x0002;
+    public static final Integer      AUTH_TYPE_CERTFP               = 0x0003;
+    public static final Integer      AUTH_TYPE_SASL_PLAIN           = 0x0004;
+    public static final Integer      AUTH_TYPE_SASL_EXT             = 0x0005;
+    public static final Integer      AUTH_TYPE_SASL_ECDSA_NIST256P  = 0x0006; // not implemented
+    public static final Integer      AUTH_TYPE_SASL_SCRAM_SHA256    = 0x0007; // not implemented
+    /* Reserved values
+    public static final Integer      AUTH_TYPE_xxx    = 0x0008;
+    ...
+    public static final Integer      AUTH_TYPE_xxx    = 0x000f; // 0x001f ?
+    */
 
-    public static final Integer      DEAUTH_TYPE_QUIT        = 0x0006;
-    public static final Integer      DEAUTH_TYPE_SQUIT       = 0x0007;
-    public static final Integer      DEAUTH_TYPE_KILL        = 0x0008;
-    public static final Integer      DEAUTH_TYPE_GLINE       = 0x0009;
-    public static final Integer      DEAUTH_TYPE_MANUAL      = 0x000a;
-    public static final Integer      DEAUTH_TYPE_EXPIRE      = 0x000b;
+    public static final Integer      DEAUTH_TYPE_QUIT        = 0x0020;
+    public static final Integer      DEAUTH_TYPE_SQUIT       = 0x0021;
+    public static final Integer      DEAUTH_TYPE_KILL        = 0x0022;
+    public static final Integer      DEAUTH_TYPE_GLINE       = 0x0023;
+    public static final Integer      DEAUTH_TYPE_MANUAL      = 0x0024;
+    public static final Integer      DEAUTH_TYPE_EXPIRE      = 0x0025;
 
 
     private static final Map<String, Integer> constStrToInt = Map.ofEntries(
