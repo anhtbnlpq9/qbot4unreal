@@ -43,6 +43,7 @@ public class Config {
     private String    cserviceModes;
     private String    cserviceAccountHostPrefix;
     private String    cserviceAccountHostSuffix;
+    private Integer   cserviceAccountMaxCertFP;
     private Integer   cserviceChanAutoLimitFreq;
 
     /* Network parameters */
@@ -104,6 +105,7 @@ public class Config {
         HashMap<String, Object> cserviceaccount   = (HashMap<String, Object>) confcservice.get("accountsettings");
         cserviceAccountHostPrefix                 = (String) cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix                 = (String) cserviceaccount.get("authvhostsuffix");
+        cserviceAccountMaxCertFP                  = (Integer)  cserviceaccount.get("maxcertfp");
         HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
         cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
 
@@ -396,5 +398,9 @@ public class Config {
      */
     public Integer getCServeAutoLimitFreq(){
         return this.cserviceChanAutoLimitFreq;
+    }
+
+    public Integer getCServeAccountMaxCertFP() {
+        return cserviceAccountMaxCertFP;
     }
 }

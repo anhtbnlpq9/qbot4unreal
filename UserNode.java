@@ -137,7 +137,7 @@ public class UserNode {
      * @param certfp User certfp
      */
     public void setUserCertFP(String certfp) {
-        this.userCertFP = certfp;
+        this.userCertFP = certfp.toLowerCase(); // putting lowercased certfp to node
     }
 
     /**

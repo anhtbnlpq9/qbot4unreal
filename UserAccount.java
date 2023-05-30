@@ -1,5 +1,11 @@
+import java.security.spec.KeySpec;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 /**
 * User account class
@@ -7,14 +13,22 @@ import java.util.HashSet;
 */
 public class UserAccount {
 
-    //private SqliteDb sqliteDb;
+    private SqliteDb sqliteDb;
+    private Config   config;
 
-    private Integer  userAccountId;
-    private String   userAccountName;
-    private String   userAccountCertFP;
-    private Integer  userAccountFlags;
-    private String   userAccountEmail;
-    private Long     userAccountRegTS;
+    private Integer             userAccountId;
+    private String              userAccountName;
+    private HashSet<String>     userAccountCertFP;
+    private Integer             userAccountFlags;
+    private String              userAccountEmail;
+    private Long                userAccountRegTS;
+
+    interface AuthPassCheck {
+        Boolean checkPass(HashMap<String, String> userParam, String userInput);
+    }
+    interface AuthCertfpCheck {
+        Boolean checkCertFp(HashMap<String, String> userParam, String userInput);
+    }
 
     /**
      * HS of the UserNodes loggued with the UserAccount
@@ -40,8 +54,8 @@ public class UserAccount {
      * @param userAccountCertFP user account certfp
      * @param userAccountRegTS user account registration TS
      */
-    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, String userAccountCertFP, Long userAccountRegTS) {
-        //this.sqliteDb = sqliteDb;
+    public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, HashSet<String> userAccountCertFP, Long userAccountRegTS) {
+        this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
         this.userAccountId = userAccountId;
         this.userAccountFlags = userFlags;
@@ -50,7 +64,7 @@ public class UserAccount {
         this.userAccountRegTS = userAccountRegTS;
 
         try {
-            this.userChanlev = sqliteDb.getUserChanlev(userAccountName); 
+            this.userChanlev = sqliteDb.getUserChanlev(this); 
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -73,14 +87,14 @@ public class UserAccount {
      * @param userAccountRegTS user account registration TS
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userFlags, String userAccountEmail, Long userAccountRegTS) {
-        //this.sqliteDb = sqliteDb;
+        this.sqliteDb = sqliteDb;
         this.userAccountName = userAccountName;
         this.userAccountFlags = userFlags;
         this.userAccountEmail = userAccountEmail;
         this.userAccountRegTS = userAccountRegTS;
 
         try {
-            this.userChanlev = sqliteDb.getUserChanlev(userAccountName); 
+            this.userChanlev = sqliteDb.getUserChanlev(this); 
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -218,8 +232,12 @@ public class UserAccount {
      * Returns the user account certfp
      * @return user certfp
      */
-    public String getUserAccountCertFP() {
+    public HashSet<String> getCertFP() {
         return this.userAccountCertFP;
+    }
+
+    public void setCertFP(HashSet<String> certfpList) {
+        this.userAccountCertFP = certfpList;
     }
 
     /**
@@ -254,4 +272,93 @@ public class UserAccount {
         this.userAccountFlags = userflags;
     }
 
+    private Boolean auth(UserNode usernode, String inputValue, Integer authType) throws Exception {
+
+        HashMap<String, String> inputParam;
+
+        try {
+            inputParam = sqliteDb.getUser(this);
+        }
+        catch (Exception e) {
+            throw new Exception("(EE) auth: cannot get user account information for auth.");
+        }
+        
+        AuthPassCheck checkPass = (userparam, inputpass) -> {
+
+            String pwHash = null;
+
+            try { 
+                Base64.Decoder dec = Base64.getDecoder();
+                KeySpec spec = new PBEKeySpec(inputpass.toCharArray(), dec.decode(userparam.get("salt")), 65536, 128);
+                SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+                byte[] hash = f.generateSecret(spec).getEncoded();
+                Base64.Encoder enc = Base64.getEncoder();
+
+                pwHash = enc.encodeToString(hash);
+            }
+            catch (Exception e) { e.printStackTrace(); }
+
+            if (userparam.get("password").equals(pwHash)) return true;
+            else return false;
+        };
+
+        AuthCertfpCheck checkCert = (userparam, inputcert) -> {
+            if (userparam.get("certfp").matches("(.*)" + inputcert + "(.*)")) return true;
+            else return false;
+        };
+
+        if (authType.equals(Const.AUTH_TYPE_PLAIN)) {  /* Plain auth (AUTH login pass) */
+            return checkPass.checkPass(inputParam, inputValue);
+        }
+        else if (authType.equals(Const.AUTH_TYPE_CERTFP)) { /* Certfp auth (AUTH login) */
+            return checkCert.checkCertFp(inputParam, inputValue);
+        }
+        else if (authType.equals(Const.AUTH_TYPE_SASL_PLAIN)) { /* SASL PLAIN auth */
+            return checkPass.checkPass(inputParam, inputValue);
+        }
+        else if (authType.equals(Const.AUTH_TYPE_SASL_EXT)) { /* SASL EXTERNAL auth */
+            return checkCert.checkCertFp(inputParam, inputValue);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void authUserToAccount(UserNode usernode, String inputChallenge, Integer authType) throws Exception {
+
+        if (auth(usernode, inputChallenge, authType) == false) {
+            Thread.sleep(config.getCServeAccountWrongCredWait() *1000);
+            throw new Exception("(II) Auth failed (invalid credentials): " + this.getUserAccountName() + " by " + usernode.getUserNick());
+        }
+
+        if (Flags.isUserSuspended(this.getUserAccountFlags()) == true) {
+            throw new Exception("(II) Auth failed (account suspended): " + this.getUserAccountName() + " by " + usernode.getUserNick());
+        }
+
+        usernode.setUserAuthed(true);
+        usernode.setUserAccount(this);
+        try {
+            sqliteDb.addUserAuth(usernode, authType);
+        }
+        catch (Exception e) {
+            throw new Exception("(EE) auth: Error finalizing the auth: nick = " + usernode.getUserNick() + ", account = " + this.getUserAccountName());
+            //protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing the auth.");
+        }
+    }
+
+    public void deAuthUserFromAccount(UserNode usernode, Integer deAuthType) throws Exception {
+
+        try { sqliteDb.delUserAuth(usernode, deAuthType, ""); }
+        catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("(EE) auth: Error finalizing the deauth, user may still be authed: nick = " + usernode.getUserNick() + ", account = " + this.getUserAccountName());
+        }
+        usernode.setUserAccount(null);
+        usernode.setUserAuthed(false);
+
+    }
+
+    public void setConfigRef(Config config) {
+        this.config = config;
+    }
 }

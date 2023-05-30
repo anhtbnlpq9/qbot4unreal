@@ -3,6 +3,7 @@ import java.util.ArrayList;
 //import org.sqlite.JDBC;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -74,6 +75,7 @@ public class SqliteDb {
         ResultSet resultSet = null;
 
         //HashMap<String,UserAccount> regUsers = new HashMap<String,UserAccount>();
+        ArrayList<String> certfpList = new ArrayList<>();
         HashMap<String, HashMap<String, Object>> regUsers = new HashMap<String, HashMap<String, Object>>();
 
         try { 
@@ -86,7 +88,7 @@ public class SqliteDb {
                 accountProperties.put("uid",       resultSet.getInt("uid"));
                 accountProperties.put("userFlags", resultSet.getInt("userFlags"));
                 accountProperties.put("email",     resultSet.getString("email"));
-                accountProperties.put("certfp",    resultSet.getString("certfp"));
+                accountProperties.put("certfp",    this.stringToHS(resultSet.getString("certfp")));
                 accountProperties.put("name",      resultSet.getString("name"));
                 accountProperties.put("regTS",      resultSet.getLong("regTS"));
                 regUsers.put(resultSet.getString("name"), accountProperties);
@@ -231,53 +233,56 @@ public class SqliteDb {
     
     /**
      * Returns an user as a Map<String, String> of field:value
-     * @param username user name
+     * @param useraccount user name
      * @return Map of the user as field:value
      * @throws Exception
      */
-    public Map<String, String> getUser(String username) throws Exception {
+    public HashMap<String, String> getUser(UserAccount useraccount) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
-        Map<String, String> user = new HashMap<String, String>();
+        HashMap<String, String> user = new HashMap<String, String>();
         String name              = "";
         String password          = "";
         String salt              = "";
         Integer userId           = 0;
+        String certfp            = "";
 
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid, name, password, salt FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT uid, name, password, salt, certfp FROM users WHERE lower(name)='" + useraccount.getUserAccountName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             name = resultSet.getString("name");
             password = resultSet.getString("password");
             salt = resultSet.getString("salt");
             userId = resultSet.getInt("uid");
+            certfp = resultSet.getString("certfp");
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: cannot fetch the user '" + useraccount.getUserAccountName() + "' in the database."); }
         statement.close();
 
         if (name.isEmpty() == true) {
-            throw new Exception("Error: cannot fetch the user '" + username + "' in the database.");
+            throw new Exception("Error: cannot fetch the user '" + useraccount.getUserAccountName() + "' in the database.");
         }
 
         user.put("name",     name);
         user.put("password", password);
         user.put("salt",     salt);
         user.put("id",       userId.toString());
+        user.put("certfp",   certfp);
 
         return user;
     }
 
     /**
      * Returns an user chanlev as a Map<String, Integer> as chan:chanlev
-     * @param username
+     * @param useraccount
      * @return Map of chan:chanlev
      * @throws Exception
      */
-    public HashMap<String, Integer> getUserChanlev(String username) throws Exception {
+    public HashMap<String, Integer> getUserChanlev(UserAccount useraccount) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -287,7 +292,7 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "';";
+            sql = "SELECT uid FROM users WHERE lower(name)='" + useraccount.getUserAccountName().toLowerCase() + "';";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
@@ -301,7 +306,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace();
-            throw new Exception("Could not get user " + username + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
+            throw new Exception("Could not get user " + useraccount.getUserAccountName() + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
         }
         statement.close();
         return userChanlev;
@@ -743,6 +748,91 @@ public class SqliteDb {
         return userId;
     }
 
+    public HashSet<String> getCertfp(UserAccount userAccount) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        String certfp = "";
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT certfp FROM users WHERE lower(name)='" + userAccount.getUserAccountName().toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            certfp = resultSet.getString("certfp");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + userAccount.getUserAccountName() + " certfp.");
+        } 
+        statement.close();
+        return stringToHS(certfp);
+    }
+
+    public void addCertfp(UserAccount userAccount, String certfp) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        String certfpForDb = "";
+
+        HashSet<String> userCertfp = this.getCertfp(userAccount);
+
+        if (userCertfp.size() > config.getCServeAccountMaxCertFP()) { throw new Exception("(EX) Client reached max certfp"); }
+
+        try {
+            userCertfp.add(certfp);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("* Could not readd certfp to user " + userAccount.getUserAccountName() + " because already in the list");
+        }
+
+        certfpForDb = hashSetToString(userCertfp);
+
+        try { 
+            statement = connection.createStatement();
+
+            sql = "UPDATE users SET certfp='" + certfpForDb + "' WHERE lower(name)='" + userAccount.getUserAccountName().toLowerCase() + "'";
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + userAccount.getUserAccountName() + " certfp.");
+        } 
+        statement.close();
+        //return stringToArrayList(certfp);
+    }
+
+    public void removeCertfp(UserAccount userAccount, String certfp) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        String certfpForDb = "";
+
+        HashSet<String> userCertfp = this.getCertfp(userAccount);
+
+        try {
+            userCertfp.remove(certfp);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("* Could not remove certfp to user " + userAccount.getUserAccountName() + " because not in the list");
+        }
+
+        certfpForDb = hashSetToString(userCertfp);
+
+        try { 
+            statement = connection.createStatement();
+
+            sql = "UPDATE users SET certfp='" + certfpForDb + "' WHERE lower(name)='" + userAccount.getUserAccountName().toLowerCase() + "'";
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + userAccount.getUserAccountName() + " certfp.");
+        } 
+        statement.close();
+        //return stringToArrayList(certfp);
+    }
+
     public String getWelcomeMsg(ChannelNode channelNode) throws Exception {
         Statement statement      = null;
         String sql               = null;
@@ -1101,6 +1191,21 @@ public class SqliteDb {
         }
         statement.close();
         return authHist;
+    }
+
+    private HashSet<String> stringToHS(String list) {
+        HashSet<String> outputHS = new HashSet<>();
+        if (list == null || list.isEmpty() == true) { list = ""; }
+        String[] listItems = list.split(",", 0);
+
+        for(String item : listItems) {
+            outputHS.add(item);
+        }
+        return outputHS;
+    }
+
+    private String hashSetToString(HashSet<String> inputHS) {
+        return String.join(",", inputHS);
     }
 
 }

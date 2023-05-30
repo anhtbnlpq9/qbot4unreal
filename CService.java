@@ -2,6 +2,7 @@
 import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.time.Instant;
 import java.text.SimpleDateFormat;
@@ -361,96 +362,8 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "Your account has been created with username \"" + fromNick.getUserNick() + "\" but you are not authed. You can now auth using AUTH " + fromNick.getUserNick() + " <password>");
 
         }
-        else if (str.toUpperCase().startsWith("AUTH ")) { // AUTH <username> <password>
-            String password;
-            String username;
-
-            HashMap<String, Integer> userChanlev;
-            
-            String[] command = str.split(" ",4);
-            if (fromNick.getUserAuthed() == true) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "You are already authed."); 
-                return;                 
-            }
-            try { password = command[2]; }
-            catch (ArrayIndexOutOfBoundsException e) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. Command is AUTH <username> <password>."); 
-                return; 
-            }
-
-            try { username = command[1]; }
-            catch (ArrayIndexOutOfBoundsException e) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. Command is AUTH <username> <password>."); 
-                return; 
-            }
-
-            String pwHash = null;
-
-            Map<String, String> userToAuth;
-            username = username.toLowerCase();
-            try {
-                userToAuth = sqliteDb.getUser(username);
-                userChanlev = sqliteDb.getUserChanlev(username);
-            }
-            catch (Exception e) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "User account not found or incorrect password."); 
-                return;
-            }
-
-            try { 
-                Base64.Decoder dec = Base64.getDecoder();
-                KeySpec spec = new PBEKeySpec(password.toCharArray(), dec.decode(userToAuth.get("salt")), 65536, 128);
-                SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-                byte[] hash = f.generateSecret(spec).getEncoded();
-                Base64.Encoder enc = Base64.getEncoder();
-
-                pwHash = enc.encodeToString(hash);
-            }
-            catch (Exception e) { e.printStackTrace(); }
-
-            /* Delay auth to slow down brute force attack */
-            try { Thread.sleep(3000); }
-            catch (Exception e) { e.printStackTrace(); }
-
-            if (userToAuth.get("password").equals(pwHash)) {
-
-                UserAccount userAccount;
-                try { userAccount = protocol.getRegUserAccount(userToAuth.get("name")); }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-
-                if (Flags.isUserSuspended(userAccount.getUserAccountFlags()) == true) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "The user account " + userAccount.getUserAccountName() + " is suspended. Please contact a staff member for more information.");
-                    return;
-                }
-                
-                fromNick.setUserAuthed(true);
-                fromNick.setUserAccount(userAccount);
-
-                try { sqliteDb.addUserAuth(fromNick, Const.AUTH_TYPE_PLAIN);}
-                catch (Exception e) {
-                    e.printStackTrace();
-                    protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing the auth.");
-                }
-                
-                fromNick.getUserAccount().setUserChanlev(userChanlev);
-
-                if (Flags.isUserAutoVhost(fromNick.getUserAccount().getUserAccountFlags()) == true) {
-                    protocol.chgHost(client, fromNick, fromNick.getUserAccount().getUserAccountName());
-                }
-
-                protocol.sendNotice(client, myUserNode, fromNick, "Auth successful."); 
-
-                // Now we apply the modes of the user's chanlev as it was joining the channels
-                // But no welcome message
-                fromNick.getUserChanList().forEach( (chanName, chanObj) -> {
-                    this.handleJoin(fromNick, chanObj, false);
-                });
-
-            }
-            else { protocol.sendNotice(client, myUserNode, fromNick, "User account not found or incorrect password."); }
+        else if (str.toUpperCase().startsWith("AUTH ")) { // AUTH <username> [password]
+            cServeAuth(fromNickRaw, str);
         }
         else if (str.toUpperCase().startsWith("LOGOUT")) { // LOGOUT
             if (fromNick.getUserAuthed() == false) {
@@ -573,6 +486,15 @@ public class CService {
         }
         else if (str.toUpperCase().startsWith("REJOIN")) { /* REJOIN <chan> */
             cServeRejoin(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("CERTFPADD")) { /* CERTFPADD <certfp> */
+            cServeCertfpAdd(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("CERTFPDEL")) { /* CERTFPDEL <certfp> */
+            cServeCertfpDel(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("CERTFPLIST")) { /* CERTFPLIST> */
+            cServeCertfpList(fromNickRaw);
         }
 
 
@@ -714,6 +636,16 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "Email address  : " + whoisUserAccount.getUserAccountEmail() );
                 //protocol.sendNotice(client, myUserNode, fromNick, "Email last set : ");
                 //protocol.sendNotice(client, myUserNode, fromNick, "Pass last set  : ");
+
+                protocol.sendNotice(client, myUserNode, fromNick, "List of registered certificate fingerprints:");
+                var wrapperCertfp = new Object(){ Integer lineCounter=1;};
+                whoisUserAccount.getCertFP().forEach( (certfp) -> {
+                    if (certfp.isEmpty() == false) {
+                        protocol.sendNotice(client, myUserNode, fromNick, " #" + wrapperCertfp.lineCounter + spaceFill.repeat(5-String.valueOf(wrapperCertfp.lineCounter).length()) + certfp);
+                        wrapperCertfp.lineCounter++;
+                    }
+                } );
+
                 protocol.sendNotice(client, myUserNode, fromNick, "Known on the following channels:");
                 protocol.sendNotice(client, myUserNode, fromNick, "Channel                        Flags:");
 
@@ -1224,7 +1156,190 @@ public class CService {
 
     }
 
-    public void cServeAuth() {
+    public void cServeAuth(UserNode usernode, String str) {
+        String   password;
+        String   username;
+        String   certfp = "";
+        Integer  authType = 0;
+        UserAccount useraccount;
+
+        HashMap<String, Integer> userChanlev;
+        
+        String[] command = str.split(" ",4);
+        if (usernode.getUserAuthed() == true) { 
+            protocol.sendNotice(client, myUserNode, usernode, "You are already authed.");
+            return;                 
+        }
+
+        try { 
+            username = command[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, usernode, "Invalid command. Command is AUTH <username> [password].");
+            return; 
+        }
+
+        try { password = command[2]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            password = "";
+        }
+        
+        try {
+            useraccount = protocol.getUserAccount(username);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+
+            /* Delay auth to slow down brute force attack */
+            try { Thread.sleep(config.getCServeAccountWrongCredWait() *1000); }
+            catch (Exception f) { f.printStackTrace(); }
+            protocol.sendNotice(client, myUserNode, usernode, "User account not found or suspended, or incorrect password.");
+            return;
+        }
+
+        if (password.isEmpty() == false) { /* Doing password auth */
+
+            authType = Const.AUTH_TYPE_PLAIN;
+
+            try { 
+                useraccount.authUserToAccount(usernode, password, authType);
+            }
+            catch (Exception e) {
+                e.printStackTrace(); 
+                protocol.sendNotice(client, myUserNode, usernode, "User account not found or suspended, or incorrect password.");
+            }
+        }
+        
+        else { /* Doing certfp auth */
+            if (fromNick.getUserCertFP().isEmpty() == false && fromNick.getUserCertFP() != null) {
+                certfp = fromNick.getUserCertFP();
+                authType = Const.AUTH_TYPE_CERTFP;
+
+                try { 
+                    useraccount.authUserToAccount(usernode, certfp, authType);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    protocol.sendNotice(client, myUserNode, usernode, "User account not found or suspended, or incorrect password.");
+                    return;
+                }
+
+            }
+            else {
+                protocol.sendNotice(client, myUserNode, usernode, "Your are not eligible to CertFP authentication."); 
+                return;
+            }
+        }
+
+        if (config.getFeature("svslogin") == true) {
+            protocol.sendSvsLogin(usernode, usernode.getUserAccount());
+        }
+
+        if (Flags.isUserAutoVhost(usernode.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+            protocol.chgHostVhost(client, usernode, usernode.getUserAccount().getUserAccountName());
+        }
+
+        protocol.sendNotice(client, myUserNode, usernode, "Auth successful."); 
+
+        // Now we apply the modes of the user's chanlev as it was joining the channels
+        // But no welcome message
+        fromNick.getUserChanList().forEach( (chanName, chanObj) -> {
+            this.handleJoin(usernode, chanObj, false);
+        });
+
+
+
+    }
+   
+
+    public void cServeCertfpAdd(UserNode userNode, String str) { // CERTFPADD <certfp>
+        String[] command = str.split(" ",5);
+        String certfp;
+
+        UserAccount userAccount;
+
+        HashSet<String> userAccountCertfp;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        userAccount = userNode.getUserAccount();
+
+        try { certfp = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CERTFPADD <certfp>."); 
+            return; 
+        }
+
+        if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
+            return;
+        }
+
+        certfp = certfp.toLowerCase(); // putting lowercased certfp to storage
+
+        try {
+            sqliteDb.addCertfp(userAccount, certfp);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, "Could not add the fingerprint. Check that you have not reached the limit (" + config.getCServeAccountMaxCertFP() + ") and delete some of them if necessary."); 
+            return;
+        }
+        try {
+            userAccountCertfp = sqliteDb.getCertfp(userAccount);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        userAccount.setCertFP(userAccountCertfp);
+        protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+
+
+    }
+
+    public void cServeCertfpDel(UserNode userNode, String str) { // CERTFPDEL <certfp>
+        String[] command = str.split(" ",5);
+        String certfp = command[1];
+
+        UserAccount userAccount;
+
+        HashSet<String> userAccountCertfp;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        userAccount = userNode.getUserAccount();
+
+        try { certfp = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CERTFPDEL <certfp>."); 
+            return; 
+        }
+
+        if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
+            return;
+        }
+
+        try {
+            certfp = certfp.toLowerCase();
+            sqliteDb.removeCertfp(userAccount, certfp);
+            userAccountCertfp = sqliteDb.getCertfp(userAccount);
+            userAccount.setCertFP(userAccountCertfp);
+            protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+    }
 
     }
 
