@@ -1,36 +1,55 @@
 # Connect config
 me:
+    # Name of the server
     name: cheetah.
+    # Description of the server (as seen in /LINKS)
     description: jThIRC
+    # Server ID. 3 characters: first must be a number and the 2 others are any alphanumeric. Case is not significant.
     sid: 5PC
+    # Protocol version
     protocolversion: "6000"
+    # Protocol version flags
     versionflags: ""
+    # Full version text
     fullversiontext: jThIRC
-    
+
+# Database information. For the moment only SQLite3 is supported.
 database:
+    # Path to the SQLite3 database file
     path: "db/qbot.sqlite3"
+    # Interval in seconds between runs of the database scheduled tasks
     schedulefreq: 60
 
+# Admin information as seen in /ADMIN (TODO: implement me)
 admin:
     - line 1
     - line 2
     - line 3
 
+# Link section, contains information about the peer to be linked to
 link:
     #peer: ocelot.
     #host: polaris3.thibland.net
+    # Host/IP of the peer
     host: 192.168.10.1
+    # Port number of the peer
     port: 6900
+    # Incoming allowed host or IP (TODO: implement me, change my name)
     incoming: incoming.host.or.ip
-    # Auth by cert => we set password to *
+    # Password for the link. If auth by cert, password is not used, in this case set password to *
     password: "*"
 
+# Network section
 network:
+    # Defines the network name
     name: Mjav
 
+# Features section
+# Permits to enable/disable features proposed by the service
 features:
     sasl: no
 
+# Logging section
 logging:
     debugIn: no
     debugOut: no
