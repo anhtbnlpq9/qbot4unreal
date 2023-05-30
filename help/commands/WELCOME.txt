@@ -1,0 +1,9 @@
+Usage: WELCOME <channel> [<message>]
+This shows the current welcome message set on a channel and allows it to be
+changed.  In order to be displayed to users, the feature must be enabled
+by the +w chanflag (see CHANFLAGS).  Where:
+channel - channel to use
+message - welcome message to set.  If this is not provided the existing welcome
+          message is displayed.
+Displaying the message requires operator (+o) access on the named channel.
+Changing the message requires master (+m) access on the named channel.

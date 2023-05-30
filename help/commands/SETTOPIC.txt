@@ -1,0 +1,7 @@
+Usage: SETTOPIC <channel> [<topic>]
+Changes the topic on the channel, where:
+channel - channel to use
+topic   - new topic.  If no topic is set, the stored topic will be reset (this
+          feature is useful if some users can no longer see the topic due to a 
+          netsplit).
+SETTOPIC requires topic (+t) or master (+m) access on the named channel.

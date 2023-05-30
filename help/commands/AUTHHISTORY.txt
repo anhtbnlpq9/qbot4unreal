@@ -1,0 +1,3 @@
+Usage: AUTHHISTORY
+Displays details of the last 10 logins with your account.  Details include
+hostmask, login time, disconnect time and reason.

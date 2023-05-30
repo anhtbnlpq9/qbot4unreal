@@ -1,0 +1,3 @@
+Usage: ADDCHAN <channel> <nick|#user>
+Requests the bot for a new channel. The specified user will be +ano.
+End of help.

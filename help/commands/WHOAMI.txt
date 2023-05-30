@@ -1,0 +1,3 @@
+Usage: WHOAMI
+Displays information about yourself.
+End of help.
