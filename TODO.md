@@ -4,6 +4,7 @@
 
 ### General
 - [ ] conf REHASH
+- [ ] logging
 
 ### Accounts
 - [X] account registration
@@ -32,11 +33,12 @@
 
 ### Accounts
 - [X] multi user auth
-- [ ] edit history (email, password)
-- [ ] account auth with challenge auth
-- [ ] SASL PLAIN
-- [ ] SASL EXTERNAL
+- [ ] account edit history (email, password)
+- [ ] account auth with challenge auth => maybe not necessary and can be replaced with SASL/TLS or CertFP, or implement SCRAM-SHA256
+- [X] SASL PLAIN
+- [X] SASL EXTERNAL
 - [X] user auto vhost on auth
+- [X] certfp authentication
 
 
 ### Channels
@@ -50,7 +52,7 @@
 
 ## Original Q bot commands
 - [ ] ACCOUNTHISTORY
-- [ ] ADDCHAN
+- [X] ADDCHAN
 - [ ] ADDUSER
 - [X] AUTH
 - [X] AUTHHISTORY
@@ -66,10 +68,9 @@
 - [ ] CHANNELCOMMENT
 - [ ] CHANOPHISTORY
 - [ ] CHANSTAT
-- [ ] CHANTYPE
 - [ ] CLEARCHAN
 - [X] CLEARTOPIC
-- [X] DELCHAN => DROP?
+- [X] DELCHAN => DROP
 - [ ] DELUSER
 - [ ] DEOPALL
 - [ ] DEVOICEALL
@@ -126,7 +127,8 @@
 - [ ] MODEOWNER
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
-- [ ] CERTFP
+- [X] CERTFPADD
+- [X] CERTFPDEL
 
 ## Interesting commands/features
 - [ ] user modes setting on auth
@@ -141,3 +143,4 @@
 - [ ] rework MODE handling
 - [ ] rework CHANLEV
 - [ ] rework DROP command to include some "safety integrity"
+- [ ] rework channel user count again
