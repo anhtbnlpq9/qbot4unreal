@@ -151,16 +151,12 @@ public class CService {
 
             if(helpCommandNameSplit[0].equals("HELP") == true) {
                 try { helpCommandName = helpCommandNameSplit[1]; }
-                catch (ArrayIndexOutOfBoundsException e) {  protocol.sendNotice(client, myUserNode, fromNick, "Nope."); return; }
+                catch (ArrayIndexOutOfBoundsException e) {  cServeShowcommands(fromNick); return; }
                 cServeHelp(fromNick, helpCommandName);
             }
         }
         else if (str.toUpperCase().startsWith("SHOWCOMMANDS")) {
-            if (fromNick.getUserAuthed() == false) {  Help.getHelp("levels", "0-UNAUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-            else if (fromNick.getUserAuthed() == true) { Help.getHelp("levels", "10-AUTHED_USER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-            else if (fromNick.getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
-
-            if (fromNick.getUserModes().matches("(.*)o(.*)") == true) {  Help.getHelp("levels", "20-OPER").forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} ); }
+            cServeShowcommands(fromNick);
         }
         else if (str.equalsIgnoreCase("USERLIST")) {
 
@@ -1426,6 +1422,81 @@ public class CService {
      */
     public void cServeHelp(UserNode fromNick, String commandName) {
         Help.getHelp("commands", commandName).forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} );
+    }
+
+
+    public void cServeShowcommands(UserNode fromNick) {
+        /*
+         * List of contexts
+         * ================
+         * - 000 = unauth user
+         * - 050 = authed user
+         * - 100 = staff member
+         * - 150 = oper member
+         * - 200 = admin member
+         * - 900 = developper member
+         * - 950 = debug member
+         * 
+         */
+        Help.getHelp("levels", "COMMANDS_LIST").forEach( (line) -> { 
+            String context = "";
+            String content = "";
+            try {
+                context = line.split("!", 2)[0];
+                content = line.split("!", 2)[1];
+            }
+            catch (Exception e) {
+                content = line;
+            }
+
+
+            switch (context) {
+                case "000":
+                    if (fromNick.getUserAuthed() == false) {
+                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                    }
+                    break;
+
+                case "050":
+                    if (fromNick.getUserAuthed() == true) {
+                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                    }
+                    break;
+
+                case "100":
+                    if (fromNick.getUserAuthed() == true && Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags())) {
+                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                    }
+                    break;
+
+
+                case "150":
+                    if (fromNick.getUserAuthed() == true && Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags())) {
+                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                    }
+                    break;
+
+                case "200":
+                    if (fromNick.getUserAuthed() == true && Flags.hasUserAdminPriv(fromNick.getUserAccount().getUserAccountFlags())) {
+                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                    }
+                    break;
+
+                case "900":
+
+                    break;
+
+                case "950":
+
+                    break;
+
+                default:
+                    protocol.sendNotice(client, myUserNode, fromNick, content);
+                    break;
+                
+            }
+
+        } );
     }
 
     public void cServeVersion() {
