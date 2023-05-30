@@ -27,7 +27,7 @@ public class Help {
         String currentLine;
 
         try {
-            FileInputStream fis=new FileInputStream("help/" + type + "/" + command + ".txt");       
+            FileInputStream fis=new FileInputStream("help/" + type + "/" + command + ".txt");
             Scanner sc=new Scanner(fis);
             while(sc.hasNextLine()) {
                 currentLine = sc.nextLine();

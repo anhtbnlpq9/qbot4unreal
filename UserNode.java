@@ -35,6 +35,7 @@ public class UserNode {
     private Long    authTS;
     private UUID authSessUUID;
 
+
     /**
      * User object contains information for connected users
      * @param userNick User nickname
