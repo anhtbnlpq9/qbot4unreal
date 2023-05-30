@@ -47,7 +47,9 @@ network:
 # Features section
 # Permits to enable/disable features proposed by the service
 features:
-    sasl: no
+    sasl: yes
+    svslogin: yes
+    chghost: yes
 
 # Logging section
 logging:

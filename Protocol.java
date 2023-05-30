@@ -1,10 +1,11 @@
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.HashMap;
-
+import java.util.HashSet;
 import java.time.Instant;
 
 
@@ -15,6 +16,7 @@ public class Protocol extends Exception {
     private ServerNode  server;
     private CService    cservice;
     private SqliteDb    sqliteDb;
+    private Boolean     networkInsideNetBurst = true;
     
     private HashMap<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
     private HashMap<String, UserNode>        userList            = new HashMap<String, UserNode>();
@@ -41,11 +43,13 @@ public class Protocol extends Exception {
         sqliteDb.setProtocol(this);
 
         sqliteDb.getRegUsers().forEach( (username, userHM) -> {
-            this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (String) userHM.get("certfp"), (Long) userHM.get("regTS")));
+            this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (HashSet<String>) userHM.get("certfp"), (Long) userHM.get("regTS")));
             //System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
+            this.userAccounts.get(username).setConfigRef(config);
         });
 
         sqliteDb.getRegChans().forEach( (chanName, chanHM) -> {
+            
             this.regChannels.put(chanName, 
                                  new ChannelNode(sqliteDb, 
                                  (String) chanHM.get("name"), 
@@ -520,11 +524,25 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
+    public void chgHostVhost(Client client, UserNode toTarget, String vhost) {
+        String who = config.getServerId();
+        String vhostComplete = config.getCServeHostPrefix() + vhost + config.getCServeHostSuffix();
+        String str;
+
+        if (toTarget.getUserHost().equals(vhostComplete)) return;
+        
+        str= ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
+        client.write(str);
+    }
 
     public void chgHost(Client client, UserNode toTarget, String vhost) {
         String who = config.getServerId();
-        String vhostComplete = config.getCServeHostPrefix() + vhost + config.getCServeHostSuffix();
-        String str = ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
+        String vhostComplete = vhost;
+        String str;
+
+        if (toTarget.getUserHost().equals(vhostComplete)) return;
+        
+        str = ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
         client.write(str);
     }
 
@@ -549,6 +567,48 @@ public class Protocol extends Exception {
     public String getPeerId() {
         return this.myPeerServerId;
     }
+
+    private void sendSaslResult(UserNode user, Boolean success) {
+        String str;
+        
+        if (success == true) str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D S";
+        else                 str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D S";
+        client.write(str);
+    }
+
+    private void sendSaslQuery(UserNode user) {
+        String str;
+
+        str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " C +";
+        client.write(str);
+    }
+
+    private void sendSvsLogin(UserNode user, UserAccount account, Boolean auth) {
+        String str;
+        String toServerSid = "";
+
+        if (user.getSaslAuthParam("authServer") != null) {
+            toServerSid = user.getSaslAuthParam("authServer");
+        }
+        else {
+            toServerSid = user.getUserServer().getServerId();
+        }
+
+        // :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay
+        if (auth == true) str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " " + account.getUserAccountName();
+        else str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " ";
+        client.write(str);
+    }
+
+    public void sendSvsLogin(UserNode user) {
+        sendSvsLogin(user, null, false);
+    }
+
+    public void sendSvsLogin(UserNode user, UserAccount account) {
+        sendSvsLogin(user, account, true);
+    }
+
+
 
     public void getResponse(String raw) throws Exception {
         String response = "";
@@ -616,6 +676,9 @@ public class Protocol extends Exception {
             /* If our peer sends the EOS (so last to send EOS) */
             if(server.getServerPeer() == true) {
 
+                /* Not in netburst anymore */
+                this.networkInsideNetBurst = false;
+
                 // Identify what are the available channel modes
                 if (protocolProps.containsKey("PREFIX")) {
                     String chanPrefix = protocolProps.get("PREFIX"); /* PREFIX = (modelist)prefixlist, e.g PREFIX=(qaohv)~&@%+ */
@@ -671,7 +734,23 @@ public class Protocol extends Exception {
         else if (command[1].equals("MD")) {
             //:ABC MD client lynx.      saslmechlist :EXTERNAL,PLAIN
             //:ABC MD client <nick|uid> <varname>    <value>
+            String   mdString = command[2];
+            String[] mdParams;
 
+            mdParams = mdString.split(" ", 10);
+
+
+            
+            switch(mdParams[2]) {
+                case "certfp": //:SID MD client <UID> certfp :<certfp string>
+                    String target = mdParams[1];
+                    UserNode userNode;
+                    if (target.length() == 9) { 
+                        userNode = getUserNodeBySid(target);
+                        userNode.setUserCertFP(mdParams[3].replaceFirst(":", ""));
+                    } 
+                    break;
+            }
         }
         else if (command[1].equals("SINFO")) {
             //<<< :5PX SINFO 1683275149 6000 diopqrstwxzBDGHIRSTWZ beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ * :UnrealIRCd-6.1.0
@@ -798,6 +877,8 @@ public class Protocol extends Exception {
                 userList.put(command[5], user);
                 userNickSidLookup.put(command[0], command[5]);
                 user.setUserServer(serverList.get(fromEnt));
+                user.setCloakedHost(command[9]);                    // cloaked host
+                user.setIP(command[10]);                            // IP address
             }
 
             else {
@@ -808,31 +889,61 @@ public class Protocol extends Exception {
                 user.setUserHost(command[8]);                       // vhost
                 user.setUserRealHost(command[4]);                   // realhost
                 user.setUserRealName((command[11].split(":"))[1]);  // gecos
-                user.setUserTS(Long.parseLong(command[2]));       // TS
+                user.setUserTS(Long.parseLong(command[2]));         // TS
                 user.setUserModes(command[7]);                      // modes
+                user.setCloakedHost(command[9]);                    // cloaked host
+                user.setIP(command[10]);                            // IP address
+
+                /* Section to update auth token in the db if the user was authed using SASL, because in this case their TS and ident was unknown */
+                /* Also a good place to set the vhost */
+                //@s2s-md/creationtime=1685464827 :5PK UID plop 0 1685464824 plop desktop-lpvlp15 5PKE08M08 0 +iwx cloak/-F9228E5A cloak/-F9228E5A wKgKGA== :...
+                if (user.getAuthBySasl() == true) {
+                    sqliteDb.updateUserAuth(user);
+
+                    //if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+                     //   this.chgHost(client, user, user.getUserAccount().getUserAccountName());
+                    //}
+                }
 
             }
 
-            /* Trying to authenticate the user if it was alreadu authed (netjoin) */
-            UserAccount accountToReauth = null;
-            //System.out.println("BFA Looking up user in token list.");
-            try {
-                //System.out.println("BFC try: " + user.getUserNick() + " / " + user.getUserTS());
-                accountToReauth = sqliteDb.getUserLoginToken(user);
-            }
-            catch (Exception e) {
-    
-            }
-            if (accountToReauth != null) {
-                //System.out.println("BFB account found: " + accountToReauth.getUserAccountName());
-                user.setUserAuthed(true);
-                user.setUserAccount(accountToReauth);
+            if (this.networkInsideNetBurst == true) {
+                /* Trying to authenticate the user if it was already authed (netjoin), only during sync */
+                UserAccount accountToReauth = null;
+                //System.out.println("BFA Looking up user in token list.");
+                try {
+                    //System.out.println("BFC try: " + user.getUserNick() + " / " + user.getUserTS());
+                    accountToReauth = sqliteDb.getUserLoginToken(user);
+                }
+                catch (Exception e) {
+        
+                }
 
-                sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
+                if (accountToReauth != null) {
+                    //System.out.println("BFB account found: " + accountToReauth.getUserAccountName());
+                    user.setUserAuthed(true);
+                    user.setUserAccount(accountToReauth);
+
+                    if (config.getFeature("svslogin") == true) {
+                        this.sendSvsLogin(user, user.getUserAccount());
+                    }
+            
+                    if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+                        this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
+                    }
+
+                    sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
+                }
+                //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
             }
-            //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
         }
-        else if (command[1].equals("S-A-S-L")) {
+        else if (command[1].equals("SASL") && config.getFeature("sasl") == true) {
+
+            fromEnt = command[0].replaceFirst(":", "");
+            command = command[2].split(" ", 12);
+
+
+
             /*
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 H 2401:d800:7e60:5bb:21e:10ff:fe1f:0 2401:d800:7e60:5bb:21e:10ff:fe1f:0
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 S PLAIN
@@ -845,10 +956,21 @@ public class Protocol extends Exception {
             * >>> :5PBAAAAAF SASL ocelot. 5P0QVW5M3 D S
             * <<< @s2s-md/geoip=cc=VN|cd=Vietnam;s2s-md/tls_cipher=TLSv1.3-TLS_CHACHA20_POLY1305_SHA256;s2s-md/creationtime=1683972418 :5P0 UID AnhTay_ 0 1683972414 ~anh 2401:d800:7e60:5bb:21e:10ff:fe1f:0 5P0QVW5M3 AnhTay +iwxz D0230F10:F347CFC4:51CFDDA3:IP D0230F10:F347CFC4:51CFDDA3:IP JAHYAH5gBbsCHhD//h8AAA== :Toi La Anh
             * >>> :5PB CHGHOST 5P0QVW5M3 user/AnhTay
+            *
+            * 1.  user_sid -> auth_sid H <realhost> <ip>
+            *
+            * 2a. user_sid -> auth_sid S PLAIN
+            * 2b. user_sid -> auth_sid S EXTERNAL <certfp>
+            *
+            * 3.  auth_uid -> user_uid C +
+            *
+            * 4a. user_sid -> auth_uid C <base64(login\0login\0pass)>
+            * 4b. user_sid -> auth_uid C +
+            *
+            * 5a. auth_uid -> user_uid D S  (success)
+            * 5b. auth_uid -> user_sid D F  (failure)
+            *
             */
-
-            fromEnt = command[0].replaceFirst(":","");
-            command = command[2].split(" ", 12);
 
             /*
              *    Received " H " from user's server
@@ -869,20 +991,13 @@ public class Protocol extends Exception {
              * command[4] = CertFP if EXTERNAL, empty if PLAIN
              */
 
-            /*
-             *    Sent " C " from authenticator SID (e.g. Q) to user's server
-             * command[0] = user's server SID
-             * command[1] = User SID
-             * command[2] = C
-             * command[3] = +
-             */
 
             /*
              *    Received " C " from user's server
              * command[0] = SASL server
              * command[1] = User SID
              * command[2] = C
-             * command[3] = Base64 hash of <LoginLoginPass>
+             * command[3] = Base64 hash of <Login\0Login\0Pass>
              */
 
             /*
@@ -895,9 +1010,6 @@ public class Protocol extends Exception {
 
             /*
              *    Auth success => Sent " SVSLOGIN " from authenticator server SID to user's server
-             * command[0] = user's server SID
-             * command[1] = User SID
-             * command[2] = User login
              */
 
             /*
@@ -913,26 +1025,170 @@ public class Protocol extends Exception {
              * command[0] = User SID
              * command[1] = vhost
              */
+            UserNode user;
+            UserAccount userAccountToAuth;
+            HashMap<String, Integer> userChanlev;
 
-            UserNode user = new UserNode( command[0],    // nick
-                                        command[3],      // ident
-                                        command[8],      // vhost
-                                        command[4],      // realhost
-                                        (command[11].split(":"))[1],   // gecos
-                                        command[5],      // unique id
-                                        Integer.parseInt(command[2]),   // TS
-                                        command[7]    // modes
-                                     );
-            user.setUserServer(serverList.get(fromEnt));
-            userList.put(command[5], user);
-            //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
-            userNickSidLookup.put(command[0], command[5]);
+            String str;
+            byte[] decodedAuthString;
+            String authString;
+            Integer authType;
+
+            switch(command[2]) {
+                case "H": // first SASL handshake => create the user
+                    /*
+                    *    Received " H " from user's server
+                    * command[0] = SASL server
+                    * command[1] = User SID
+                    * command[2] = H
+                    * command[3] = Hostname
+                    * command[4] = IP
+                    * command[5] = P if plaintext connection, else empty
+                    */
+                    user = new UserNode(command[1], command[3]);
+                    user.setUserServer(serverList.get(fromEnt));
+                    userList.put(command[1], user);
+                    break;
+
+                case "S":
+                   /*
+                    *    Received " S " from user's server
+                    * command[0] = SASL server
+                    * command[1] = User SID
+                    * command[2] = S
+                    * command[3] = Client SASL type (PLAIN for user/pass, EXTERNAL for authentication through ircd)
+                    * command[4] = CertFP if EXTERNAL, empty if PLAIN
+                    */
+
+                    user = this.getUserNodeBySid(command[1]);
+                    user.setSaslAuthParam("authType", command[3]);
+                    if (command[3].equals("EXTERNAL")) { 
+                        user.setSaslAuthParam("authExt", command[4]);
+                        user.setUserCertFP(command[4]);
+                    }
+                    user.setSaslAuthParam("authServer", command[1]);
+
+                    /*
+                    * Send " C + " from authenticator UID (e.g. Q) to user's server
+                    * >>> :5PBAAAAAF SASL ocelot. 5P0QVW5M3 C +
+                    */
+
+                    this.sendSaslQuery(user);
+
+                    break;
+
+                case "C":
+                    /*
+                    *    Received " C " from user's server
+                    * command[0] = SASL server
+                    * command[1] = User SID
+                    * command[2] = C
+                    * command[3] = Base64 hash of <Login\0Login\0Pass>
+                    */
+
+                    user = this.getUserNodeBySid(command[1]);
+
+                    if (user.getSaslAuthParam("authType").equals("EXTERNAL") == true && command[3].equals("+") == true) { // SASL EXTERNAL auth
+                        authType = Const.AUTH_TYPE_SASL_EXT;
+
+                        String authCertFp = user.getSaslAuthParam("authExt");
+
+                        /* SASL EXTERNAL => no username provided => need to find in all the accounts to which belongs the certfp */
+                        var wrapper = new Object() { UserAccount userAccountToAuth; };
+                        this.userAccounts.forEach( (username, useraccount) -> {
+
+                            if (useraccount.getCertFP().contains(authCertFp)) {
+                                wrapper.userAccountToAuth = useraccount;
+                            }
+                            else { wrapper.userAccountToAuth = null; }
+
+                        });
+
+                        userAccountToAuth = wrapper.userAccountToAuth;
+
+                        if (userAccountToAuth != null) { // Certfp found => Auth successful
+
+                            userAccountToAuth.authUserToAccount( user,  authCertFp,  authType);
+
+                            this.sendSaslResult(user, true);
+
+
+                            if (config.getFeature("svslogin") == true) {
+                                this.sendSvsLogin(user, userAccountToAuth);
+                            }
+                            if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+                                this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
+                            }
+                            return;
+                        }
+                        else { // Certfp not found => Auth fail
+                            this.sendSaslResult(user, false);
+                            return;
+                        }
+                    }
+
+                    else { // SASL PLAIN auth
+                        Base64.Decoder dec = Base64.getDecoder();
+                        decodedAuthString = dec.decode(command[3]);
+                        authString = new String(decodedAuthString);
+
+                        String[] authStringItems = authString.split("\0", 3);
+                        String login = "";
+                        String password = "";
+                        authType = Const.AUTH_TYPE_SASL_PLAIN;
+
+
+                        try {
+                            /* Separate items from login string */
+                            if (authStringItems[0].equals(authStringItems[1])) login = authStringItems[0];
+                            password = authStringItems[2];
+                            
+                        }
+                        catch (Exception e) { 
+                            e.printStackTrace(); 
+                            this.sendSaslResult(user, false);
+                            return;
+
+                        }
+
+                        userAccountToAuth = this.getUserAccount(login);
+
+                        if (userAccountToAuth == null) { /* Auth failed (unknown user account) */
+                            Thread.sleep(config.getCServeAccountWrongCredWait() *1000);
+                            this.sendSaslResult(user, false);
+                            return;
+                        }
+                        
+                            
+                        HashMap<String, String> userAccountParams = sqliteDb.getUser(userAccountToAuth);
+
+                        userAccountToAuth.authUserToAccount(user, password, authType);
+
+                        if (user.getUserAuthed() == false) { /* Auth failed */
+                            //Thread.sleep(config.getCServeAccountWrongCredWait() *1000);
+                            this.sendSaslResult(user, false);
+                            return;
+                        }
+
+                        /* Auth success */
+
+                        this.sendSaslResult(user, true);
+                        if (config.getFeature("svslogin") == true) {
+                            this.sendSvsLogin(user, userAccountToAuth);
+                        }
+                        if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+                            this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
+                        }
+                        
+
+                    }
+
+
+                    break;
 
 
 
-
-
-
+            }
 
 
         }
@@ -1325,7 +1581,7 @@ public class Protocol extends Exception {
             
             UserNode userToRemove = userList.get(fromEnt);
 
-            sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
+            if (userToRemove.getUserAuthed() == true) sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             userToRemove.setUserAccount(null);
 
             userNickSidLookup.remove(userToRemove.getUserNick());

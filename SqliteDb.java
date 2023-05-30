@@ -961,6 +961,29 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + userNode.getUserAccount() + "."); }
     }
 
+    public void updateUserAuth(UserNode userNode) throws Exception {
+        Statement statement = null;
+        String sql = null;
+
+        try {
+            statement = connection.createStatement();
+            sql = "UPDATE logins SET userTS='" + userNode.getUserTS().toString() + "' WHERE userSid='" + userNode.getUserUniq() + "';";
+            statement.executeUpdate(sql);
+            statement.close();
+
+            statement = connection.createStatement();
+            
+            sql = "UPDATE authhistory SET maskFrom='" + userNode.getUserIdent() + "' WHERE sessionUuid='" + userNode.getUserAuth() + "';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Error: cannot update login token/history for user '" + userNode.getUserUniq()); 
+        }
+
+    }
+
     /**
      * Returns the list of login tokens for the user account
      * @param userAccountName user account name

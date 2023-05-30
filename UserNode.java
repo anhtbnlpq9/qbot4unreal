@@ -17,10 +17,15 @@ public class UserNode {
     private String userIdent      = "";
     private String userHost       = "";
     private String userRealHost   = "";
+    private String ipAddress      = "";
+    private String cloakedHost    = "";
     private String userRealName   = "";
     private String userUniq       = "";
     private String userModes      = "";
     private String userCertFP     = "";
+
+    private Boolean usingSaslAuth = false;
+    private HashMap<String, String> saslAuthParams = new HashMap<>();
 
     private ServerNode   userServer;
     private UserAccount  userAccount;
@@ -66,6 +71,18 @@ public class UserNode {
         this.userModes = userModes;
         
     } 
+
+    /**
+     * Constructor used during SASL handshake
+     * @param uid
+     * @param hostname
+     */
+    public UserNode(String uid, String hostname) {
+        this.userUniq = uid;
+        this.userRealHost = hostname;
+        this.usingSaslAuth = true;
+        this.userTS = 0L;
+    }
 
     /**
      * Sets the user nickname
@@ -145,15 +162,17 @@ public class UserNode {
      * @param account user account object
      */
     public void setUserAccount(UserAccount account) {
-        if (account != null) {
-            this.userAccount = account;
-            try { this.userAccount.addUserAuth(this); }
-            catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not auth user."); }
-        }
-        else {
-            try { this.userAccount.delUserAuth(this); }
-            catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not de-auth user."); }   
-            this.userAccount = null;
+        if (this.userAuthed == true) {
+            if (account != null) {
+                this.userAccount = account;
+                try { this.userAccount.addUserAuth(this); }
+                catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not auth user."); }
+            }
+            else {
+                try { this.userAccount.delUserAuth(this); }
+                catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not de-auth user."); }   
+                this.userAccount = null;
+            }
         }
     }
 
@@ -415,5 +434,32 @@ public class UserNode {
 
     public Long getUserAuthTS() {
         return this.authTS;
+    }
+
+    public void setSaslAuthParam(String param, String value) {
+        this.saslAuthParams.put(param, value);
+    }
+
+    public String getSaslAuthParam(String param) {
+        try {
+            return this.saslAuthParams.get(param);
+        }
+        catch (NullPointerException e) { e.printStackTrace(); return null; }
+    }
+
+    public Boolean getAuthBySasl() {
+        return this.usingSaslAuth;
+    }
+
+    public void setIP(String b64IP) {
+        this.ipAddress = b64IP;
+    }
+
+    public void setCloakedHost(String clkdHost) {
+        this.cloakedHost = clkdHost;
+    }
+
+    public String getCloakedHost() {
+        return this.cloakedHost;
     }
 }

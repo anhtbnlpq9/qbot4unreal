@@ -44,6 +44,7 @@ public class Config {
     private String    cserviceAccountHostPrefix;
     private String    cserviceAccountHostSuffix;
     private Integer   cserviceAccountMaxCertFP;
+    private Integer   cserviceAccountWrongCredWait;
     private Integer   cserviceChanAutoLimitFreq;
 
     /* Network parameters */
@@ -51,6 +52,8 @@ public class Config {
 
     /* Features parameters */
     private Boolean featureSasl;
+    private Boolean featureSvslogin;
+    private Boolean featureChgHost;
     HashMap<String, Boolean> featuresList = new HashMap<String, Boolean>();
 
     /* Logging parameters */
@@ -106,6 +109,7 @@ public class Config {
         cserviceAccountHostPrefix                 = (String) cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix                 = (String) cserviceaccount.get("authvhostsuffix");
         cserviceAccountMaxCertFP                  = (Integer)  cserviceaccount.get("maxcertfp");
+        cserviceAccountWrongCredWait              = (Integer)  cserviceaccount.get("wrongcredwait");
         HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
         cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
 
@@ -118,9 +122,12 @@ public class Config {
 
         HashMap<String, Object> confFeatures  = (HashMap<String, Object>) data.get("features");
         featureSasl                           = (Boolean) confFeatures.get("sasl");
+        featureSvslogin                       = (Boolean) confFeatures.get("svslogin");
+        featureChgHost                        = (Boolean) confFeatures.get("chghost");
 
-        if (featureSasl == true) featuresList.put("sasl", true);
-        else featuresList.put("sasl", false);
+        featuresList.put("sasl",        featureSasl);
+        featuresList.put("svslogin",    featureSvslogin);
+        featuresList.put("chghost",     featureChgHost);
 
         HashMap<String, Object> confDatabase    = (HashMap<String, Object>) data.get("database");
         databasePath                            = (String) confDatabase.get("path");
@@ -317,12 +324,11 @@ public class Config {
      * @return feature enable/disable
      */
     public Boolean getFeature(String feature) {
-        switch (feature) {
-            case "sasl":
-                return this.featuresList.get(feature);
-    
-            default:
-                return false;
+        if (this.featuresList.containsKey(feature) == true) {
+            return this.featuresList.get(feature);
+        }
+        else {
+            return false;
         }
     }
 
@@ -403,4 +409,9 @@ public class Config {
     public Integer getCServeAccountMaxCertFP() {
         return cserviceAccountMaxCertFP;
     }
+    public Integer getCServeAccountWrongCredWait() {
+        return cserviceAccountWrongCredWait;
+    }
+
+
 }
