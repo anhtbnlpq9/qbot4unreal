@@ -366,20 +366,7 @@ public class CService {
             cServeAuth(fromNickRaw, str);
         }
         else if (str.toUpperCase().startsWith("LOGOUT")) { // LOGOUT
-            if (fromNick.getUserAuthed() == false) {
-                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
-                return;
-            }
-            else {
-                try { sqliteDb.delUserAuth(fromNick, Const.DEAUTH_TYPE_MANUAL, ""); }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing unauth."); 
-                }
-                fromNick.setUserAccount(null);
-                fromNick.setUserAuthed(false);
-                protocol.sendNotice(client, myUserNode, fromNick, "Logout successful.");
-            }         
+            cServeLogout(fromNick);    
         }
         else if (str.toUpperCase().startsWith("VERSION")) {
             protocol.sendNotice(client, myUserNode, fromNick, "qbot4u - The Q Bot for UnrealIRCd."); 
@@ -1355,7 +1342,34 @@ public class CService {
 
     }
 
-    public void cServeLogout() {
+    public void cServeLogout(UserNode usernode) {
+
+        if (usernode.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, usernode, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        UserAccount userAccount = usernode.getUserAccount();
+
+        try {
+            userAccount.deAuthUserFromAccount(usernode, Const.DEAUTH_TYPE_MANUAL);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, "Error while logging out.");
+            return;
+        }
+
+        if (Flags.isUserAutoVhost(userAccount.getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+            protocol.chgHost(client, usernode, usernode.getCloakedHost());
+        }
+        
+        if (config.getFeature("svslogin") == true) {
+            protocol.sendSvsLogin(usernode);
+        }
+
+        protocol.sendNotice(client, myUserNode, usernode, "Done.");
+
 
     }
 
