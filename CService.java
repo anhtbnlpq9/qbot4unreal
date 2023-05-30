@@ -372,47 +372,10 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, "qbot4u - The Q Bot for UnrealIRCd."); 
         }
         else if (str.toUpperCase().startsWith("REQUESTBOT ")) { // REQUESTBOT #channel
-            String channel = (str.split(" ", 2))[1];
-            ChannelNode chanNode = protocol.getChannelNodeByName(channel);
-
-            if (fromNick.getUserAuthed() == false) {
-                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
-                return;
-            }
-
-            UserAccount ownerAccount = fromNick.getUserAccount();
-
-            // First check that the user is on the channel and opped
-            if (fromNick.getUserChanMode(channel).matches("(.*)o(.*)")) {
-                try {
-                    sqliteDb.addRegChan(chanNode, ownerAccount);
-                    
-                    sqliteDb.setChanFlags(chanNode, Flags.getDefaultChanFlags());
-
-
-                    sqliteDb.setUserChanlev(ownerAccount, chanNode, CHANLEV_FOUNDER_DEFAULT);
-
-                    ownerAccount.setUserChanlev(chanNode, CHANLEV_FOUNDER_DEFAULT);
-
-                    // updating channel chanlev as well
-                    Map<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(chanNode);
-                    chanNode.setChanChanlev(chanNewChanlev);
-                    chanNode.setChanFlags(Flags.getDefaultChanFlags());
-                    
-                    protocol.chanJoin(client, myUserNode, chanNode);
-                    protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
-                    protocol.sendNotice(client, myUserNode, fromNick, "Channel successfully registered."); 
-                }
-                catch (Exception e) { 
-                    protocol.sendNotice(client, myUserNode, fromNick, "Error while registering the channel."); 
-                    e.printStackTrace();
-                    return;
-                }
-            }
-            else {
-                protocol.sendNotice(client, myUserNode, fromNick, "You must be present on the channel and be opped."); 
-            }
-            
+            cServeRequestbot(fromNick, str, false);
+        }
+        else if (str.toUpperCase().startsWith("ADDCHAN ")) { // REQUESTBOT #channel
+            cServeRequestbot(fromNick, str, true);
         }
         else if (str.toUpperCase().startsWith("DROP ")) { /* DROP #channel */
             String channel = (str.split(" ", 2))[1];
@@ -1135,8 +1098,95 @@ public class CService {
 
     }
 
-    public void cServeRequestbot() {
+    public void cServeAddChan() {
 
+    }
+
+    public void cServeRequestbot(UserNode user, String str, Boolean operMode) {
+        String channel;
+        ChannelNode chanNode;
+        String target;
+        UserAccount targetAccount = null;
+
+        if (user.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, user, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try {
+            channel = (str.split(" "))[1];
+            chanNode = protocol.getChannelNodeByName(channel);
+        }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, user, "This channel does not exist."); 
+            return;
+        }
+
+        if (operMode == true) {
+
+            try {
+                target = (str.split(" "))[2];
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, user, "You must specify the target nick/#account for the channel."); 
+                return;
+            }
+
+            try {
+                if (target.startsWith("#") == true) {
+                    targetAccount = protocol.getUserAccount(target.replaceFirst("#", ""));
+                }
+                else {
+                    targetAccount = protocol.getUserNodeByNick(target).getUserAccount();
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                protocol.sendNotice(client, myUserNode, user, "This nick is not online or this #account does not exist."); 
+                return;
+            }
+            if (targetAccount == null) {
+                protocol.sendNotice(client, myUserNode, user, "This nick is not authed."); 
+                return;
+            }
+        }
+
+
+        UserAccount ownerAccount;
+
+        if (operMode == true) ownerAccount = targetAccount;
+        else ownerAccount = user.getUserAccount();
+
+        // First check that the user is on the channel and opped
+        if (user.getUserChanMode(channel).matches("(.*)o(.*)") == true || operMode == true) {
+            try {
+                sqliteDb.addRegChan(chanNode, ownerAccount);
+                
+                sqliteDb.setChanFlags(chanNode, Flags.getDefaultChanFlags());
+
+
+                sqliteDb.setUserChanlev(ownerAccount, chanNode, CHANLEV_FOUNDER_DEFAULT);
+
+                ownerAccount.setUserChanlev(chanNode, CHANLEV_FOUNDER_DEFAULT);
+
+                // updating channel chanlev as well
+                Map<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(chanNode);
+                chanNode.setChanChanlev(chanNewChanlev);
+                chanNode.setChanFlags(Flags.getDefaultChanFlags());
+                
+                protocol.chanJoin(client, myUserNode, chanNode);
+                protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
+                protocol.sendNotice(client, myUserNode, user, "Channel successfully registered."); 
+            }
+            catch (Exception e) { 
+                protocol.sendNotice(client, myUserNode, user, "Error while registering the channel."); 
+                e.printStackTrace();
+                return;
+            }
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, user, "You must be present on the channel and be opped."); 
+        }
     }
 
     public void cServeHello() {
