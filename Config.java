@@ -44,6 +44,8 @@ public class Config {
     private String    cserviceAccountHostPrefix;
     private String    cserviceAccountHostSuffix;
     private Integer   cserviceAccountMaxCertFP;
+    private Integer   cserviceAccountMinPassLength;
+    private Integer   cserviceAccountMaxPassLength;
     private Integer   cserviceAccountWrongCredWait;
     private Integer   cserviceChanAutoLimitFreq;
 
@@ -109,6 +111,8 @@ public class Config {
         cserviceAccountHostPrefix                 = (String) cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix                 = (String) cserviceaccount.get("authvhostsuffix");
         cserviceAccountMaxCertFP                  = (Integer)  cserviceaccount.get("maxcertfp");
+        cserviceAccountMinPassLength              = (Integer)  cserviceaccount.get("minpasslen");
+        cserviceAccountMaxPassLength              = (Integer)  cserviceaccount.get("maxpasslen");
         cserviceAccountWrongCredWait              = (Integer)  cserviceaccount.get("wrongcredwait");
         HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
         cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
@@ -413,5 +417,12 @@ public class Config {
         return cserviceAccountWrongCredWait;
     }
 
+    public Integer getCServiceAccountMinPassLength() {
+        return this.cserviceAccountMinPassLength;
+    }
+
+    public Integer getCServiceAccountMaxPassLength() {
+        return this.cserviceAccountMaxPassLength;
+    }
 
 }

@@ -330,8 +330,8 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "HELLO: Invalid email address.");
                 return;
             }
-            if (password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,64}$")==false) {
-                protocol.sendNotice(client, myUserNode, fromNick, "HELLO: Password must contain at least 8 (at most 64) characters with at least one of the following types: lowercase, uppercase, number, symbol.");
+            if (password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{" + config.getCServiceAccountMinPassLength() + "," + config.getCServiceAccountMaxPassLength() + "}$")==false) {
+                protocol.sendNotice(client, myUserNode, fromNick, "HELLO: Password must contain at least " + config.getCServiceAccountMinPassLength() + " (at most " + config.getCServiceAccountMaxPassLength() + ") characters with at least one of the following types: lowercase, uppercase, number, symbol.");
                 return;
             }
             String pwHash = null;
