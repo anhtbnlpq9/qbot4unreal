@@ -23,6 +23,7 @@ public abstract class Const {
     public static final Integer      DEAUTH_TYPE_GLINE       = 0x0023;
     public static final Integer      DEAUTH_TYPE_MANUAL      = 0x0024;
     public static final Integer      DEAUTH_TYPE_EXPIRE      = 0x0025;
+    public static final Integer      DEAUTH_TYPE_DROP        = 0x0026;
 
 
     private static final Map<String, Integer> constStrToInt = Map.ofEntries(
@@ -36,7 +37,8 @@ public abstract class Const {
         entry("Kill",   DEAUTH_TYPE_KILL),
         entry("Gline",   DEAUTH_TYPE_GLINE),
         entry("Logout",   DEAUTH_TYPE_MANUAL),
-        entry("Expire",   DEAUTH_TYPE_EXPIRE)
+        entry("Expire",   DEAUTH_TYPE_EXPIRE),
+        entry("Account dropped",   DEAUTH_TYPE_DROP)
     );
 
     private static final Map<Integer, String> constIntToStr = dictionaryRev(constStrToInt);

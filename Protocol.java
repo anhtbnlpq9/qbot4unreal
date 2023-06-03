@@ -125,7 +125,10 @@ public class Protocol extends Exception {
      * @return UserNode
      */
     public UserNode getUserNodeByNick(String userNick) {
-        return userList.get(getNickLookupTableCi(userNick));
+        if (userNickSidLookup.containsKey(userNick)) {
+            return userList.get(getNickLookupTableCi(userNick));
+        }
+        else return null;
     }
 
     /**

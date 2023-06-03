@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.UUID;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -22,6 +23,8 @@ public class UserAccount {
     private Integer             userAccountFlags;
     private String              userAccountEmail;
     private Long                userAccountRegTS;
+    private UUID confirmCode = null;
+
 
     interface AuthPassCheck {
         Boolean checkPass(HashMap<String, String> userParam, String userInput);
@@ -360,5 +363,13 @@ public class UserAccount {
 
     public void setConfigRef(Config config) {
         this.config = config;
+    }
+
+    public void setConfirmCode(UUID uuid) {
+        this.confirmCode = uuid;
+    }
+
+    public UUID getConfirmCode() {
+        return this.confirmCode;
     }
 }

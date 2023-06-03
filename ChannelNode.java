@@ -9,6 +9,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
  
 public class ChannelNode {
     
@@ -16,6 +17,7 @@ public class ChannelNode {
     private String topic = "";
     private Long   topicTS;
     private String topicBy;
+    private UUID confirmCode = null;
     private Boolean channelRegistered;
     private UserNode channelOwner;
     private Map<String, Integer> chanChanlev; // Map username -> chanlev
@@ -274,5 +276,13 @@ public class ChannelNode {
 
     public void setAutoLimit(Integer autolimit) {
         this.autoLimit = autolimit;
+    }
+
+    public void setConfirmCode(UUID uuid) {
+        this.confirmCode = uuid;
+    }
+
+    public UUID getConfirmCode() {
+        return this.confirmCode;
     }
 }

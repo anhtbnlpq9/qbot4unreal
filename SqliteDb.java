@@ -501,6 +501,32 @@ public class SqliteDb {
 
     }
 
+    public void clearUserChanlev(String username) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+
+        Integer userId           = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT uid FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            userId = resultSet.getInt("uid");
+
+            resultSet = statement.executeQuery(sql);
+
+            sql = "DELETE FROM chanlev WHERE userId='" + userId + "';";
+            statement.executeUpdate(sql);
+
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset user " + username + " chanlev."); }
+
+    }
+
     /**
      * Clear the channel chanlev
      * @param channel channel name
@@ -959,6 +985,19 @@ public class SqliteDb {
             statement.close();
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + userNode.getUserAccount() + "."); }
+    }
+
+    public void delUserAccount(UserAccount userAccount) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "DELETE FROM users WHERE lower(name)='" + userAccount.getUserAccountName().toLowerCase() + "';";
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not delete account for user " + userAccount.getUserAccountName() + "."); }
     }
 
     public void updateUserAuth(UserNode userNode) throws Exception {

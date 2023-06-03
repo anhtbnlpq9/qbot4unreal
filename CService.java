@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.time.Instant;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
@@ -382,38 +383,11 @@ public class CService {
         else if (str.toUpperCase().startsWith("ADDCHAN ")) { // REQUESTBOT #channel
             cServeRequestbot(fromNick, str, true);
         }
-        else if (str.toUpperCase().startsWith("DROP ")) { /* DROP #channel */
-            String channel = (str.split(" ", 2))[1];
-            ChannelNode chanNode = protocol.getChannelNodeByName(channel);
-
-            if (fromNick.getUserAuthed() == false) {
-                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
-                return;
-            }
-
-            // First check that the user is a the channel's owner (chanlev +n)
-            try {
-                if ( Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true ) {
-
-                    fromNick.getUserAccount().clearUserChanlev(chanNode);
-                    chanNode.clearChanChanlev(fromNick);
-                    sqliteDb.clearChanChanlev(channel);
-
-                    sqliteDb.delRegChan(channel);
-
-                    protocol.setMode(client, chanNode, "-r", "");
-                    protocol.chanPart(client, myUserNode, chanNode);
-                    protocol.sendNotice(client, myUserNode, fromNick, "Channel successfully dropped."); 
-                }
-                else {
-                    protocol.sendNotice(client, myUserNode, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
-                }
-            }
-            catch (Exception e) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
-                e.printStackTrace();
-                return;
-            }
+        else if (str.toUpperCase().startsWith("DROPCHAN ")) { /* DROPCHAN #channel */
+            cServeDropChan(fromNickRaw, str);
+        }
+        else if (str.toUpperCase().startsWith("DROPUSER ")) { /* DROPUSER <nick|#user> [confirmcode] */
+            cServeDropUser(fromNickRaw, str);
         }
         else if (str.toUpperCase().startsWith("CHANLEV ")) { /* CHANLEV <channel> [user [change]] */
             cServeChanlev(fromNickRaw, str);
@@ -1201,12 +1175,221 @@ public class CService {
 
     }
 
-    public void cServeDrop() {
+    public void cServeDropChan(UserNode fromNick, String str) {
+        String channel;
+        String confirmCode = "";
 
+        ChannelNode chanNode;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try {
+            channel = (str.split(" ", 3))[1];
+            chanNode = protocol.getChannelNodeByName(channel);
+        }
+        catch (IndexOutOfBoundsException e) {
+
+            return;
+        }
+        catch (Exception f) {
+
+            return;
+        }
+
+        if (protocol.getRegChanList().containsKey(channel) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "The channel " +  channel + " is not registered."); 
+            return;
+        }
+
+        if ( Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == false ) {
+            protocol.sendNotice(client, myUserNode, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
+            return;
+        }
+
+        if ( Flags.isChanSuspended(chanNode.getChanFlags()) == true ) {
+            protocol.sendNotice(client, myUserNode, fromNick, "You cannot drop a suspended channel."); 
+            return;
+        }
+
+
+        if (chanNode.getConfirmCode() == null) { /* This is the first time the user requests the dropping of the channel */
+
+            chanNode.setConfirmCode(UUID.randomUUID());
+            protocol.sendNotice(client, myUserNode, fromNick, "Dropping of channel " + chanNode.getChanName() + " requested. Please note that all the channel settings, chanlev, history... will be deleted. This action cannot be undone, even by the staff."); 
+            protocol.sendNotice(client, myUserNode, fromNick, "To confirm, please send the command: DROPCHAN " + chanNode.getChanName() + " " + chanNode.getConfirmCode());
+            return;
+
+        }
+
+        try {
+            confirmCode = (str.split(" ", 3))[2];
+        }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Please enter the confirmation code as: DROPCHAN " + chanNode.getChanName() + " " + chanNode.getConfirmCode()); 
+            return;
+        }
+
+        if (confirmCode.equals(chanNode.getConfirmCode().toString()) == false) {
+            chanNode.setConfirmCode(null);
+            protocol.sendNotice(client, myUserNode, fromNick, "Incorrect confirmation code. Confirmation code reset."); 
+            return;
+        }
+
+        
+
+        // First check that the user is a the channel's owner (chanlev +n)
+        try {
+            fromNick.getUserAccount().clearUserChanlev(chanNode);
+            chanNode.clearChanChanlev(fromNick);
+            sqliteDb.clearChanChanlev(channel);
+
+            sqliteDb.delRegChan(channel);
+
+            protocol.setMode(client, chanNode, "-r", "");
+            protocol.chanPart(client, myUserNode, chanNode);
+            protocol.sendNotice(client, myUserNode, fromNick, "Channel successfully dropped."); 
+
+        }
+        catch (Exception e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Error dropping the channel."); 
+            e.printStackTrace();
+            return;
+        }
     }
 
-    public void cServeAddChan() {
 
+    public void cServeDropUser(UserNode fromNick, String str) { /* DROPUSER <nick|#user> [confirmationcode] */
+        String user;
+        String confirmCode = "";
+
+        HashSet<UserNode>    loggedUserNodes  = new HashSet<>();
+        HashSet<ChannelNode> knownChannels    = new HashSet<>();
+
+        UserNode targetUserNode;
+        UserAccount targetUserAccount = null;
+
+        if (fromNick.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            return;
+        }
+
+        try {
+            user = (str.split(" ", 3))[1];
+        }
+        catch (IndexOutOfBoundsException e) {
+            protocol.sendNotice(client, myUserNode, fromNick, "Syntax: DROPUSER <nick|#user> [confirmationcode]");
+            return;
+        }
+
+
+
+        if (user.startsWith("#") == true) {
+            try {
+                targetUserAccount = protocol.getUserAccount(user.replaceFirst("#", ""));
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                protocol.sendNotice(client, myUserNode, fromNick, "No such account.");
+            }
+        }
+        else {
+            if (protocol.getUserNodeByNick(user) == null) {
+                protocol.sendNotice(client, myUserNode, fromNick, "No such nick.");
+                return;
+            }
+            else { targetUserNode = protocol.getUserNodeByNick(user);  }
+
+            if (targetUserNode.getUserAuthed() == true) {
+                targetUserAccount = targetUserNode.getUserAccount();
+            }
+            else {
+                protocol.sendNotice(client, myUserNode, fromNick, "That nick is not authed.");
+                return;
+            }
+        }
+
+        if (fromNick.getUserAccount().equals(targetUserAccount) == false && Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, "You cannot request that on another user.");
+            return;
+        }
+        else {
+            if ( Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true && Flags.isUserSuspended(targetUserAccount.getUserAccountFlags()) == true ) {
+                protocol.sendNotice(client, myUserNode, fromNick, "You cannot drop a suspended user account."); 
+                return;
+            }
+        }
+
+        if (targetUserAccount.getConfirmCode() == null) { /* This is the first time the user requests the dropping of the channel */
+
+            targetUserAccount.setConfirmCode(UUID.randomUUID());
+            protocol.sendNotice(client, myUserNode, fromNick, "Dropping of account " + targetUserAccount.getUserAccountName() + " requested. Please note that all the data, history... will be deleted. This action cannot be undone, even by the staff."); 
+            protocol.sendNotice(client, myUserNode, fromNick, "To confirm, please send the command: DROPUSER #" + targetUserAccount.getUserAccountName() + " " + targetUserAccount.getConfirmCode());
+            return;
+
+        }
+
+        try {
+            confirmCode = (str.split(" ", 3))[2];
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, "Please enter the confirmation code as: DROPUSER #" + targetUserAccount.getUserAccountName() + " " + targetUserAccount.getConfirmCode()); 
+            return;
+        }
+
+        if (confirmCode.equals(targetUserAccount.getConfirmCode().toString()) == false) {
+            targetUserAccount.setConfirmCode(null);
+            protocol.sendNotice(client, myUserNode, fromNick, "Incorrect confirmation code. Confirmation code reset."); 
+            return;
+        }
+
+        
+
+        
+        try {
+            /* Deauth all the nicks associated */
+            targetUserAccount.getUserLogins().forEach( (usernode) -> {
+                loggedUserNodes.add(usernode);
+            });
+            for (UserNode loggedUserNode : loggedUserNodes) {
+                try {
+                    this.logoutUser(loggedUserNode, Const.DEAUTH_TYPE_DROP);
+                    protocol.sendNotice(client, myUserNode, loggedUserNode, "You have been deauthed because your account is being dropped.");
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("* User drop: could not deauthenticate: " + loggedUserNode.getUserNick() + ".");
+                }
+            }
+
+            /* Clean the chanlevs */
+            targetUserAccount.getUserChanlev().forEach( (chanName, chanlev) -> {
+                knownChannels.add(protocol.getChannelNodeByName(chanName));
+            });
+            for (ChannelNode channel : knownChannels) {
+                sqliteDb.clearUserChanlev(targetUserAccount.getUserAccountName(), channel.getChanName());
+                channel.setChanChanlev(sqliteDb.getChanChanlev(channel));
+            }
+            sqliteDb.clearUserChanlev(targetUserAccount.getUserAccountName());
+
+
+            /* Delete account data from db */
+            sqliteDb.delUserAccount(targetUserAccount);
+
+            /* Delete the reference */
+            targetUserAccount = null;
+
+            protocol.sendNotice(client, myUserNode, fromNick, "User successfully dropped."); 
+
+        }
+        catch (Exception e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, "Error dropping the user."); 
+            e.printStackTrace();
+            return;
+        }
     }
 
     public void cServeRequestbot(UserNode user, String str, Boolean operMode) {
@@ -1528,6 +1711,27 @@ public class CService {
         protocol.sendNotice(client, myUserNode, usernode, "Done.");
 
 
+    }
+
+    private void logoutUser(UserNode usernode, Integer deAuthType) {
+
+        UserAccount userAccount = usernode.getUserAccount();
+        try {
+            userAccount.deAuthUserFromAccount(usernode, deAuthType);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error while logging out.");
+            return;
+        }
+
+        if (Flags.isUserAutoVhost(userAccount.getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
+            protocol.chgHost(client, usernode, usernode.getCloakedHost());
+        }
+        
+        if (config.getFeature("svslogin") == true) {
+            protocol.sendSvsLogin(usernode);
+        }
     }
 
     public void cServeRejoin(UserNode userNode, String str) {
