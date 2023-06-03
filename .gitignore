@@ -7,3 +7,4 @@ services.log.20230504
 db/
 at/
 *.jar
+javadoc/
