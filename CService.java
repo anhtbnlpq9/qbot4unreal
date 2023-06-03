@@ -1566,6 +1566,12 @@ public class CService {
             protocol.chgHostVhost(client, usernode, usernode.getUserAccount().getUserAccountName());
         }
 
+        usernode.getUserAccount().getUserChanlev().forEach( (channel, chanlev) -> {
+            if (Flags.isChanLAutoInvite(chanlev) == true) {
+                protocol.sendInvite(client, usernode, protocol.getChannelNodeByName(channel));
+            }
+        });
+
         protocol.sendNotice(client, myUserNode, usernode, "Auth successful."); 
 
         // Now we apply the modes of the user's chanlev as it was joining the channels

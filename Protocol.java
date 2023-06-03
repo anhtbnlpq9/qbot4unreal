@@ -247,6 +247,11 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
+    public void sendInvite(Client client, UserNode to, ChannelNode chanNode) /*throws Exception*/ {
+        String str = ":" + config.getServerId() + config.getCServeUniq() + " INVITE " + to.getUserUniq() + " " + chanNode.getChanName();
+        client.write(str);
+    }
+
     /**
      * Makes the bot join a channel
      * @param client client
@@ -1129,9 +1134,18 @@ public class Protocol extends Exception {
                             if (config.getFeature("svslogin") == true) {
                                 this.sendSvsLogin(user, userAccountToAuth);
                             }
+
                             if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
                                 this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
                             }
+
+                            userAccountToAuth.getUserChanlev().forEach( (channel, chanlev) -> { 
+                                if (Flags.isChanLAutoInvite(chanlev) == true) {
+                                    this.sendInvite(client, user, this.getChannelNodeByName(channel));
+                                }
+
+                            });
+
                             return;
                         }
                         else { // Certfp not found => Auth fail
@@ -1192,6 +1206,13 @@ public class Protocol extends Exception {
                         if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
                             this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
                         }
+
+                        userAccountToAuth.getUserChanlev().forEach( (channel, chanlev) -> { 
+                            if (Flags.isChanLAutoInvite(chanlev) == true) {
+                                this.sendInvite(client, user, this.getChannelNodeByName(channel));
+                            }
+
+                        });
                         
 
                     }
