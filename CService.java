@@ -876,7 +876,7 @@ public class CService {
             return; 
         }
 
-        if (chanNode.getChanlev() == null || chanNode.getChanlev().isEmpty() == true) { /* FIXME: is not working due to potential presence of personal flags */
+        if (chanNode.getChanlevWoutPersonalFlags() == null || chanNode.getChanlevWoutPersonalFlags().isEmpty() == true) {
             try {
                 fromNick.getUserAccount().clearUserChanlev(chanNode);
                 sqliteDb.clearChanChanlev(channel);
@@ -1441,11 +1441,16 @@ public class CService {
             }
         }
 
-
         UserAccount ownerAccount;
 
         if (operMode == true) ownerAccount = targetAccount;
         else ownerAccount = user.getUserAccount();
+
+        /* Check the user chanlev in case the limit is reached */
+        if (ownerAccount.getUserChanlev().size() >= config.getCServeAccountMaxChannels() && Flags.hasUserOperPriv(ownerAccount.getUserAccountFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, user, "There are too many channels in user's chanlev. Remove some and try again."); 
+            return;
+        }
 
         // First check that the user is on the channel and opped
         if (user.getUserChanMode(channel).matches("(.*)o(.*)") == true || operMode == true) {

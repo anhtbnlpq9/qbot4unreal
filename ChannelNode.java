@@ -238,6 +238,18 @@ public class ChannelNode {
         return this.chanChanlev;
     }
 
+    public Map<String, Integer> getChanlevWoutPersonalFlags() {
+        HashMap<String, Integer> chanlevMap = new HashMap<>();
+
+        chanChanlev.forEach( (user, chanlev) -> {
+            if (Flags.stripChanlevPersonalFlags(chanlev) != 0) {
+                chanlevMap.put(user, chanlev);
+            }
+        } );
+
+        return chanlevMap;
+    }
+
     public String getChanName() {
         return this.channelName;
     }
