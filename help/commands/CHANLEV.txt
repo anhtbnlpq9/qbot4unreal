@@ -26,21 +26,21 @@ Valid flags are:
  +m MASTER    Can add or remove all access except master or owner
  +o OP        Can get ops on the channel
  +v VOICE     Can get voice on the channel
-// +k KNOWN     Known on the channel - can get invites to the channel via INVITE
+ +k KNOWN     Known on the channel - can get invites to the channel via INVITE
 * Punishment flags : these restrict the user on the channel in some way
-// +q DEVOICE   Not allowed to be voiced on the channel
-// +d DEOP      Not allowed to be opped on the channel
+ +q DEVOICE   Not allowed to be voiced on the channel
+ +d DEOP      Not allowed to be opped on the channel
  +b BANNED    Banned from the channel
 * Extra flags : these control specific behaviour on the channel
  +a AUTO      Ops/Voices the user automatically when they join the channel (if
               the user holds +aov, then it will only get opped)
-// +p PROTECT   If the user has +o or +v, this makes sure they will always have
-//              that status, they will be reopped/voiced if deopped/voiced
-// +t TOPIC     Can use SETTOPIC to alter the topic on the channel
-//* Personal flags - these control user personal preferences and can only be changed
-//                   by the user concerned.  They are not visible to other users.
-// +w NOWELCOME Prevents the welcome message being sent when you join the channel.
-// +j AUTOINV   Invites you to the channel automatically when you authenticate.
+ +p PROTECT   If the user has +o or +v, this makes sure they will always have
+              that status, they will be reopped/voiced if deopped/voiced
+ +t TOPIC     Can use SETTOPIC to alter the topic on the channel
+* Personal flags - these control user personal preferences and can only be changed
+                   by the user concerned. They are not visible to other users.
+ +w NOWELCOME Prevents the welcome message being sent when you join the channel.
+ +j AUTOINV   Invites you to the channel automatically when you authenticate.
 Note that non-sensible combinations of flags are not allowed.  After making a 
 change the current status of the named user on the channel will be confirmed.
 End of help.
