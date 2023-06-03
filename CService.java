@@ -375,7 +375,7 @@ public class CService {
             cServeLogout(fromNick);    
         }
         else if (str.toUpperCase().startsWith("VERSION")) {
-            protocol.sendNotice(client, myUserNode, fromNick, "qbot4u - The Q Bot for UnrealIRCd."); 
+            protocol.sendNotice(client, myUserNode, fromNick, config.getCServeVersionString());
         }
         else if (str.toUpperCase().startsWith("REQUESTBOT ")) { // REQUESTBOT #channel
             cServeRequestbot(fromNick, str, false);

@@ -24,6 +24,7 @@ public class Config {
     private String serverProtocolVersion;
     private String serverVersionFlags;
     private String serverFullVersionText;
+    private String serverVersionString;
 
     /* Admin parameters */
     private ArrayList<String> adminInformation = new ArrayList<String>();
@@ -93,6 +94,7 @@ public class Config {
         serverProtocolVersion            = (String) confme.get("protocolversion");
         serverVersionFlags               = (String) confme.get("versionflags");
         serverFullVersionText            = (String) confme.get("fullversiontext");
+        serverVersionString              = (String) confme.get("versionstring");
 
         HashMap<String, Object> conflink    = (HashMap<String, Object>) data.get("link");
         linkPeer                            = (String)  conflink.get("peer");
@@ -423,6 +425,10 @@ public class Config {
 
     public Integer getCServiceAccountMaxPassLength() {
         return this.cserviceAccountMaxPassLength;
+    }
+
+    public String getCServeVersionString() {
+        return this.serverVersionString;
     }
 
 }
