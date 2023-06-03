@@ -437,13 +437,17 @@ public class CService {
     public void handleJoin(UserNode user, ChannelNode channel, Boolean dispWelcome) {
         //System.out.println("BBA chanjoin");
         // check if user is authed
+
+        String autoBanMask = "*!*%s@%s";
+        String autoBanReason = "Banned.";
+
         if (user.getUserAuthed() == true) {
             if (user.getUserAccount().getUserChanlev().containsKey(channel.getChanName())) {
                 if (  Flags.isChanLBanned( user.getUserAccount().getUserChanlev(channel)) == true ) {
                     //System.out.println("BBC chanlev ban");
                     try {
-                        protocol.setMode(client, myUniq, channel.getChanName(), "+b", "*!*" + user.getUserIdent() + "@" + user.getUserHost());
-                        protocol.chanKick(client, myUserNode, channel, user, "You are BANNED from this channel.");
+                        protocol.setMode(client, myUniq, channel.getChanName(), "+b", String.format(autoBanMask, user.getUserIdent(), user.getUserHost()));
+                        protocol.chanKick(client, myUserNode, channel, user, autoBanReason);
                     }
                     catch (Exception e) { e.printStackTrace(); }
                 }
@@ -639,13 +643,18 @@ public class CService {
         String chanlevModRaw             = "";
         String chanlevStrUnAuthed        = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
         String chanlevStrInvalidCommand  = "Invalid command. CHANLEV <channel> [<user> <change>].";
-        String chanlevStrChanNotReg      = "This channel does not exist on the network and is not registered.";
+        String chanlevStrChanNotReg      = "This channel is not registered.";
         String chanlevStrNickNotAuth     = "That nickname is not authed.";
         String chanlevStrAccountNotFound = "No such user account.";
         String chanlevStrNickNotFound    = "No such nick.";
         String chanlevStrSuccess         = "Done.";
+        String chanlevStrSuccessSummary  = "Chanlev set. Chanlev for user account %s is now +%s.";
         String chanlevStrErrGeneric      = "Error setting the chanlev.";
         String chanlevStrErrNoChange     = "Nothing changed. Your requested flag combination change was either the same as the existing flags, impossible, or you don't have enough access.";
+        String chanlevStrErrNoAccess     = "You do not have sufficient access on %s to use chanlev.";
+        String chanlevStrListHeader      = "Displaying CHANLEV for channel %s:";
+        String chanlevStrListFooter      = "End of list.";
+        String chanlevStrDropChanLEmpty  = "Channel has been dropped because its chanlev was left empty.";
 
         /* Define the lambda function to display chanlev */
         ChanlevList displayCL = (fromN, chanNode, userAccount) -> {
@@ -653,7 +662,7 @@ public class CService {
             var wrapper = new Object() { Integer chanlev;};
 
             if (  Flags.hasChanLSignificant(fromN.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserStaffPriv(fromN.getUserAccount().getUserAccountFlags()) == true  ) {
-                protocol.sendNotice(client, myUserNode, fromN, "Displaying CHANLEV for channel " + chanNode.getChanName() + ":");
+                protocol.sendNotice(client, myUserNode, fromN, String.format(chanlevStrListHeader, chanNode.getChanName()));
                 protocol.sendNotice(client, myUserNode, fromN, "Account             Chanlev");
 
                 chanNode.getChanlev().forEach( (user, chanlev) -> {
@@ -681,11 +690,11 @@ public class CService {
                         protocol.sendNotice(client, myUserNode, fromN, " " + user + spaceFill.repeat(19-user.length()) + "+" + Flags.flagsIntToChars("chanlev", wrapper.chanlev)); 
                     }
                 });
-                protocol.sendNotice(client, myUserNode, fromN, "End of list."); 
+                protocol.sendNotice(client, myUserNode, fromN, chanlevStrListFooter); 
             }
 
             else {
-                protocol.sendNotice(client, myUserNode, fromN, "You do not have sufficient access on " + chanNode.getChanName() + " to use chanlev."); 
+                protocol.sendNotice(client, myUserNode, fromN, String.format(chanlevStrErrNoAccess, chanNode.getChanName()) ); 
             }
 
         };
@@ -805,7 +814,7 @@ public class CService {
 
         /* User has provided no personal flags and has no rights on the chan */
         if (chanlevModSepInt.get("+") + chanlevModSepInt.get("-") + chanlevModSepInt.get("p+") + chanlevModSepInt.get("p-") == 0 ) {
-            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use chanlev.");
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(chanlevStrErrNoAccess, chanNode.getChanName()));
             return;
         }
 
@@ -854,7 +863,7 @@ public class CService {
                 wrapper.chanlev = Flags.stripChanlevPunishFlags(wrapper.chanlev);
             }
             protocol.sendNotice(client, myUserNode, fromNick, chanlevStrSuccess);
-            protocol.sendNotice(client, myUserNode, fromNick, "Chanlev set. Chanlev for user account " + userAccount.getUserAccountName() + " is now +" + Flags.flagsIntToChars("chanlev", wrapper.chanlev) + ".");
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(chanlevStrSuccessSummary, userAccount.getUserAccountName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
 
             userAccount.getUserLogins().forEach( (usernode) -> {
                 if (usernode.getUserChanList().containsKey(chanNode.getChanName())) {
@@ -875,7 +884,7 @@ public class CService {
                 sqliteDb.delRegChan(channel);
                 protocol.setMode(client, chanNode, "-r", "");
                 protocol.chanPart(client, myUserNode, chanNode);
-                protocol.sendNotice(client, myUserNode, fromNick, "Channel has been dropped because its chanlev was left empty.");
+                protocol.sendNotice(client, myUserNode, fromNick, chanlevStrDropChanLEmpty);
             }
             catch (Exception e) { return; }
         }
@@ -2014,7 +2023,7 @@ public class CService {
             if ((Flags.isChanAutolimit(chanNode.getChanFlags()) == true) && newLimit != curChanModeLimit) {
                 try {
                     protocol.setMode(client, myUserNode, chanNode, "+l", String.valueOf(newLimit));
-                    System.out.println("* Autolimit: set limit of " + chanName + " to " + String.valueOf(newLimit));
+                    System.out.println("* Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -2033,20 +2042,36 @@ public class CService {
         String[] command = str.split(" ",5);
         Integer chanAutoLimitInt = 0;
 
+        String autoLimStrUnknownCommand     = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
+        String autoLimStrInvalidCommand     = "Invalid command. AUTOLIMIT <channel> [limit]].";
+        String autoLimStrChanSusOrNotFound  = "Channel %s is unknown or suspended.";
+        String autoLimStrCurConf            = "Current autolimit setting on %s: %s";
+        String autoLimStrNoAccess           = "You do not have sufficient access on %s to use autolimit.";
+        String autoLimStrSuccess            = "Done.";
+        String autoLimStrSuccessSummary     = " - Autolimit for %s : %s.";
+        String autoLimStrErr                = "Error setting autolimit.";
+
+
+
         if (fromNick.getUserAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            protocol.sendNotice(client, myUserNode, fromNick, autoLimStrUnknownCommand); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. AUTOLIMIT <channel> [limit]]."); 
+            protocol.sendNotice(client, myUserNode, fromNick, autoLimStrInvalidCommand); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { 
+            chanNode = protocol.getChannelNodeByName(channel);
+            if (Flags.isChanSuspended(chanNode.getChanFlags()) == true) {
+                throw new Exception("* Channel suspended.");
+            }
+        }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Channel " + channel + " is unknown or suspended."); 
+            protocol.sendNotice(client, myUserNode, fromNick, autoLimStrChanSusOrNotFound);
             return;
         }
 
@@ -2056,9 +2081,9 @@ public class CService {
 
             if ( Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true || Flags.hasChanLOpPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true ) {
                 chanCurAutoLimit = chanNode.getChanAutoLimit();
-                protocol.sendNotice(client, myUserNode, fromNick, "Current autolimit setting on " + chanNode.getChanName() + ": " + chanCurAutoLimit); 
+                protocol.sendNotice(client, myUserNode, fromNick, String.format(autoLimStrCurConf, chanNode.getChanName(), chanCurAutoLimit)); 
             }
-            else { protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use autolimit."); } 
+            else { protocol.sendNotice(client, myUserNode, fromNick, String.format(autoLimStrNoAccess, chanNode.getChanName())); } 
             return;
 
         }
@@ -2068,20 +2093,21 @@ public class CService {
                 sqliteDb.setChanAutoLimit(chanNode, chanAutoLimitInt);
                 chanNode.setAutoLimit(chanAutoLimitInt);
 
-                protocol.sendNotice(client, myUserNode, fromNick, "Done.");
-                protocol.sendNotice(client, myUserNode, fromNick, " - Autolimit for " + chanNode.getChanName() + " : " + chanAutoLimitInt + ".");
+                protocol.sendNotice(client, myUserNode, fromNick, autoLimStrSuccess);
+                protocol.sendNotice(client, myUserNode, fromNick, String.format(autoLimStrSuccessSummary, chanNode.getChanName(), chanAutoLimitInt));
 
             }
             catch (Exception e) {
                 e.printStackTrace(); 
-                protocol.sendNotice(client, myUserNode, fromNick, "Error setting autolimit."); 
+                protocol.sendNotice(client, myUserNode, fromNick, autoLimStrErr); 
                 return; 
             }
 
         }
+
         /* User has no rights on the chan */
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use autolimit.");
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(autoLimStrNoAccess, chanNode.getChanName()));
             return;
         }
     }
