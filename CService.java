@@ -50,6 +50,11 @@ public class CService {
         void displayW(UserAccount whoisUserAccount);
     }
 
+    interface ChanlevList {
+
+        void displayCL(UserNode fromNick, ChannelNode chanNode, UserAccount userAccount);
+    }
+
     /**
      * @param client
      * @param protocol
@@ -650,162 +655,264 @@ public class CService {
      */
     public void cServeChanlev(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
-        String userNick = "";
-        String chanlevMod = "";
-        HashMap<String, String> chanlevModStr = new HashMap<String, String>(); 
-        HashMap<String, Integer> chanlevModInt = new HashMap<String, Integer>(); 
-        String userAccountStr = "";
+
+        HashMap<String, String>   chanlevModSepStr   = new HashMap<String, String>(); 
+        HashMap<String, Integer>  chanlevModSepInt   = new HashMap<String, Integer>(); 
+        
         userChanlevFilter = "";
-        String spaceFill = " ";
+
+        Integer userCurChanlevInt  = 0;
+        Integer userNewChanlevInt  = 0;
+        Integer chanlevNewFlagsInt = 0;
+        Integer chanlevCurFlagsInt = 0;
+
+        String userAccountStr            = "";
+        String spaceFill                 = " ";
+        String userNick                  = "";
+        String chanlevModRaw             = "";
+        String chanlevStrUnAuthed        = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
+        String chanlevStrInvalidCommand  = "Invalid command. CHANLEV <channel> [<user> <change>].";
+        String chanlevStrChanNotReg      = "This channel does not exist on the network and is not registered.";
+        String chanlevStrNickNotAuth     = "That nickname is not authed.";
+        String chanlevStrAccountNotFound = "No such user account.";
+        String chanlevStrNickNotFound    = "No such nick.";
+        String chanlevStrSuccess         = "Done.";
+        String chanlevStrErrGeneric      = "Error setting the chanlev.";
+        String chanlevStrErrNoChange     = "Nothing changed. Your requested flag combination change was either the same as the existing flags, impossible, or you don't have enough access.";
+
+        /* Define the lambda function to display chanlev */
+        ChanlevList displayCL = (fromN, chanNode, userAccount) -> {
+
+            var wrapper = new Object() { Integer chanlev;};
+
+            if (  Flags.hasChanLSignificant(fromN.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserStaffPriv(fromN.getUserAccount().getUserAccountFlags()) == true  ) {
+                protocol.sendNotice(client, myUserNode, fromN, "Displaying CHANLEV for channel " + chanNode.getChanName() + ":");
+                protocol.sendNotice(client, myUserNode, fromN, "Account             Chanlev");
+
+                chanNode.getChanlev().forEach( (user, chanlev) -> {
+
+                    /* We should display:
+                     *  - all flags if requester has Staff priv
+                     *  - public + punishment flags if requester has chan master priv
+                     *  - public + personal when requester's line comes
+                     */
+
+                    wrapper.chanlev = chanlev;
+
+                    /* Stripping personal flags if the line is not the requester account and has not staff privilege */
+                    if ( fromN.getUserAccount().getUserAccountName().equals(user) == false && Flags.hasUserStaffPriv(fromN.getUserAccount().getUserAccountFlags()) == false) {
+                        wrapper.chanlev = Flags.stripChanlevPersonalFlags(wrapper.chanlev);
+                    }
+
+                    /* Stripping punishment flags if the requester has not chan master privilege */
+                    if ( Flags.hasChanLMasterPriv(fromN.getUserAccount().getUserChanlev(chanNode)) == false && Flags.hasUserStaffPriv(fromN.getUserAccount().getUserAccountFlags()) == false) {
+                        wrapper.chanlev = Flags.stripChanlevPunishFlags(wrapper.chanlev);
+                    }
+
+
+                    if ( wrapper.chanlev != 0 && ((userAccount != null && user.equals(userAccount.getUserAccountName())) || userAccount == null)) {
+                        protocol.sendNotice(client, myUserNode, fromN, " " + user + spaceFill.repeat(19-user.length()) + "+" + Flags.flagsIntToChars("chanlev", wrapper.chanlev)); 
+                    }
+                });
+                protocol.sendNotice(client, myUserNode, fromN, "End of list."); 
+            }
+
+            else {
+                protocol.sendNotice(client, myUserNode, fromN, "You do not have sufficient access on " + chanNode.getChanName() + " to use chanlev."); 
+            }
+
+        };
+
 
         if (fromNick.getUserAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrUnAuthed); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CHANLEV <channel> [<user> [<change>]]."); 
+            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrInvalidCommand); 
             return; 
         }
         try {
             chanNode = protocol.getChannelNodeByName(channel);
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, "This channel does not exist on the network and is not registered."); 
+            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrChanNotReg); 
             return;
         }
         
-        try {  userNick = command[2]; }
-        catch (ArrayIndexOutOfBoundsException e) {  }
+        try { 
+            userNick = command[2];
 
-        try {  chanlevMod =  command[3]; }
-        catch (ArrayIndexOutOfBoundsException e) {  }
-        chanlevModStr = Flags.parseFlags(chanlevMod);
-        chanlevModInt.put("+", Flags.flagsCharsToInt("chanlev", chanlevModStr.get("+")));
-        chanlevModInt.put("-", Flags.flagsCharsToInt("chanlev", chanlevModStr.get("-")));
+            if (userNick.startsWith("#")) { // direct access to account
+                userAccountStr = userNick.replaceFirst("#", "").toLowerCase();
+                userAccount = protocol.getRegUserAccount(userAccountStr);
 
-
-
-        if (userNick.startsWith("#")) { // direct access to account
-            userAccountStr = userNick.replaceFirst("#", "").toLowerCase();
-            try { userAccount = protocol.getRegUserAccount(userAccountStr); }
-            catch (Exception e) {
-                e.printStackTrace();
-                protocol.sendNotice(client, myUserNode, fromNick, "No such user account.");
-                return;
             }
-        }
-        else if (userNick.isEmpty() == true) { // no nick/account provided => only display chanlev
-        }
-        else { // indirect access to account => need to lookup account name
-            try {
+            else { // indirect access to account => need to lookup account name
+
                 if (protocol.getUserNodeByNick(userNick).getUserAuthed() == true)  {
                     userAccount = protocol.getUserNodeByNick(userNick).getUserAccount();
                     //System.out.println("BBX 1=" + userNick + " 2=" + userAccount);
                 }
                 else {
-                    protocol.sendNotice(client, myUserNode, fromNick, "That nickname is not authed.");
+                    protocol.sendNotice(client, myUserNode, fromNick, chanlevStrNickNotAuth);
                     return; 
                 }
             }
-            catch (NullPointerException e) { 
-                e.printStackTrace();
-                protocol.sendNotice(client, myUserNode, fromNick, "No such nick.");
-                return;
-            }
+
         }
-
-        if ( userAccountStr.isEmpty() == false) {
-            userChanlevFilter = userAccountStr;
+        catch (ArrayIndexOutOfBoundsException e) {
+            /* Display current chanlev */
+            displayCL.displayCL(fromNick, chanNode, null);
+            return;
         }
-
-        if (chanlevMod.isEmpty() == true) { // no chanlev => list
-            //System.out.println("BCB no chanlev => list userChanlevFilter=" +userChanlevFilter);
-
-            try {
-                if (  Flags.hasChanLSignificant(fromNick.getUserAccount().getUserChanlev(chanNode)) == true || Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == true  ) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "Displaying CHANLEV for channel " + chanNode.getChanName() + ":"); 
-                    protocol.sendNotice(client, myUserNode, fromNick, "Account             Chanlev");
-                    chanNode.getChanlev().forEach( (user, chanlev) -> {
-                        //System.out.println("BCD userChanlevFilter=" +userChanlevFilter+ " user=" + user + " chanlev=" + chanlev);
-                        if ( (userChanlevFilter.isEmpty() == false && user.toLowerCase().equals(userChanlevFilter.toLowerCase())) || userChanlevFilter.isEmpty() == true) {
-                            protocol.sendNotice(client, myUserNode, fromNick, " " + user + spaceFill.repeat(19-user.length()) + "+" + Flags.flagsIntToChars("chanlev", chanlev)); 
-                        }
-                    });
-                    protocol.sendNotice(client, myUserNode, fromNick, "End of list."); 
-                }
-                else {
-                    protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + channel + " to use chanlev."); 
-                    return;
-                }
-            }
-            catch (Exception e) { 
-                e.printStackTrace();
-                protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + channel + " to use chanlev."); 
-                return;
-            }
-        }
-        else { 
-            if (    chanlevMod.matches("^(?=.*["+ CHANLEV_FLAGS +"])(?=.*["+ CHANLEV_SYMBS +"]).+$")    ) {
-                chanlevModInt.put("combined", chanlevModInt.get("+") | chanlevModInt.get("-"));
-
-                if (   (  (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLMasterConFlags(chanlevModInt.get("combined"))  ) == true) ||
-                (  (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) && ( Flags.containsChanLOwnerConFlags(chanlevModInt.get("combined"))  ) == true)  || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true ) {
-
-                    // user wants to modify chanlev by account name directly
-                    // in this case, we need to update the db + check if the account is online and update that nick chanlev
-                    try {
-
-                        Integer userCurChanlev = sqliteDb.getUserChanlev(userAccount, chanNode);
-                        Integer userNewChanlev = Flags.applyFlagsFromStr("chanlev", userCurChanlev, chanlevModStr);
-                        
-                        //protocol.sendNotice(client, myUserNode, fromNick, "BCA current chanlev " + channel + " -> " + Flags.flagsIntToChars("chanlev", userCurChanlev) + " :: mod=" + chanlevMod + " :: result=" + Flags.flagsIntToChars("chanlev", userNewChanlev));
-                        //System.out.println("BCA current chanlev " + channel + " -> " + userCurChanlev + " :: mod=" + chanlevMod + " :: result=" + userNewChanlev);
-
-                        sqliteDb.setUserChanlev(userAccount, chanNode, userNewChanlev);
-                        userAccount.setUserChanlev(chanNode, userNewChanlev);
-
-                        chanNode.setChanChanlev(sqliteDb.getChanChanlev(chanNode));
-
-                        protocol.sendNotice(client, myUserNode, fromNick, "Done.");
-                        protocol.sendNotice(client, myUserNode, fromNick, "Chanlev set. Chanlev for user account " + userAccount.getUserAccountName() + " is now +" + Flags.flagsIntToChars("chanlev", userNewChanlev) + ".");
-
-                        userAccount.getUserLogins().forEach( (usernode) -> {
-                            if (usernode.getUserChanList().containsKey(chanNode.getChanName())) {
-                                this.handleJoin(usernode, chanNode);
-                            }
-                        });
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace(); 
-                        protocol.sendNotice(client, myUserNode, fromNick, "Error setting chanlev."); 
-                        return; 
-                    }
-
-                    if (chanNode.getChanlev() == null || chanNode.getChanlev().isEmpty() == true) {
-                        try {
-                            fromNick.getUserAccount().clearUserChanlev(chanNode);
-                            sqliteDb.clearChanChanlev(channel);
-                            sqliteDb.delRegChan(channel);
-                            protocol.setMode(client, chanNode, "-r", "");
-                            protocol.chanPart(client, myUserNode, chanNode);
-                            protocol.sendNotice(client, myUserNode, fromNick, "Channel has been dropped because its chanlev was left empty."); 
-                        }
-                        catch (Exception e) { return; }
-                    }
-                }
-                else {
-                    protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient rights on " + channel + " to set chanlev with those flags.");
-                    return;
-                }
-            }
+        catch (Exception f) {
+            if (userNick.startsWith("#")) protocol.sendNotice(client, myUserNode, fromNick, chanlevStrAccountNotFound);
             else {
-                protocol.sendNotice(client, myUserNode, fromNick, "Invalid chanlev flags. Valid flags are: <+|->" + CHANLEV_FLAGS);
-            } 
+                if (protocol.getUserNodeByNick(userNick) == null) protocol.sendNotice(client, myUserNode, fromNick, chanlevStrNickNotFound);
+                else if (protocol.getUserNodeByNick(userNick).getUserAuthed() == false) protocol.sendNotice(client, myUserNode, fromNick, chanlevStrNickNotAuth);
+
+            }
+
+            return;
+        }
+
+        try {  chanlevModRaw =  command[3]; }
+        catch (ArrayIndexOutOfBoundsException e) {
+            displayCL.displayCL(fromNick, chanNode, userAccount);
+            return;
+        }
+
+        chanlevModSepStr = Flags.parseFlags(chanlevModRaw);
+        chanlevModSepInt.put("+", Flags.flagsCharsToInt("chanlev", chanlevModSepStr.get("+")));
+        chanlevModSepInt.put("-", Flags.flagsCharsToInt("chanlev", chanlevModSepStr.get("-")));
+        chanlevModSepInt.put("combined", 0);
+
+        /* Stripping the unknown and readonly flags */
+        chanlevModSepInt.replace("+", Flags.stripUnknownChanlevFlags(chanlevModSepInt.get("+")));
+        chanlevModSepInt.replace("-", Flags.stripUnknownChanlevFlags(chanlevModSepInt.get("-")));
+        /* Stripping and moving personal flags to new keys (users can set/unset personal flags even if they are not known on the channel) */
+        chanlevModSepInt.put("p+", Flags.keepChanlevPersonalConFlags(chanlevModSepInt.get("+")));
+        chanlevModSepInt.put("p-", Flags.keepChanlevPersonalConFlags(chanlevModSepInt.get("-")));
+
+        /* Keeping admin editable flags if the user is admin */
+        if (Flags.hasUserAdminPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+            /* Admin can edit everything */
+        }
+        /* Keeping oper editable flags if the user is oper */
+        else if (Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == true) {
+            /* Oper can edit everything */
+        }
+
+        /* Keeping chanowner editable flags if the user is owner of the chan */
+        else if (Flags.hasChanLOwnerPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) {
+            chanlevModSepInt.replace("+", Flags.keepChanlevOwnerConFlags(chanlevModSepInt.get("+")));
+            chanlevModSepInt.replace("-", Flags.keepChanlevOwnerConFlags(chanlevModSepInt.get("-")));
+        }
+        /* Keeping chanmaster editable flags if the user is master of the chan */
+        else if (Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == true) {
+            chanlevModSepInt.replace("+", Flags.keepChanlevMasterConFlags(chanlevModSepInt.get("+")));
+            chanlevModSepInt.replace("-", Flags.keepChanlevMasterConFlags(chanlevModSepInt.get("-")));
+        }
+
+        /* Keeping self editable flags if the user is known on the chan (but can only remove them on themselves) */
+        else if (Flags.hasChanLKnown(fromNick.getUserAccount().getUserChanlev(chanNode)) == true && fromNick.getUserAccount() == userAccount) {
+            chanlevModSepInt.replace("+", 0);
+            chanlevModSepInt.replace("-", Flags.keepChanlevSelfConFlags(chanlevModSepInt.get("-")));
+        }
+
+        /* User has no rights on the chan */
+        else {
+            chanlevModSepInt.replace("+", 0);
+            chanlevModSepInt.replace("-", 0);
+        }
+
+        /* If the user is trying to set personal flags of another user and has not oper privilege => strip it  */
+        if (fromNick.getUserAccount() != userAccount && chanlevModSepInt.get("p+") + chanlevModSepInt.get("p-") != 0 && Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+            chanlevModSepInt.replace("p+", 0);
+            chanlevModSepInt.replace("p-", 0);
         }
 
 
+        /* User has provided no personal flags and has no rights on the chan */
+        if (chanlevModSepInt.get("+") + chanlevModSepInt.get("-") + chanlevModSepInt.get("p+") + chanlevModSepInt.get("p-") == 0 ) {
+            protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getChanName() + " to use chanlev.");
+            return;
+        }
+
+        /* Here the user has enough privileges:
+         *  - has oper priv
+         *  - has master/owner priv
+         *  - has known priv
+         *  - is setting personal flags on himself
+         * Normally the modification request should be stripped of all the impossible cases
+         */
+
+        /* Combining flags */
+        chanlevModSepInt.replace("+", chanlevModSepInt.get("+") | chanlevModSepInt.get("p+"));
+        chanlevModSepInt.replace("-", chanlevModSepInt.get("-") | chanlevModSepInt.get("p-"));
+        chanlevModSepInt.replace("combined", chanlevModSepInt.get("+") | chanlevModSepInt.get("-"));
+
+
+        if (chanlevModSepInt.get("combined") == 0) {
+            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrErrNoChange); 
+            return; 
+        }
+
+
+
+        try {
+
+            var wrapper = new Object() { Integer chanlev;};
+
+            userCurChanlevInt = sqliteDb.getUserChanlev(userAccount, chanNode);
+            userNewChanlevInt = Flags.applyFlagsFromInt("chanlev", userCurChanlevInt, chanlevModSepInt);
+            
+
+            sqliteDb.setUserChanlev(userAccount, chanNode, userNewChanlevInt);
+            userAccount.setUserChanlev(chanNode, userNewChanlevInt);
+
+            chanNode.setChanChanlev(sqliteDb.getChanChanlev(chanNode));
+
+
+            wrapper.chanlev = userNewChanlevInt;
+            /* Stripping personal flags if the line is not the requester account and has not staff privilege */
+            if ( fromNick.getUserAccount() != userAccount && Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+                wrapper.chanlev = Flags.stripChanlevPersonalFlags(wrapper.chanlev);
+            }
+
+            /* Stripping punishment flags if the requester has not chan master privilege */
+            if ( Flags.hasChanLMasterPriv(fromNick.getUserAccount().getUserChanlev(chanNode)) == false && Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+                wrapper.chanlev = Flags.stripChanlevPunishFlags(wrapper.chanlev);
+            }
+            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrSuccess);
+            protocol.sendNotice(client, myUserNode, fromNick, "Chanlev set. Chanlev for user account " + userAccount.getUserAccountName() + " is now +" + Flags.flagsIntToChars("chanlev", wrapper.chanlev) + ".");
+
+            userAccount.getUserLogins().forEach( (usernode) -> {
+                if (usernode.getUserChanList().containsKey(chanNode.getChanName())) {
+                    this.handleJoin(usernode, chanNode);
+                }
+            });
+        }
+        catch (Exception e) {
+            e.printStackTrace(); 
+            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrErrGeneric); 
+            return; 
+        }
+
+        if (chanNode.getChanlev() == null || chanNode.getChanlev().isEmpty() == true) { /* FIXME: is not working due to potential presence of personal flags */
+            try {
+                fromNick.getUserAccount().clearUserChanlev(chanNode);
+                sqliteDb.clearChanChanlev(channel);
+                sqliteDb.delRegChan(channel);
+                protocol.setMode(client, chanNode, "-r", "");
+                protocol.chanPart(client, myUserNode, chanNode);
+                protocol.sendNotice(client, myUserNode, fromNick, "Channel has been dropped because its chanlev was left empty.");
+            }
+            catch (Exception e) { return; }
+        }
     }
 
     /**
