@@ -518,7 +518,7 @@ public class CService {
                 if (welcomeMsg == null) { welcomeMsg = ""; }
 
                 if (welcomeMsg.isEmpty() == false) {
-                    protocol.sendNotice(client, myUserNode, fromNick, welcomeMsg);
+                    protocol.sendNotice(client, myUserNode, user, welcomeMsg);
                 }
             }
         }
