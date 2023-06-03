@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.Base64;
 
 /**
  * UserNode class to store the connected users.
@@ -17,13 +18,13 @@ public class UserNode {
     private String userIdent      = "";
     private String userHost       = "";
     private String userRealHost   = "";
-    private String ipAddress      = "";
     private String cloakedHost    = "";
     private String userRealName   = "";
     private String userUniq       = "";
     private String userModes      = "";
     private String userCertFP     = "";
 
+    private byte[] ipAddress;
     private Boolean usingSaslAuth = false;
     private HashMap<String, String> saslAuthParams = new HashMap<>();
 
@@ -451,10 +452,6 @@ public class UserNode {
         return this.usingSaslAuth;
     }
 
-    public void setIP(String b64IP) {
-        this.ipAddress = b64IP;
-    }
-
     public void setCloakedHost(String clkdHost) {
         this.cloakedHost = clkdHost;
     }
@@ -462,4 +459,19 @@ public class UserNode {
     public String getCloakedHost() {
         return this.cloakedHost;
     }
+
+    public byte[] getIpAddress() {
+        return this.ipAddress;
+    }
+
+
+    public void setIpAddress(String base64Ip) {
+        Base64.Decoder dec = Base64.getDecoder();
+        this.ipAddress = dec.decode(base64Ip);
+    }
+
+    public void setIpAddress(byte[] ip) {
+        this.ipAddress = ip;
+    }
+
 }

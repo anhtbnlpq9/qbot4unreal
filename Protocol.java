@@ -890,7 +890,7 @@ public class Protocol extends Exception {
                 userNickSidLookup.put(command[0], command[5]);
                 user.setUserServer(serverList.get(fromEnt));
                 user.setCloakedHost(command[9]);                    // cloaked host
-                user.setIP(command[10]);                            // IP address
+                user.setIpAddress(command[10]);                            // IP address
             }
 
             else {
@@ -904,7 +904,7 @@ public class Protocol extends Exception {
                 user.setUserTS(Long.parseLong(command[2]));         // TS
                 user.setUserModes(command[7]);                      // modes
                 user.setCloakedHost(command[9]);                    // cloaked host
-                user.setIP(command[10]);                            // IP address
+                user.setIpAddress(command[10]);                     // IP address
 
                 /* Section to update auth token in the db if the user was authed using SASL, because in this case their TS and ident was unknown */
                 /* Also a good place to set the vhost */
