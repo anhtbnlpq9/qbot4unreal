@@ -1,26 +1,34 @@
-# Connect config
+# Defines the information about the server
 me:
     # Name of the server
+    # This name that will appear everywhere on the network when used: mode changes, /LINKS, /MAP, ...
     name: cheetah.
+
     # Description of the server (as seen in /LINKS)
     description: jThIRC
-    # Server ID. 3 characters: first must be a number and the 2 others are any alphanumeric. Case is not significant.
+
+    # Server ID. 3 characters: first must be a number and the 2 others are any alphanumeric. The case is not significant.
     sid: 5PC
-    # Protocol version
+
+    # Protocol version (UnrealIRCd TS6)
     protocolversion: "6000"
-    # Protocol version flags
+
+    # Protocol version flags (UnrealIRCd TS6)
     versionflags: ""
-    # Full version text
+
+    # Full version text (UnrealIRCd TS6)
     fullversiontext: jThIRC
 
-# Database information. For the moment only SQLite3 is supported.
+# Database configuration 
+# For the moment only SQLite3 is supported.
 database:
     # Path to the SQLite3 database file
     path: "db/qbot.sqlite3"
     # Interval in seconds between runs of the database scheduled tasks
     schedulefreq: 60
 
-# Admin information as seen in /ADMIN (TODO: implement me)
+# Not implemented
+# Admin information as seen in /ADMIN
 admin:
     - line 1
     - line 2
@@ -30,26 +38,42 @@ admin:
 link:
     #peer: ocelot.
     #host: polaris3.thibland.net
+
     # Host/IP of the peer
     host: 192.168.10.1
+
     # Port number of the peer
     port: 6900
+
+    # Not implemented
     # Incoming allowed host or IP (TODO: implement me, change my name)
     incoming: incoming.host.or.ip
+
     # Password for the link. If auth by cert, password is not used, in this case set password to *
     password: "*"
 
 # Network section
 network:
     # Defines the network name
+    # This name will appear in the WHOIS command
     name: Mjav
 
 # Features section
 # Permits to enable/disable features proposed by the service
 features:
+
+    # Enables or disables the SASL authentication (ie the possibility to the user to login before registering on the network)
     sasl: yes
+
+    # Enables or disables the display of the account name in the /WHOIS ("xxx is logged as yyy")
     svslogin: yes
+
+    # Enables or disables the automatic vhost upon login
     chghost: yes
+
+    # Not implemented
+    # Denies/disable SASL when the user is using a plain text connection
+    denyauthplainconn: yes
 
 # Logging section
 logging:
@@ -65,25 +89,116 @@ ssl:
         password: "123456"
 
 cservice:
+
+    # Enables or disables the CService
     enable: yes
+
+    # Defines the nick used by the CService
     nick: Q
+
+    # Defines the user ID used by the CService
+    # The format is 6 alphanumeric characters
+    # Must be unique within a server
     uniq: AAAAAA
-    ident: qbot
-    host: CServe
-    realname: The Q Bot
+
+    # Defines the ident of the bot
+    ident: qb4u
+
+    # Defines the realhost of the bot (but that host can be not real)
+    host: network/service/test
+
+    # Defines the real name / gecos of the bot
+    realname: qbot4u
+
+    # Defines the modes that the bot will be set when it connects
+    # It is advised that the bot is at least protected (+q) and a bot (+B)
+    # +o - ircop (necessary for KILL and GLINE features)
+    # +i - invisible, not shown in /WHO
+    # +q - protected, cannot be kicked by non-ulined resource
+    # +B - bot, cannot be deopped/deownered/deadmined
+    # +S - service protection
     modes: +ioqBS
+
+    # Defines the global features of the CService
+    global:
+        maxchans: 10
+        maxusers: 10
+        maxglines: 10
+
+
+    # Defines the settings around the user accounts
     accountsettings:
-        passlen: 12
-        autolimitinterval: 60
+
+        # Anti brute force.
+        # A delay is introduced in case the user provides an incorrect login/password to slow down brute force attacks.
+        # Unit in seconds
+        wrongcredwait: 3
+
+        # Set the acceptable password length min/max characters
+        minpasslen: 8
+        maxpasslen: 64
+
+        # Not implemented
+        maxemaillen: 60
+        # Not implemented
+        maxconcurauth: 5
+        # Not implemented
         chanophistory: 10
-        maxchannels: 500
+
+        # The maximum amount of records (lines) to show in the output of the AUTHHISTORY command
+        maxauthhistory: 10
+        # Not implemented
+        maxchannels: 50
+        # Not implemented
         lastreg: 100
+
+        # The maximum amount of certificate fingerprints the user can associate to his account
+        maxcertfp: 10
+
+        # The prefix and suffix of the vhost applied to the user when they log in
+        # Vhost format is <prefix><user account name><suffix>
         authvhostprefix: "user/"
         authvhostsuffix: ""
+
+    # Defines the settings around channel features
     chansettings:
-        emaillen: 60
-        welcomelen: 250
+        # Not implemented
+        maxwelcomelen: 250
+        # Not implemented
+        maxtopiclen: 250
+        # Not implemented
         infolen: 100
-        maxchanlevs: 500
+        # Not implemented
+        maxchanlevs: 100
+        # Not implemented
         maxbans: 100
+
+        # The time in seconds between each changes (if necessary) of +l channel mode when AUTOLIMIT is active on the channel
         autolimitfreq: 30
+
+
+operservice:
+
+    # Enables or disables the OperService
+    enable: no
+
+    # Defines the nick used by the OperService
+    nick: O
+
+    # Defines the user ID used by the OperService
+    # The format is 6 alphanumeric characters
+    # Must be unique within a server
+    uniq: AAAAAB
+
+    # Defines the ident of the bot
+    ident: oper
+
+    # Defines the realhost of the bot (but that host can be not real)
+    host: network/service/test
+
+    # Defines the real name / gecos of the bot
+    realname: operserv
+
+    # Defines the modes that the bot will be set when it connects
+    # It is advised that the bot is at least protected +oqBS
+    modes: +ioqBS
