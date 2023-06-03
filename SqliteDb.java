@@ -10,10 +10,13 @@ import java.util.TreeMap;
 import java.time.Instant;
 
 public class SqliteDb {
-    Connection connection;
-    Long unixTime;
-    Config config;
-    Protocol protocol;
+    private Connection connection;
+
+    private Long unixTime;
+
+    private Config config;
+
+    private Protocol protocol;
 
     /**
      * Class constructor
@@ -921,6 +924,7 @@ public class SqliteDb {
             catch (Exception e) { e.printStackTrace(); }
 
             if (resultSet.next() == true) {
+                System.out.println("Error: cannot reauth '" + userNode.getUserAccount().getUserAccountId() + "' with '" + userNode.getUserUniq() + "'.");
                 throw new Exception("Error: cannot reauth '" + userNode.getUserAccount().getUserAccountId() + "' with '" + userNode.getUserUniq() + "'.");
             }
             statement.close();
@@ -933,6 +937,7 @@ public class SqliteDb {
             }
             catch (Exception e) { 
                 e.printStackTrace(); 
+                System.out.println("Error: cannot map login token '" + userNode.getUserUniq() + "' -> '" + userNode.getUserAccount().getUserAccountId() + "'.");
                 throw new Exception("Error: cannot map login token '" + userNode.getUserUniq() + "' -> '" + userNode.getUserAccount().getUserAccountId() + "'."); 
             }
         }

@@ -15,33 +15,34 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 public class CService {
+
+    private UserNode myUserNode;
+    private UserNode fromNick;
+
+    private UserAccount userAccount;
+
+    private ChannelNode chanNode;
     
-    String       myUniq;
-    UserNode     myUserNode;
+    private Client client;
+
+    private Protocol protocol;
+
+    private SqliteDb sqliteDb;
+
+    private Config config;
     
-    Client       client;
-    Protocol     protocol;
-    SqliteDb     sqliteDb;
-    Config       config;
-    
-    Boolean      cServiceReady = false;
+    private Boolean cServiceReady = false;
 
-    String       bufferMode = "";
-    String       bufferParam = "";
-    String       userChanlevFilter = "";
-    UserNode     fromNick;
-    UserAccount  userAccount;
-    String       channel = "";
-    ChannelNode  chanNode;
+    private String bufferMode   = "";
+    private String bufferParam  = "";
+    private String channel      = "";
+    private String myUniq;
 
-    static String chanJoinModes = "";
+    private Long unixTime;
 
-    final String CHANLEV_FLAGS = "abdjkmnopqtvw";
-    final String CHANLEV_SYMBS = "+-";
 
-    final Integer CHANLEV_FOUNDER_DEFAULT = Flags.getChanLFlagOwnerDefault();
+    private static String chanJoinModes = "";
 
-    long unixTime;
 
     interface Whois {
         /**
@@ -52,7 +53,6 @@ public class CService {
     }
 
     interface ChanlevList {
-
         void displayCL(UserNode fromNick, ChannelNode chanNode, UserAccount userAccount);
     }
 
@@ -422,9 +422,6 @@ public class CService {
         else if (str.toUpperCase().startsWith("CERTFPDEL")) { /* CERTFPDEL <certfp> */
             cServeCertfpDel(fromNickRaw, str);
         }
-        else if (str.toUpperCase().startsWith("CERTFPLIST")) { /* CERTFPLIST> */
-            cServeCertfpList(fromNickRaw);
-        }
 
 
         else { // Unknown command
@@ -633,12 +630,8 @@ public class CService {
         HashMap<String, String>   chanlevModSepStr   = new HashMap<String, String>(); 
         HashMap<String, Integer>  chanlevModSepInt   = new HashMap<String, Integer>(); 
         
-        userChanlevFilter = "";
-
         Integer userCurChanlevInt  = 0;
         Integer userNewChanlevInt  = 0;
-        Integer chanlevNewFlagsInt = 0;
-        Integer chanlevCurFlagsInt = 0;
 
         String userAccountStr            = "";
         String spaceFill                 = " ";
@@ -849,7 +842,6 @@ public class CService {
             userAccount.setUserChanlev(chanNode, userNewChanlevInt);
 
             chanNode.setChanChanlev(sqliteDb.getChanChanlev(chanNode));
-
 
             wrapper.chanlev = userNewChanlevInt;
             /* Stripping personal flags if the line is not the requester account and has not staff privilege */
@@ -1097,7 +1089,6 @@ public class CService {
         ArrayList<HashMap<String, Object>> authHistList; 
         UserAccount userAccount;
         String authType;
-        String deAuthType;
         SimpleDateFormat jdf = new SimpleDateFormat("dd/MM/yy HH:mm z");
         jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         String strFiller = " ";
@@ -1494,8 +1485,6 @@ public class CService {
         String   certfp = "";
         Integer  authType = 0;
         UserAccount useraccount;
-
-        HashMap<String, Integer> userChanlev;
         
         String[] command = str.split(" ",4);
         if (usernode.getUserAuthed() == true) { 
@@ -1677,8 +1666,6 @@ public class CService {
             e.printStackTrace();
             return;
         }
-    }
-
     }
 
     public void cServeChanlist() {

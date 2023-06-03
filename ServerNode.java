@@ -21,13 +21,14 @@ public class ServerNode {
     private String serverDescription;
     private String serverTS;
     private String serverDistance;
+    
     private ServerNode introducedBy;
     
     // Only used for me (detect that server peer has responded => it exists in serverList)
     private Boolean serverPeerResponded = null;
-    
     private Boolean serverIsPeer = false;
     private Boolean serverIsEOS  = false;
+
 
     public ServerNode(String serverName, String serverDistance, String serverId, String serverDescription) {
         this.serverName = serverName;

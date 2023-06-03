@@ -13,25 +13,30 @@ import java.util.UUID;
  
 public class ChannelNode {
     
-    private String channelName;
-    private String topic = "";
-    private Long   topicTS;
-    private String topicBy;
-    private UUID confirmCode = null;
-    private Boolean channelRegistered;
-    private UserNode channelOwner;
-    private Map<String, Integer> chanChanlev; // Map username -> chanlev
-    private Integer chanUserCount = 0;
-    private Integer channelFlags = 0;
-    private Integer autoLimit = 10;
-    private Integer banTime = 0;
-    private String chanRegisteredTopic = "";
-    private String chanWelcomeMsg = "";
-
-
+    private Integer chanUserCount  = 0;
+    private Integer channelFlags   = 0;
+    private Integer autoLimit      = 10;
+    private Integer banTime        = 0;
     private Integer channelId;
 
-    private long channelTS; /* If channel is registered, channel TS = registration TS */
+    private String channelName;
+    private String topic               = "";
+    private String chanRegisteredTopic = "";
+    private String chanWelcomeMsg      = "";
+    private String topicBy;
+
+    private UUID confirmCode = null;
+
+
+    private Long topicTS;
+    private Long channelTS; /* If channel is registered, channel TS = registration TS */
+
+    private Boolean channelRegistered;
+
+    private UserNode channelOwner;
+
+    private Map<String, Integer> chanChanlev; // Map username -> chanlev
+
     
     /* Contains the UserNodes inside the chan */
     private HashMap<String, UserNode> chanUserList = new HashMap<String, UserNode>();

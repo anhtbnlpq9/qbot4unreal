@@ -12,24 +12,37 @@ import java.time.Instant;
 public class Protocol extends Exception {
     
     private Client      client;
+
     private Config      config;
+
     private ServerNode  server;
+
     private CService    cservice;
+
     private SqliteDb    sqliteDb;
+
     private Boolean     networkInsideNetBurst = true;
     
     private HashMap<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
+
     private HashMap<String, UserNode>        userList            = new HashMap<String, UserNode>();
+
     private HashMap<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
+
     private HashMap<String, ChannelNode>     regChannels         = new HashMap<String, ChannelNode>();
     private HashMap<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
+
     private HashMap<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; TODO : to transform to <String, UserNode>
     private HashMap<String, String>          protocolProps       = new HashMap<String, String>();
+
     private HashMap<String, Boolean>         featureList         = new HashMap<>();
     
-    String myPeerServerId;
-    Long   unixTime;
-    String foundNickLookUpCi;
+
+    private String myPeerServerId;
+    private String foundNickLookUpCi;
+
+    private Long   unixTime;
+
 
     /**
      * Class constructor
@@ -90,7 +103,7 @@ public class Protocol extends Exception {
      */
     public UserAccount getRegUserAccount(String userAccountName) throws Exception {
         if (userAccounts.containsKey(userAccountName) == true) return userAccounts.get(userAccountName);
-        else throw new Exception("User account not found.");
+        else throw new Exception("User account " + userAccountName + " not found.");
     }
 
     /**

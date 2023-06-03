@@ -15,14 +15,19 @@ import javax.crypto.spec.PBEKeySpec;
 public class UserAccount {
 
     private SqliteDb sqliteDb;
-    private Config   config;
 
-    private Integer             userAccountId;
-    private String              userAccountName;
-    private HashSet<String>     userAccountCertFP;
-    private Integer             userAccountFlags;
-    private String              userAccountEmail;
-    private Long                userAccountRegTS;
+    private Config config;
+
+    private Integer userAccountId;
+    private Integer userAccountFlags;
+
+    private String userAccountEmail;    
+    private String userAccountName;
+
+    private HashSet<String> userAccountCertFP;
+
+    private Long userAccountRegTS;
+
     private UUID confirmCode = null;
 
 

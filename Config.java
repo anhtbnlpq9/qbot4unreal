@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class Config {
 
-    public InputStream inputStream = null; 
+    private InputStream inputStream = null; 
 
     /* Server parameters */
     private String serverName;
