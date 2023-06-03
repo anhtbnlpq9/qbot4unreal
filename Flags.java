@@ -350,6 +350,7 @@ abstract class Flags {
     private static final Integer   CLFLAG_MASTER_PRIV   = (CLFLAG_MASTER | CLFLAG_OWNER);
     private static final Integer   CLFLAG_OWNER_PRIV    = (CLFLAG_OWNER);
 
+    private static final Integer   CLFLAGS_KNOWNONCHAN  = (CLFLAG_KNOWN | CLFLAG_VOICE_PRIV | CLFLAG_HALFOP_PRIV | CLFLAG_OP_PRIV | CLFLAG_MASTER_PRIV | CLFLAG_OWNER_PRIV);
     private static final Integer   CLFLAG_SIGNIFICANT   = (CLFLAG_MASTER | CLFLAG_OWNER | CLFLAG_OP);
 
     private static final Integer   CLFLAG_MASTERCON     = (CLFLAG_AUTO | CLFLAG_BANNED | CLFLAG_DENYOP | CLFLAG_OP | CLFLAG_HALFOP | 
@@ -367,6 +368,8 @@ abstract class Flags {
     private static final Integer   CLFLAGS_PERSONAL     = (CLFLAG_HIDEWELCOME | CLFLAG_AUTOINVITE);
 
     private static final Integer   CHANLEV_OWNER_DEF    = ( CLFLAG_OWNER | CLFLAG_AUTO | CLFLAG_OP );
+
+    private static final Integer   CLFLAGS_ALLOWED      = ( CLFLAGS_PUBLIC | CLFLAGS_PUNISH | CLFLAGS_PERSONAL );
 
 
     /**
@@ -425,6 +428,40 @@ abstract class Flags {
     public static String getAllowedChanLFlags() {
         return CLFLAGS_LIST;
     }
+
+    public static Integer stripUnknownChanlevFlags(Integer chanlev) {
+        return (chanlev & CLFLAGS_ALLOWED);
+    }
+
+    public static Integer keepChanlevOwnerConFlags(Integer chanlev) {
+        return (chanlev & CLFLAG_OWNERCON);
+    }
+
+    public static Integer keepChanlevMasterConFlags(Integer chanlev) {
+        return (chanlev & CLFLAG_MASTERCON);
+    }
+
+    public static Integer keepChanlevPersonalConFlags(Integer chanlev) {
+        return (chanlev & CLFLAGS_PERSONAL);
+    }
+
+    public static Integer keepChanlevSelfConFlags(Integer chanlev) {
+        return (chanlev & CLFLAG_SELFCON);
+    }
+
+    public static Integer keepChanlevPublicFlags(Integer chanlev) {
+        return (chanlev & CLFLAGS_PUBLIC);
+    }
+
+    public static Integer stripChanlevPersonalFlags(Integer chanlev) {
+        return (chanlev & ~CLFLAGS_PERSONAL);
+    }
+
+    public static Integer stripChanlevPunishFlags(Integer chanlev) {
+        return (chanlev & ~CLFLAGS_PUNISH);
+    }
+
+
 
     /**
      * Returns whether the user is channel owner
@@ -679,7 +716,7 @@ abstract class Flags {
      * @return True or False
      */
     public static Boolean hasChanLKnown(Integer chanlev) {
-        if ( (chanlev & (CLFLAG_KNOWN | CLFLAG_VOICE_PRIV | CLFLAG_HALFOP_PRIV | CLFLAG_OP_PRIV | CLFLAG_MASTER_PRIV | CLFLAG_OWNER_PRIV)) == 0 ) {
+        if ( (chanlev & CLFLAGS_KNOWNONCHAN) == 0 ) {
             return false;
 
         }
