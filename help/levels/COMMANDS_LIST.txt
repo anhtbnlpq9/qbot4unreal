@@ -9,6 +9,8 @@ For more information on a specific command, type HELP <command>:
 //050!BANDEL             Removes a single ban from a channel.
 //050!BANLIST            Displays all persistent bans on a channel.
 //050!BANTIMER           Shows or changes the time after which bans are removed.
+050!CERTFPADD          Adds a fingerprint to account for user authentification.
+050!CERTFPDEL          Deletes a fingerprint to account for user authentification.
 //000!CHALLENGE          Returns a challenge for use in challengeauth. 
 //000!CHALLENGEAUTH      Authenticates you on the bot using challenge response. 
 050!CHANFLAGS          Shows or changes the flags on a channel.
