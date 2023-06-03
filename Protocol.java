@@ -1067,8 +1067,14 @@ public class Protocol extends Exception {
                     user = this.getUserNodeBySid(command[1]);
                     user.setSaslAuthParam("authType", command[3]);
                     if (command[3].equals("EXTERNAL")) { 
-                        user.setSaslAuthParam("authExt", command[4]);
-                        user.setUserCertFP(command[4]);
+                        try {
+                            user.setSaslAuthParam("authExt", command[4]);
+                            user.setUserCertFP(command[4]);
+                        }
+                        catch (Exception e) {
+                            System.out.println("* User is trying SASL EXTERNAL but does not provide certfp");
+                            e.printStackTrace();
+                        }
                     }
                     user.setSaslAuthParam("authServer", command[1]);
 
