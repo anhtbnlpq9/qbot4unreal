@@ -608,7 +608,7 @@ public class Protocol extends Exception {
 
         // :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay
         if (auth == true) str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " " + account.getUserAccountName();
-        else str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " ";
+        else str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " 0";
         client.write(str);
     }
 
