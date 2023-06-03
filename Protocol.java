@@ -576,7 +576,7 @@ public class Protocol extends Exception {
         String str;
         
         if (success == true) str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D S";
-        else                 str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D S";
+        else                 str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D F";
         client.write(str);
     }
 
