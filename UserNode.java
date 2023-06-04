@@ -33,6 +33,7 @@ public class UserNode {
     private HashMap<String, String> saslAuthParams = new HashMap<>();
 
     private ServerNode   userServer;
+    
     private UserAccount  userAccount;
 
     private Long userTS;

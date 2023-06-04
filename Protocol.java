@@ -1054,7 +1054,6 @@ public class Protocol extends Exception {
             UserAccount userAccountToAuth;
             HashMap<String, Integer> userChanlev;
 
-            String str;
             byte[] decodedAuthString;
             String authString;
             Integer authType;
@@ -1655,7 +1654,6 @@ public class Protocol extends Exception {
 
             String[] topicRawStr = raw.split(" ", 5);
             ChannelNode chanNode;
-            String chanTopic = "";
             
             /* Normally TOPIC is always sent after SJOIN, so the channel should be created. */
             chanNode = getChannelNodeByName(topicRawStr[1]);
@@ -1669,7 +1667,6 @@ public class Protocol extends Exception {
 
             String[] topicRawStr = command[2].split(" ", 4);
             ChannelNode chanNode;
-            String chanTopic = "";
             
             chanNode = getChannelNodeByName(topicRawStr[0]);
 

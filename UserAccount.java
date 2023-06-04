@@ -1,5 +1,4 @@
 import java.security.spec.KeySpec;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,14 +29,6 @@ public class UserAccount {
 
     private UUID confirmCode = null;
 
-
-    interface AuthPassCheck {
-        Boolean checkPass(HashMap<String, String> userParam, String userInput);
-    }
-    interface AuthCertfpCheck {
-        Boolean checkCertFp(HashMap<String, String> userParam, String userInput);
-    }
-
     /**
      * HS of the UserNodes loggued with the UserAccount
      * Table to map the SIDs loggued with that UserAccount
@@ -52,6 +43,15 @@ public class UserAccount {
 
     private HashMap<String, Integer> userChanlev = null;// = new HashMap<String, Integer>();
 
+
+    interface AuthPassCheck {
+        Boolean checkPass(HashMap<String, String> userParam, String userInput);
+    }
+    interface AuthCertfpCheck {
+        Boolean checkCertFp(HashMap<String, String> userParam, String userInput);
+    }
+
+
     /**
      * Constructor for UserAccount
      * @param sqliteDb database
@@ -63,13 +63,13 @@ public class UserAccount {
      * @param userAccountRegTS user account registration TS
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, HashSet<String> userAccountCertFP, Long userAccountRegTS) {
-        this.sqliteDb = sqliteDb;
-        this.userAccountName = userAccountName;
-        this.userAccountId = userAccountId;
-        this.userAccountFlags = userFlags;
-        this.userAccountEmail = userAccountEmail;
-        this.userAccountCertFP = userAccountCertFP;
-        this.userAccountRegTS = userAccountRegTS;
+        this.sqliteDb           = sqliteDb;
+        this.userAccountName    = userAccountName;
+        this.userAccountId      = userAccountId;
+        this.userAccountFlags   = userFlags;
+        this.userAccountEmail   = userAccountEmail;
+        this.userAccountCertFP  = userAccountCertFP;
+        this.userAccountRegTS   = userAccountRegTS;
 
         try {
             this.userChanlev = sqliteDb.getUserChanlev(this); 
@@ -95,11 +95,11 @@ public class UserAccount {
      * @param userAccountRegTS user account registration TS
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userFlags, String userAccountEmail, Long userAccountRegTS) {
-        this.sqliteDb = sqliteDb;
-        this.userAccountName = userAccountName;
-        this.userAccountFlags = userFlags;
-        this.userAccountEmail = userAccountEmail;
-        this.userAccountRegTS = userAccountRegTS;
+        this.sqliteDb          = sqliteDb;
+        this.userAccountName   = userAccountName;
+        this.userAccountFlags  = userFlags;
+        this.userAccountEmail  = userAccountEmail;
+        this.userAccountRegTS  = userAccountRegTS;
 
         try {
             this.userChanlev = sqliteDb.getUserChanlev(this); 
@@ -155,7 +155,6 @@ public class UserAccount {
      * @param chanlev User chanlev
      */
     public void setUserChanlev(HashMap<String, Integer> chanlev) {
-        //System.out.println("BFN");
         this.userChanlev = chanlev;
     }
 
@@ -165,7 +164,6 @@ public class UserAccount {
      * @param chanlev Chanlev
      */
     public void setUserChanlev(ChannelNode channel, Integer chanlev) {
-        //System.out.println("BFL");
         if (this.userChanlev.containsKey(channel.getChanName()) == true) {
             if (chanlev != 0) {
                 this.userChanlev.replace(channel.getChanName(), chanlev);
@@ -186,7 +184,6 @@ public class UserAccount {
      * @param channel channel object
      */
     public void clearUserChanlev(ChannelNode channel) {
-        //System.out.println("BFM");
         setUserChanlev(channel, 0);
     }
 
@@ -195,7 +192,6 @@ public class UserAccount {
      * @return Full user chanlev
      */
     public HashMap<String, Integer> getUserChanlev() {
-        //this.userChanlev.forEach( (chan, chanlev) -> { System.out.println("BFJ chan=" + chan + " chanlev=" + chanlev); });
         return this.userChanlev;
     }
 
