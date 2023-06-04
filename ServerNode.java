@@ -19,9 +19,10 @@ public class ServerNode {
     private String serverName;
     private String serverId;
     private String serverDescription;
-    private String serverTS;
-    private String serverDistance;
-    
+    private Long serverTS;
+
+    private Integer serverDistance;
+
     private ServerNode introducedBy;
     
     // Only used for me (detect that server peer has responded => it exists in serverList)
@@ -30,7 +31,14 @@ public class ServerNode {
     private Boolean serverIsEOS  = false;
 
 
-    public ServerNode(String serverName, String serverDistance, String serverId, String serverDescription) {
+    /**
+     * Constructor called tp declare new servers on the network usually following SINFO or SERVER
+     * @param serverName
+     * @param serverDistance
+     * @param serverId
+     * @param serverDescription
+     */
+    public ServerNode(String serverName, Integer serverDistance, String serverId, String serverDescription) {
         this.serverName = serverName;
         this.serverDistance = serverDistance;
         this.serverId = serverId;
@@ -38,70 +46,138 @@ public class ServerNode {
         this.serverIsPeer = false;
     } 
 
+    /**
+     * Constructor called to declare the peer (1st remote server added)
+     * @param serverId network server id
+     */
     public ServerNode(String serverId) {
         this.serverId = serverId;
         this.serverIsPeer = false;
     } 
 
+    /**
+     * Sets if the server has done syncing
+     * @param eos true or false
+     */
     public void setEOS(Boolean eos) {
         this.serverIsEOS = eos;
     }
 
+    /**
+     * Sets if the server is the peer connected to CService
+     * @param peer true or false
+     */
     public void setPeer(Boolean peer) {
         this.serverIsPeer = peer;
     }
 
+    /**
+     * Sets the server name (as appear in /MAP)
+     * @param name server name
+     */
     public void setServerName(String name) {
         this.serverName = name;
     } 
 
+    /**
+     * Sets the server description (as seen in /LINKS)
+     * @param desc
+     */
     public void setServerDescription(String desc) {
         this.serverDescription = desc;
     }  
 
-    public void setServerDistance(String dist) {
+    /**
+     * Sets the server hop count to CService
+     * @param dist distance in hops
+     */
+    public void setServerDistance(Integer dist) {
         this.serverDistance = dist;
     }  
 
+    /**
+     * Sets if the server peer has responded (1st message sent fron the peer)
+     * @param serverPeerResponded true or false
+     */
     public void setServerPeerResponded(Boolean serverPeerResponded) {
         this.serverPeerResponded = serverPeerResponded;
     }
     
+    /**
+     * Returns the server name (as listed in /map)
+     * @return server name
+     */
     public String getServerName() {
         return this.serverName;
     }
 
+    /**
+     * Returns the server network SID
+     * @return server SID
+     */
     public String getServerId() {
         return this.serverId;
     }
 
+    /**
+     * Returns if the server is the one directly connected to CServive (peer)
+     * @return true or false
+     */
     public Boolean getServerPeer() {
         return this.serverIsPeer;
     }
 
+    /**
+     * Returns if the server has done syncing to the network
+     * @return true or false
+     */
     public Boolean getServerEOS() {
         return this.serverIsEOS;
     }
+    /**
+     * Gets if the peer server has responded (sent 1st message)
+     * @return true or false
+     */
     public Boolean getServerPeerResponded() {
         return this.serverPeerResponded;
     }
 
+    /**
+     * Returns the server that has introduced the one represented by the object
+     * @return introducer server
+     */
     public ServerNode getIntroducedBy() {
         return this.introducedBy;
     }
 
+    /**
+     * Returns the server description as listed in /LINKS
+     * @return server description
+     */
     public String getDescription() {
         return this.serverDescription;
     }
 
-    public String getTS() {
+    /**
+     * Returns the server timestamp
+     * @return server timestamp
+     */
+    public Long getTS() {
         return serverTS;
     }
 
-    public String getDistance() {
+    /**
+     * Returns the hop count from the server to CService
+     * @return hop count from the server to CService
+     */
+    public Integer getDistance() {
         return serverDistance;
     }
 
+    /**
+     * Sets the server that has introduced the one represented by the object
+     * @param introducer introducing server (in a SERVER)
+     */
     public void setIntroducedBy(ServerNode introducer) {
         this.introducedBy = introducer;
     }
