@@ -13,11 +13,14 @@ import java.security.spec.KeySpec;
 import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CService {
 
     private UserNode myUserNode;
     private UserNode fromNick;
+    private static Logger log = LogManager.getLogger("common-log");
 
     private UserAccount userAccount;
 
@@ -1361,7 +1364,7 @@ public class CService {
                 }
                 catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println("* User drop: could not deauthenticate: " + loggedUserNode.getUserNick() + ".");
+                    log.error("User drop: could not deauthenticate: " + loggedUserNode.getUserNick() + ".");
                 }
             }
 
@@ -1728,7 +1731,7 @@ public class CService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Error while logging out.");
+            log.error("Error while logging out.");
             return;
         }
 
@@ -2023,7 +2026,7 @@ public class CService {
             if ((Flags.isChanAutolimit(chanNode.getChanFlags()) == true) && newLimit != curChanModeLimit) {
                 try {
                     protocol.setMode(client, myUserNode, chanNode, "+l", String.valueOf(newLimit));
-                    System.out.println("* Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
+                    log.info("Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
                 }
                 catch (Exception e) {
                     e.printStackTrace();

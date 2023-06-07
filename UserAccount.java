@@ -7,11 +7,16 @@ import java.util.UUID;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
 * User account class
 * @author me
 */
 public class UserAccount {
+
+    private static Logger log = LogManager.getLogger("common-log");
 
     private SqliteDb sqliteDb;
 
@@ -76,7 +81,7 @@ public class UserAccount {
         }
         catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Error: could not retrieve chanlev");
+            log.error("Error: could not retrieve chanlev");
         }
 
         //try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
@@ -106,13 +111,13 @@ public class UserAccount {
         }
         catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Error: could not retrieve chanlev");
+            log.error("Error: could not retrieve chanlev");
         }
 
         try { this.userAccountId = sqliteDb.getId(userAccountName); }
         catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Error: could not retrieve user id");
+            log.error("Error: could not retrieve user id");
         }
 
         //try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }

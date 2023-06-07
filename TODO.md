@@ -4,7 +4,7 @@
 
 ### General
 - [ ] conf REHASH
-- [ ] logging
+- [X] logging
 
 ### Accounts
 - [X] account registration

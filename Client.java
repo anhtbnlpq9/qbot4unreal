@@ -9,11 +9,16 @@ import java.lang.Thread;
 import java.net.Socket;
 import java.util.Map;
 import javax.net.ssl.SSLSocketFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Client class
  */
 public class Client implements Runnable {
+
+    private static Logger log     = LogManager.getLogger("common-log");
+    private static Logger trafLog = LogManager.getLogger("trafficLog");
     
     public Config config;
     
@@ -44,7 +49,7 @@ public class Client implements Runnable {
     }
 
     public void run() {
-        System.out.println("* Starting client thread");
+        log.info("Starting client thread");
         try {
             SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
             clientSocket = ssf.createSocket(config.getLinkPeerHost(), config.getLinkPeerPort());
@@ -52,19 +57,19 @@ public class Client implements Runnable {
             //SSLSession session = ((SSLSocket) clientSocket).getSession();
             //Certificate[] cchain = session.getPeerCertificates();
 
-            System.out.println("* Connected");
+            log.info("Connected");
 
             protocol = new Protocol(config, sqliteDb);
             protocol.setClientRef(this);
 
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
           
-            System.out.println("* Client is ready");
+            log.info("Client is ready");
             this.clientReady = true;
 
             String str;
             while ((str = in.readLine()) != null) {
-                if (config.getLogging("debugIn") == true) { System.out.println("<<< " + str); }
+                if (config.getLogging("debugIn") == true) { trafLog.debug("<<< " + str); }
                 protocol.getResponse(str);
             }
             throw new Exception("Connection has been closed.");
@@ -79,7 +84,7 @@ public class Client implements Runnable {
         cservice = new CService(this, protocol, sqliteDb);
 
         while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
-            System.out.println("* Waiting for peer to register");
+            log.info("Waiting for peer to register");
             try {
                 Thread.sleep(2000);
             }
@@ -87,16 +92,16 @@ public class Client implements Runnable {
         }
 
         while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
-            System.out.println("* Waiting for the final EOS");
+            log.info("Waiting for the final EOS");
             try {
                 Thread.sleep(2000);
             }
             catch (Exception e) { e.printStackTrace(); }
         }
 
-        System.out.println("* Peer has registered and we have EOS");
+        log.info("Peer has registered and we have EOS");
 
-        System.out.println("* CService is going online");
+        log.info("CService is going online");
         cservice.runCService(config, protocol);
 
     }
@@ -120,7 +125,7 @@ public class Client implements Runnable {
 
     public void write(String str) {
 		try {
-            if (config.getLogging("debugOut") == true) { System.out.println(">>> " + str); }
+            if (config.getLogging("debugOut") == true) { trafLog.debug(">>> " + str); }
 
             out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 			out.write(str + "\n");
