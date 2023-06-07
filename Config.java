@@ -48,7 +48,11 @@ public class Config {
     private Integer   cserviceAccountMinPassLength;
     private Integer   cserviceAccountMaxPassLength;
     private Integer   cserviceAccountWrongCredWait;
+    private Integer   cserviceAccountMaxChannels;
+    private Integer   cserviceAccountMaxAuthHistory;
     private Integer   cserviceChanAutoLimitFreq;
+    private Integer   cserviceChanMaxChanlevs;
+
 
     /* Network parameters */
     private String networkName;
@@ -110,14 +114,16 @@ public class Config {
         cserviceReal                           = (String) confcservice.get("realname");
         cserviceModes                          = (String) confcservice.get("modes");
         HashMap<String, Object> cserviceaccount   = (HashMap<String, Object>) confcservice.get("accountsettings");
-        cserviceAccountHostPrefix                 = (String) cserviceaccount.get("authvhostprefix");
-        cserviceAccountHostSuffix                 = (String) cserviceaccount.get("authvhostsuffix");
+        cserviceAccountHostPrefix                 = (String)   cserviceaccount.get("authvhostprefix");
+        cserviceAccountHostSuffix                 = (String)   cserviceaccount.get("authvhostsuffix");
         cserviceAccountMaxCertFP                  = (Integer)  cserviceaccount.get("maxcertfp");
         cserviceAccountMinPassLength              = (Integer)  cserviceaccount.get("minpasslen");
         cserviceAccountMaxPassLength              = (Integer)  cserviceaccount.get("maxpasslen");
+        cserviceAccountMaxChannels                = (Integer)  cserviceaccount.get("maxchannels");
         cserviceAccountWrongCredWait              = (Integer)  cserviceaccount.get("wrongcredwait");
         HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
         cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
+        cserviceChanMaxChanlevs                = (Integer) cservicechan.get("maxchanlevs");
 
         HashMap<String, Object> confNetwork  = (HashMap<String, Object>) data.get("network");
         networkName                          = (String) confNetwork.get("name");
@@ -415,6 +421,19 @@ public class Config {
     public Integer getCServeAccountMaxCertFP() {
         return cserviceAccountMaxCertFP;
     }
+
+    public Integer getCServeAccountMaxChannels() {
+        return cserviceAccountMaxChannels;
+    }
+
+    public Integer getCServeAccountMaxAuthhistory() {
+        return cserviceAccountMaxAuthHistory;
+    }
+
+    public Integer getCServeChanMaxChanlevs() {
+        return cserviceChanMaxChanlevs;
+    }
+
     public Integer getCServeAccountWrongCredWait() {
         return cserviceAccountWrongCredWait;
     }
