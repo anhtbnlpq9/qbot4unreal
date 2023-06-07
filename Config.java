@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.yaml.snakeyaml.Yaml;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Configuration class
@@ -14,6 +17,9 @@ import org.yaml.snakeyaml.Yaml;
  * @author me
  */
 public class Config {
+
+    private static Logger log = LogManager.getLogger("common-log");
+    private static final Level INFO2 = Level.forName("INFO2", 050);
 
     private InputStream inputStream = null; 
 
@@ -154,18 +160,27 @@ public class Config {
         sslTruststorePath                       = (String) sslTuststore.get("path");
         sslTruststorePassword                   = (String) sslTuststore.get("password");
 
+        log.info("Configuration loaded:");
+        log.info("Me ");
+        log.info(" -> My name         = " + serverName);
+        log.info(" -> My SID          = " + serverId);
+        log.info(" -> My description  = " + serverDescription);
 
-        System.out.println("* Config:\n"
-                        + "  +- Me name             = " + serverName  + "\n"
-                        + "  |--- sid               = " + serverId + "\n"
-                        + "  |--- description       = " + serverDescription + "\n"
-                        + "  +- Link peer name      = " + linkPeer + "\n"
-                        + "  |--- peer host         = " + linkHost + "\n"
-                        + "  |--- peer port         = " + linkPort + "\n"
-                        + "  +- Database path       = " + databasePath + "\n"                       
-                        + "  +- Logging             = " + linkPeer + "\n"
-                        + "  |--- debug in          = " + logDebugIn + "\n"
-                        + "  `--- debug out         = " + logDebugOut + "\n");
+        log.info("Peer ");
+        //log.info(" -> Peer name      = " + linkPeer);
+        log.info(" -> Peer hostname  = " + linkHost);
+        log.info(" -> Peer port      = " + linkPort);
+
+        log.info("Database ");
+        log.info(" -> Path = " + databasePath);
+
+        log.info("Logging ");
+        log.info(" -> LogLevel  = ");
+        log.info(" -> Traffic debug input  = " + logDebugIn);
+        log.info(" -> Traffic debug output = " + logDebugOut);
+
+
+
     }
 
     /**

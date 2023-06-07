@@ -7,11 +7,17 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.Base64;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * UserNode class to store the connected users.
  * @author me
  */
 public class UserNode {
+
+    private static Logger log = LogManager.getLogger("common-log");
+
     
     private String userNick       = "";
     private String userOldNick    = "";
@@ -170,11 +176,11 @@ public class UserNode {
             if (account != null) {
                 this.userAccount = account;
                 try { this.userAccount.addUserAuth(this); }
-                catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not auth user."); }
+                catch (Exception e) { e.printStackTrace(); log.error("(EE) Could not auth user."); }
             }
             else {
                 try { this.userAccount.delUserAuth(this); }
-                catch (Exception e) { e.printStackTrace(); System.out.println("(EE) Could not de-auth user."); }   
+                catch (Exception e) { e.printStackTrace(); log.error("(EE) Could not de-auth user."); }   
                 this.userAccount = null;
             }
         }
@@ -470,7 +476,13 @@ public class UserNode {
 
     public void setIpAddress(String base64Ip) {
         Base64.Decoder dec = Base64.getDecoder();
-        this.ipAddress = dec.decode(base64Ip);
+        try {
+            this.ipAddress = dec.decode(base64Ip);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error("(EE) Could not set the IP of client: " + this.getUserNick());
+        }
     }
 
     public void setIpAddress(byte[] ip) {

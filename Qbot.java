@@ -1,3 +1,6 @@
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Main class
@@ -6,38 +9,39 @@ public class Qbot {
 
     private static final String CONFIG_FILE = "./conf/config.yml";
 
+    private static Logger log = LogManager.getLogger("common-log");
+    private static final Level INFO2 = Level.forName("INFO2", 050);
+
     /**
      * Main method
      * @param args no arguments
      */
     public static void main(String[] args) {
-        System.out.println("+----------------------------------------------------------------+\n"
-+ "|                                                                |\n"
-+ "|                      _..---...,\"\"-._     ,/}/)                 |\n"
-+ "|                   .''        ,      ``..'(/-<                  |\n"
-+ "|                  /   _      {      )         \\                 |\n"
-+ "|                 ;   _ `.     `.   <         a(                 |\n"
-+ "|               ,'   ( \\  )      `.  \\ __.._ .: y                |\n"
-+ "|              (  <\\_-) )'-.____...\\  `._   //-'                 |\n"
-+ "|               `. `-' /-._)))      `-._)))                      |\n"
-+ "|                 `...'                                          |\n"
-+ "|               _       _   ___                     _            |\n"
-+ "|           ___| |_ ___| |_| | |_ _ ___ ___ ___ ___| |           |\n"
-+ "|          | . | . | . |  _|_  | | |   |  _| -_| .'| |           |\n"
-+ "|          |_  |___|___|_|   |_|___|_|_|_| |___|__,|_|           |\n"
-+ "|            |_|                                                 |\n"
-+ "|                                                                |\n"
-+ "| ___        __    __         _                        __  __    |\n"
-+ "|  | |_  _  /  \\  |__) _ |_  (_ _  _  /  \\ _  _ _ _ |||__)/   _| |\n"
-+ "|  | | )(-  \\_\\/  |__)(_)|_  | (_)|   \\__/| )| (-(_|||| \\ \\__(_| |\n"
-+ "|                                                                |\n"
-+ "+----------------------------------------------------------------+\n"
-                );
+        log.log(INFO2, "  ");
+        log.log(INFO2, "                      _..---...,\"\"-._     ,/}/)");
+        log.log(INFO2, "                   .''        ,      ``..'(/-< ");
+        log.log(INFO2, "                  /   _      {      )         \\ ");
+        log.log(INFO2, "                ;   _ `.     `.   <         a(   ");
+        log.log(INFO2, "               ,'   ( \\  )      `.  \\ __.._ .: y  ");
+        log.log(INFO2, "              (  <\\_-) )'-.____...\\  `._   //-'   ");
+        log.log(INFO2, "               `. `-' /-._)))      `-._))) ");
+        log.log(INFO2, "                 `...'   ");
+        log.log(INFO2, "               _       _   ___                     _  ");
+        log.log(INFO2, "           ___| |_ ___| |_| | |_ _ ___ ___ ___ ___| | ");
+        log.log(INFO2, "          | . | . | . |  _|_  | | |   |  _| -_| .'| | ");
+        log.log(INFO2, "          |_  |___|___|_|   |_|___|_|_|_| |___|__,|_| ");
+        log.log(INFO2, "            |_| ");
+        log.log(INFO2, " ");
+        log.log(INFO2, " ___        __    __         _                        __  __  ");
+        log.log(INFO2, "  | |_  _  /  \\  |__) _ |_  (_ _  _  /  \\ _  _ _ _ |||__)/   _| ");
+        log.log(INFO2, "  | | )(-  \\_\\/  |__)(_)|_  | (_)|   \\__/| )| (-(_|||| \\ \\__(_| ");
+        log.log(INFO2, " ");
 
-        System.out.println("* Loading configuration file");
+        log.info("Loading configuration file");
+        
         Config config = new Config(CONFIG_FILE);
 
-        System.out.println("* Opening database");
+        log.info("Opening database");
         SqliteDb sqliteDb = new SqliteDb(config);
 
 
@@ -53,10 +57,10 @@ public class Qbot {
             catch (Exception e) { e.printStackTrace(); }
         }
 
-        System.out.println("* Sending server ident");
+        log.info("Sending server ident");
         tlsClient.sendIdent();
 
-        System.out.println("* Starting CService");
+        log.info("Starting CService");
         tlsClient.launchCService(); 
 
         /* Thread to manage the database schedules tasks */

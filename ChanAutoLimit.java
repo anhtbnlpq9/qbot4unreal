@@ -1,8 +1,12 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Class to implement the channel autolimit user limit auto setting feature periodically
  */
 public class ChanAutoLimit implements Runnable {
+
+    private static Logger log = LogManager.getLogger("common-log");
 
     private CService  cservice;
     private Boolean   threadRunning = true;
@@ -22,7 +26,7 @@ public class ChanAutoLimit implements Runnable {
      * Method to start the thread
      */
     public void run() {
-        System.out.println("* Started autolimit thread");
+        log.info("Started autolimit thread");
         while(threadRunning == true) {
             try {
                 Thread.sleep(this.autoLimitFreq *1000); /* x1000 because sleep() expects ms */

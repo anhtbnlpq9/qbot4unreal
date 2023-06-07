@@ -5,8 +5,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.time.Instant;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SqliteDb {
+
+    private static Logger log = LogManager.getLogger("common-log");
+
     private Connection connection;
 
     private Long unixTime;
@@ -820,7 +825,7 @@ public class SqliteDb {
         }
         catch (Exception e) {
             e.printStackTrace();
-            System.out.println("* Could not readd certfp to user " + userAccount.getUserAccountName() + " because already in the list");
+            log.warn("* Could not readd certfp to user " + userAccount.getUserAccountName() + " because already in the list");
         }
 
         certfpForDb = hashSetToString(userCertfp);
@@ -851,7 +856,7 @@ public class SqliteDb {
         }
         catch (Exception e) {
             e.printStackTrace();
-            System.out.println("* Could not remove certfp to user " + userAccount.getUserAccountName() + " because not in the list");
+            log.warn("* Could not remove certfp to user " + userAccount.getUserAccountName() + " because not in the list");
         }
 
         certfpForDb = hashSetToString(userCertfp);
@@ -932,7 +937,7 @@ public class SqliteDb {
             catch (Exception e) { e.printStackTrace(); }
 
             if (resultSet.next() == true) {
-                System.out.println("Error: cannot reauth '" + userNode.getUserAccount().getUserAccountId() + "' with '" + userNode.getUserUniq() + "'.");
+                log.warn("Error: cannot reauth '" + userNode.getUserAccount().getUserAccountId() + "' with '" + userNode.getUserUniq() + "'.");
                 throw new Exception("Error: cannot reauth '" + userNode.getUserAccount().getUserAccountId() + "' with '" + userNode.getUserUniq() + "'.");
             }
             statement.close();
@@ -945,7 +950,7 @@ public class SqliteDb {
             }
             catch (Exception e) { 
                 e.printStackTrace(); 
-                System.out.println("Error: cannot map login token '" + userNode.getUserUniq() + "' -> '" + userNode.getUserAccount().getUserAccountId() + "'.");
+                log.error("Error: cannot map login token '" + userNode.getUserUniq() + "' -> '" + userNode.getUserAccount().getUserAccountId() + "'.");
                 throw new Exception("Error: cannot map login token '" + userNode.getUserUniq() + "' -> '" + userNode.getUserAccount().getUserAccountId() + "'."); 
             }
         }
@@ -1204,7 +1209,7 @@ public class SqliteDb {
         /* We can remove the ones corresponding to nobody on the network */
         for(String userUid : userUidTokens) {
             if (userUidNetwork.contains(userUid) == false) {
-                System.out.println("* DB cleanup: deleting expired user UID " + userUid);
+                log.info("DB cleanup: deleting expired user UID " + userUid);
                 try { this.delUserAuth(userUid); }
                 catch (Exception e) { e.printStackTrace(); }
             }
