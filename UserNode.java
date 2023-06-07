@@ -26,15 +26,15 @@ public class UserNode {
 
     private byte[] ipAddress;
 
-    private Boolean usingSaslAuth = false;
-    private Boolean userAuthed         = false;
-    private Boolean userNickRegistered = false;
+    private Boolean usingSaslAuth       = false;
+    private Boolean userAuthed          = false;
+    private Boolean userNickRegistered  = false;
 
     private HashMap<String, String> saslAuthParams = new HashMap<>();
 
-    private ServerNode   userServer;
-    
-    private UserAccount  userAccount;
+    private ServerNode userServer;
+
+    private UserAccount userAccount;
 
     private Long userTS;
     private Long authTS;

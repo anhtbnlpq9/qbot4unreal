@@ -25,7 +25,8 @@ public class UserAccount {
 
     private HashSet<String> userAccountCertFP;
 
-    private Long userAccountRegTS;
+    private Long userAccountRegTS  = 0L;
+    private Long lastAuthTS        = 0L;
 
     private UUID confirmCode = null;
 
@@ -109,7 +110,7 @@ public class UserAccount {
             System.out.println("Error: could not retrieve chanlev");
         }
 
-        try { this.userAccountId = sqliteDb.getId(userAccountName); }
+        try { this.userAccountId = sqliteDb.getAccountId(userAccountName); }
         catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error: could not retrieve user id");

@@ -111,7 +111,7 @@ public class Client implements Runnable {
         this.write(":" + config.getServerId() + " " + "PROTOCTL SID=" + config.getServerId());
         this.write(":" + config.getServerId() + " " + "SERVER" + " " + config.getServerName() + " 1 :" + config.getServerDescription());
 
-        ServerNode server = new ServerNode(config.getServerName(), "0", config.getServerId(), config.getServerDescription());
+        ServerNode server = new ServerNode(config.getServerName(), 0, config.getServerId(), config.getServerDescription());
         server.setEOS(false);
         server.setServerPeerResponded(false);
         server.setIntroducedBy(server);

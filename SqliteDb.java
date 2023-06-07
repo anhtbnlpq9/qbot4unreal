@@ -75,7 +75,6 @@ public class SqliteDb {
         ResultSet resultSet = null;
 
         //HashMap<String,UserAccount> regUsers = new HashMap<String,UserAccount>();
-        ArrayList<String> certfpList = new ArrayList<>();
         HashMap<String, HashMap<String, Object>> regUsers = new HashMap<String, HashMap<String, Object>>();
 
         try { 
@@ -103,10 +102,9 @@ public class SqliteDb {
     /**
      * Add a channel into the databse
      * @param channel channel name
-     * @param owner owner user id //TODO to be deleted because ownership can be handled by chanlev
      * @throws Exception
      */
-    public void addRegChan(ChannelNode channel, UserAccount owner) throws Exception {
+    public void addRegChan(ChannelNode channel) throws Exception {
         Statement statement = null;
         String sql = null;
         ResultSet resultSet = null;
@@ -125,19 +123,8 @@ public class SqliteDb {
         statement.close();
 
         try {
-
-            Integer userAccountId = 0;
             statement = connection.createStatement();
-            sql = "SELECT uid FROM users WHERE name='" + owner.getUserAccountId() + "';";
-            resultSet = statement.executeQuery(sql);
-            while (resultSet.next()) {
-                userAccountId = resultSet.getInt("uid");
-            }
-            unixTime = Instant.now().getEpochSecond();
-            statement.close();
-
-            statement = connection.createStatement();
-            sql = "INSERT INTO channels (name, owner, regTS) VALUES ('" + channel.getChanName() + "', '" + userAccountId.toString() + "', '" + unixTime.toString() + "');";
+            sql = "INSERT INTO channels (name, regTS) VALUES ('" + channel.getChanName() + "', '" + unixTime.toString() + "');";
             statement.executeUpdate(sql);
             statement.close();
         }
@@ -146,7 +133,7 @@ public class SqliteDb {
             throw new Exception("Error while registering the channel."); 
         }
     }
-    
+
     /**
      * Removes a channel from the database (chanlev + channel)
      * @param channel channel name
@@ -571,7 +558,7 @@ public class SqliteDb {
      * @return user flags
      * @throws Exception
      */
-    public Integer getUserFlags(String username) throws Exception {
+    public Integer getUserFlags(UserAccount useraccount) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -580,14 +567,14 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT userflags FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT userflags FROM users WHERE lower(name)='" + useraccount.getUserAccountName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userFlags = resultSet.getInt("userflags");
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " userflags.");
+            throw new Exception("Could not get user " + useraccount.getUserAccountName() + " userflags.");
         } 
         statement.close();
         return userFlags;
@@ -620,7 +607,7 @@ public class SqliteDb {
      * @return user email
      * @throws Exception
      */
-    public String getUserEmail(String username) throws Exception {
+    public String getUserEmail(UserAccount useraccount) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -629,14 +616,14 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT email FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT email FROM users WHERE lower(name)='" + useraccount.getUserAccountName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userEmail = resultSet.getString("userflags");
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " userflags.");
+            throw new Exception("Could not get user " + useraccount.getUserAccountName() + " userflags.");
         } 
         statement.close();
         return userEmail;
@@ -648,9 +635,10 @@ public class SqliteDb {
      * @return user account reg TS
      * @throws Exception
      */
-    public Long getUserRegTS(String username) throws Exception {
+    public Long getUserRegTS(UserAccount useraccount) throws Exception {
         Statement statement      = null;
         String sql               = null;
+        String username          = useraccount.getUserAccountName();
         ResultSet resultSet      = null;
         Long regTS               = 0L;
 
@@ -676,7 +664,7 @@ public class SqliteDb {
      * @return user certfp
      * @throws Exception
      */
-    public String getUserCertFP(String username) throws Exception {
+    public String getUserCertFP(UserAccount useraccount) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -685,14 +673,14 @@ public class SqliteDb {
         try { 
             statement = connection.createStatement();
             
-            sql = "SELECT certfp FROM users WHERE lower(name)='" + username.toLowerCase() + "'";
+            sql = "SELECT certfp FROM users WHERE lower(name)='" + useraccount.getUserAccountName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userCertFP = resultSet.getString("userflags");
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " userflags.");
+            throw new Exception("Could not get user " + useraccount.getUserAccountName() + " userflags.");
         } 
         statement.close();
         return userCertFP;
@@ -752,7 +740,7 @@ public class SqliteDb {
      * @return user id
      * @throws Exception
      */
-    public Integer getId(String username) throws Exception {
+    public Integer getAccountId(String username) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -949,10 +937,14 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add auth for user " + userNode.getUserAccount() + "."); }
     }
 
-    public void delUserAuth(String userSid) throws Exception {
+    public void delUserAuth(Object usernode) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
+        String userSid           = "";
+
+        if (usernode instanceof UserNode) userSid = ((UserNode) usernode).getUserUniq();
+        else if (usernode instanceof String) userSid = (String) usernode;
 
         try { 
             statement = connection.createStatement();
@@ -975,7 +967,7 @@ public class SqliteDb {
         Statement statement      = null;
         String sql               = null;
 
-        this.delUserAuth(userNode.getUserUniq());
+        this.delUserAuth(userNode);
 
         unixTime = Instant.now().getEpochSecond();
 

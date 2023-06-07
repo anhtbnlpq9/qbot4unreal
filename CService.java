@@ -1,4 +1,3 @@
-
 import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,10 +18,8 @@ public class CService {
     private UserNode myUserNode;
     private UserNode fromNick;
 
-    private UserAccount userAccount;
+    private UserNode myUserNode;
 
-    private ChannelNode chanNode;
-    
     private Client client;
 
     private Protocol protocol;
@@ -30,16 +27,10 @@ public class CService {
     private SqliteDb sqliteDb;
 
     private Config config;
-    
+
     private Boolean cServiceReady = false;
 
-    private String bufferMode   = "";
-    private String bufferParam  = "";
-    private String channel      = "";
     private String myUniq;
-
-    private Long unixTime;
-
 
     private static String chanJoinModes = "";
 
@@ -69,11 +60,16 @@ public class CService {
  
     public void runCService(Config config, Protocol protocol) {
 
+        Long unixTime;
+
         this.config = config;
         this.myUniq = config.getServerId()+config.getCServeUniq();
 
         unixTime = Instant.now().getEpochSecond();
-        client.write(":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName());
+
+        String str;
+        str = ":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName();
+        client.write(str);
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
         UserNode user = new UserNode(config.getCServeNick(), 
                                      config.getCServeIdent(), 
@@ -138,9 +134,11 @@ public class CService {
         chanAutoLimitThread.start();
 
     }
+
     public void setClient(Client client) {
         this.client = client;
     }
+
     public Boolean isReady() {
         return this.cServiceReady;
     }
@@ -150,7 +148,8 @@ public class CService {
     }
 
     public void handleMessage(UserNode fromNickRaw, String str) {
-        fromNick = fromNickRaw;
+        UserNode fromNick = fromNickRaw;
+
 
         if (str.toUpperCase().startsWith("HELP")) { 
             String[] helpCommandNameSplit = str.toUpperCase().split(" ", 3);
@@ -435,7 +434,7 @@ public class CService {
      * @param channel channel node joined
      */
     public void handleJoin(UserNode user, ChannelNode channel, Boolean dispWelcome) {
-        //System.out.println("BBA chanjoin");
+
         // check if user is authed
 
         String autoBanMask = "*!*%s@%s";
@@ -444,7 +443,6 @@ public class CService {
         if (user.getUserAuthed() == true) {
             if (user.getUserAccount().getUserChanlev().containsKey(channel.getChanName())) {
                 if (  Flags.isChanLBanned( user.getUserAccount().getUserChanlev(channel)) == true ) {
-                    //System.out.println("BBC chanlev ban");
                     try {
                         protocol.setMode(client, myUniq, channel.getChanName(), "+b", String.format(autoBanMask, user.getUserIdent(), user.getUserHost()));
                         protocol.chanKick(client, myUserNode, channel, user, autoBanReason);
@@ -467,7 +465,6 @@ public class CService {
                         catch (Exception e) { e.printStackTrace(); }
                     }
                     else if (  Flags.isChanLOp( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanOp") == true) {
-                        //System.out.println("BBD chanlev op");
                         try {
                             protocol.setMode(client, myUniq, channel.getChanName(), "+o", user.getUserNick());
                         }
@@ -480,7 +477,6 @@ public class CService {
                         catch (Exception e) { e.printStackTrace(); }
                     }
                     else if (  Flags.isChanLVoice( user.getUserAccount().getUserChanlev(channel)) && protocol.getFeature("chanVoice") == true ) {
-                        //System.out.println("BBE chanlev voice");
                         try {
                             protocol.setMode(client, myUniq, channel.getChanName(), "+v", user.getUserNick());
                         }
@@ -503,7 +499,6 @@ public class CService {
             }
         }
     }
-
 
     public void handleJoin(UserNode user, ChannelNode channel) {
         handleJoin(user, channel, true); 
@@ -631,6 +626,12 @@ public class CService {
     public void cServeChanlev(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
 
+        String channel = "";
+
+        UserAccount userAccount;
+
+        ChannelNode chanNode;
+
         HashMap<String, String>   chanlevModSepStr   = new HashMap<String, String>(); 
         HashMap<String, Integer>  chanlevModSepInt   = new HashMap<String, Integer>(); 
         
@@ -730,7 +731,6 @@ public class CService {
 
                 if (protocol.getUserNodeByNick(userNick).getUserAuthed() == true)  {
                     userAccount = protocol.getUserNodeByNick(userNick).getUserAccount();
-                    //System.out.println("BBX 1=" + userNick + " 2=" + userAccount);
                 }
                 else {
                     protocol.sendNotice(client, myUserNode, fromNick, chanlevStrNickNotAuth);
@@ -745,6 +745,7 @@ public class CService {
             return;
         }
         catch (Exception f) {
+            f.printStackTrace();
             if (userNick.startsWith("#")) protocol.sendNotice(client, myUserNode, fromNick, chanlevStrAccountNotFound);
             else {
                 if (protocol.getUserNodeByNick(userNick) == null) protocol.sendNotice(client, myUserNode, fromNick, chanlevStrNickNotFound);
@@ -982,9 +983,14 @@ public class CService {
      */
     public void cServeChanflags(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
+
         String chanFlagsModRaw = "";
+        String channel         = "";
+
         Integer chanNewFlagsInt = 0;
         Integer chanCurFlagsInt = 0;
+
+        ChannelNode chanNode;
 
         HashMap<String, String> chanFlagsModSepStr;
         HashMap<String, Integer> chanFlagsModSepInt = new HashMap<>();
@@ -1260,7 +1266,6 @@ public class CService {
         }
     }
 
-
     public void cServeDropUser(UserNode fromNick, String str) { /* DROPUSER <nick|#user> [confirmationcode] */
         String user;
         String confirmCode = "";
@@ -1455,14 +1460,14 @@ public class CService {
         // First check that the user is on the channel and opped
         if (user.getUserChanMode(channel).matches("(.*)o(.*)") == true || operMode == true) {
             try {
-                sqliteDb.addRegChan(chanNode, ownerAccount);
+                sqliteDb.addRegChan(chanNode);
                 
                 sqliteDb.setChanFlags(chanNode, Flags.getDefaultChanFlags());
 
 
-                sqliteDb.setUserChanlev(ownerAccount, chanNode, CHANLEV_FOUNDER_DEFAULT);
+                sqliteDb.setUserChanlev(ownerAccount, chanNode, Flags.getChanLFlagOwnerDefault());
 
-                ownerAccount.setUserChanlev(chanNode, CHANLEV_FOUNDER_DEFAULT);
+                ownerAccount.setUserChanlev(chanNode, Flags.getChanLFlagOwnerDefault());
 
                 // updating channel chanlev as well
                 Map<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(chanNode);
@@ -1541,8 +1546,8 @@ public class CService {
         }
         
         else { /* Doing certfp auth */
-            if (fromNick.getUserCertFP().isEmpty() == false && fromNick.getUserCertFP() != null) {
-                certfp = fromNick.getUserCertFP();
+            if (usernode.getUserCertFP().isEmpty() == false && usernode.getUserCertFP() != null) {
+                certfp = usernode.getUserCertFP();
                 authType = Const.AUTH_TYPE_CERTFP;
 
                 try { 
@@ -1579,7 +1584,7 @@ public class CService {
 
         // Now we apply the modes of the user's chanlev as it was joining the channels
         // But no welcome message
-        fromNick.getUserChanList().forEach( (chanName, chanObj) -> {
+        usernode.getUserChanList().forEach( (chanName, chanObj) -> {
             this.handleJoin(usernode, chanObj, false);
         });
 
@@ -1587,7 +1592,6 @@ public class CService {
 
     }
    
-
     public void cServeCertfpAdd(UserNode userNode, String str) { // CERTFPADD <certfp>
         String[] command = str.split(" ",5);
         String certfp;
@@ -1596,8 +1600,8 @@ public class CService {
 
         HashSet<String> userAccountCertfp;
 
-        if (fromNick.getUserAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+        if (userNode.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, userNode, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
             return;
         }
 
@@ -1605,12 +1609,12 @@ public class CService {
 
         try { certfp = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CERTFPADD <certfp>."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Invalid command. CERTFPADD <certfp>."); 
             return; 
         }
 
         if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
             return;
         }
 
@@ -1621,7 +1625,7 @@ public class CService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            protocol.sendNotice(client, myUserNode, fromNick, "Could not add the fingerprint. Check that you have not reached the limit (" + config.getCServeAccountMaxCertFP() + ") and delete some of them if necessary."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Could not add the fingerprint. Check that you have not reached the limit (" + config.getCServeAccountMaxCertFP() + ") and delete some of them if necessary."); 
             return;
         }
         try {
@@ -1633,7 +1637,7 @@ public class CService {
         }
 
         userAccount.setCertFP(userAccountCertfp);
-        protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+        protocol.sendNotice(client, myUserNode, userNode, "Done."); 
 
 
     }
@@ -1646,8 +1650,8 @@ public class CService {
 
         HashSet<String> userAccountCertfp;
 
-        if (fromNick.getUserAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+        if (userNode.getUserAuthed() == false) {
+            protocol.sendNotice(client, myUserNode, userNode, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
             return;
         }
 
@@ -1655,12 +1659,12 @@ public class CService {
 
         try { certfp = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CERTFPDEL <certfp>."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Invalid command. CERTFPDEL <certfp>."); 
             return; 
         }
 
         if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
-            protocol.sendNotice(client, myUserNode, fromNick, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
             return;
         }
 
@@ -1669,7 +1673,7 @@ public class CService {
             sqliteDb.removeCertfp(userAccount, certfp);
             userAccountCertfp = sqliteDb.getCertfp(userAccount);
             userAccount.setCertFP(userAccountCertfp);
-            protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Done."); 
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -1703,7 +1707,7 @@ public class CService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            protocol.sendNotice(client, myUserNode, fromNick, "Error while logging out.");
+            protocol.sendNotice(client, myUserNode, usernode, "Error while logging out.");
             return;
         }
 
@@ -1752,13 +1756,13 @@ public class CService {
 
             try { channel = command[1]; }
             catch (ArrayIndexOutOfBoundsException e) { 
-                protocol.sendNotice(client, myUserNode, fromNick, "Invalid command. CHANFLAGS <channel> [flags]."); 
+                protocol.sendNotice(client, myUserNode, userNode, "Invalid command. CHANFLAGS <channel> [flags]."); 
                 return; 
             }
     
             try { chanNode = protocol.getChannelNodeByName(channel); }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, "Can't find this channel."); 
+                protocol.sendNotice(client, myUserNode, userNode, "Can't find this channel."); 
                 return;
             }
             protocol.chanPart(client, myUserNode, chanNode);
@@ -1767,10 +1771,10 @@ public class CService {
                 protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
             }
             catch (Exception e) { e.printStackTrace(); System.out.println("* Could not set mode for "+ chanNode.getChanName() + " after REJOIN command"); return; }
-            protocol.sendNotice(client, myUserNode, fromNick, "Done."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Done."); 
         }
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+            protocol.sendNotice(client, myUserNode, userNode, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
             return;
         }
 
@@ -1778,7 +1782,11 @@ public class CService {
 
     public void cServeWelcome(UserNode fromNick, String str) {
         String[] command = str.split(" ",3);
+
         String newWelcomeMsg;
+        String channel        = "";
+
+        ChannelNode chanNode;
 
         if (fromNick.getUserAuthed() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
@@ -1831,7 +1839,11 @@ public class CService {
 
     public void cServeSetTopic(UserNode fromNick, String str) {
         String[] command = str.split(" ",3);
+
         String newTopic;
+        String channel = "";
+
+        ChannelNode chanNode;
 
         if (fromNick.getUserAuthed() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
@@ -1877,7 +1889,11 @@ public class CService {
 
     public void cServeClearTopic(UserNode fromNick, String str) {
         String[] command = str.split(" ",3);
-        String newTopic = "";
+
+        String channel   = "";
+        String newTopic  = "";
+
+        ChannelNode chanNode;
 
         if (fromNick.getUserAuthed() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
@@ -1920,7 +1936,6 @@ public class CService {
     public void cServeHelp(UserNode fromNick, String commandName) {
         Help.getHelp("commands", commandName).forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} );
     }
-
 
     public void cServeShowcommands(UserNode fromNick) {
         /*
@@ -1996,8 +2011,8 @@ public class CService {
         } );
     }
 
-    public void cServeVersion() {
-
+    public void cServeVersion(UserNode fromNick) {
+        protocol.sendNotice(client, myUserNode, fromNick, config.getCServeVersionString());
     }
 
     /**
@@ -2040,7 +2055,12 @@ public class CService {
      */
     public void cServeAutoLimit(UserNode fromNick, String str) {
         String[] command = str.split(" ",5);
+
+        String channel = "";
+
         Integer chanAutoLimitInt = 0;
+
+        ChannelNode chanNode;
 
         String autoLimStrUnknownCommand     = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
         String autoLimStrInvalidCommand     = "Invalid command. AUTOLIMIT <channel> [limit]].";
