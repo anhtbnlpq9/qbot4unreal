@@ -5,12 +5,13 @@
 ### General
 - [ ] conf REHASH
 - [ ] logging
+- [ ] i18n
 
 ### Accounts
 - [X] account registration
 - [X] account auth with plain user/pass
 - [X] user flags
-- [ ] account deletion
+- [X] account deletion
 - [ ] account editing
 - [ ] nick ownership
 - [X] auth history
@@ -70,16 +71,16 @@
 - [ ] CHANSTAT
 - [ ] CLEARCHAN
 - [X] CLEARTOPIC
-- [X] DELCHAN => DROP
-- [ ] DELUSER
+- [X] DELCHAN => DROPCHAN
 - [ ] DEOPALL
 - [ ] DEVOICEALL
+- [X] DROPUSER
 - [ ] EMAIL
 - [ ] GIVEOWNER
 - [X] HELLO
 - [X] HELP
 - [ ] INVITE
-- [ ] JUPE
+- [ ] JUPE  => operservice?
 - [ ] LISTFLAGS
 - [ ] NEWPASS
 - [ ] OP
@@ -116,6 +117,7 @@
 - [X] CHANLIST
 - [ ] DIE
 - [X] DROP
+- [ ] GHOST
 - [X] LOGOUT
 - [ ] REHASH
 - [X] REQUESTBOT
@@ -123,8 +125,8 @@
 - [X] SERVERLIST
 - [X] USERLIST
 - [ ] HALFOP
-- [ ] MODEADMIN
-- [ ] MODEOWNER
+- [ ] MODEADMIN => rename to something better
+- [ ] MODEOWNER => rename to something better
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
 - [X] CERTFPADD
@@ -134,13 +136,13 @@
 - [ ] user modes setting on auth
 - [ ] user/channel account privacy
 - [ ] channel banning
-- [ ] DEFCON (operserv, anope)
-- [ ] Qline manipulation
+- [ ] DEFCON (operserv, anope)  => operservice?
+- [ ] Qline manipulation => operservice?
 - [ ] searching data (for users, for opers)
 
 # Coding
 - [ ] rework SJOIN handling
 - [ ] rework MODE handling
-- [ ] rework CHANLEV
-- [ ] rework DROP command to include some "safety integrity"
+- [X] rework CHANLEV
+- [X] rework DROP commands to include some "safety integrity"
 - [ ] rework channel user count again
