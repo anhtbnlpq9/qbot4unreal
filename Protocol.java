@@ -516,6 +516,16 @@ public class Protocol extends Exception {
         setMode(client, who, target, modes, parameters);
     }
 
+    public void setMlock(Client client, ServerNode fromWho, ChannelNode toTarget, String modes) {
+        /* :5PB MLOCK 1681424518 #chan PCfHntT */
+        String str;
+        Long unixTime;
+        unixTime = Instant.now().getEpochSecond();
+
+        str = String.format(":%s MLOCK %s %s %s", fromWho.getServerId(), unixTime, toTarget.getChanName(), modes);
+        client.write(str);
+    }
+
     /**
      * @param client client
      * @param fromWho servernode

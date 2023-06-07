@@ -24,6 +24,7 @@ public class ChannelNode {
     private String chanRegisteredTopic = "";
     private String chanWelcomeMsg      = "";
     private String topicBy;
+    private String mLocked             = "";
 
     private UUID confirmCode = null;
 

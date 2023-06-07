@@ -8,3 +8,5 @@ db/
 at/
 *.jar
 javadoc/
+.vscode/
+logs/
