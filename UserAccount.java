@@ -225,6 +225,18 @@ public class UserAccount {
         return this.userAccountRegTS;
     }
 
+    public void setRegTS(Long ts) {
+        this.userAccountRegTS = ts;
+    }
+
+    public Long getLastAuthTS() {
+        return this.lastAuthTS;
+    }
+
+    public void setLastAuthTS(Long ts) {
+        this.lastAuthTS = ts;
+    }
+
     /**
      * Returns the user account name
      * @return user account name

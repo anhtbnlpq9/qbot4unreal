@@ -658,6 +658,29 @@ public class SqliteDb {
         return regTS;
     }
 
+    public Long getUserLastAuthTS(UserAccount useraccount) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        Integer userid           = useraccount.getUserAccountId();
+        ResultSet resultSet      = null;
+        Long authTS              = 0L;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT authTS FROM authhistory WHERE userId='" + userid + "' AND authType IS NOT '" + Const.AUTH_TYPE_REAUTH + "' ORDER by authTS DESC LIMIT 0,1;";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            authTS = resultSet.getLong("authTS");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + useraccount.getUserAccountName() + " last auth ts.");
+        } 
+        statement.close();
+        return authTS;
+    }
+
     /**
      * Returns the user certfp
      * @param username
