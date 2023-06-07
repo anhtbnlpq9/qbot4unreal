@@ -5,7 +5,7 @@ me:
     name: cheetah.
 
     # Description of the server (as seen in /LINKS)
-    description: jThIRC
+    description: qbot4u
 
     # Server ID. 3 characters: first must be a number and the 2 others are any alphanumeric. The case is not significant.
     sid: 5PC
@@ -17,7 +17,10 @@ me:
     versionflags: ""
 
     # Full version text (UnrealIRCd TS6)
-    fullversiontext: jThIRC
+    fullversiontext: qbot4u
+
+    # Version string (returned to VERSION command)
+    versionstring: "qbot4u - The Q Bot for UnrealIRCd."
 
 # Database configuration 
 # For the moment only SQLite3 is supported.
