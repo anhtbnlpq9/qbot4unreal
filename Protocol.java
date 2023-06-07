@@ -688,7 +688,7 @@ public class Protocol extends Exception {
             
             command = (command[2]).split(" ", 4);
             String name = command[0];
-            String hop = command[1];
+            Integer hop = Integer.valueOf(command[1]);
             String sid = command[2];
             String desc = (command[3].split(":"))[1];
             server = new ServerNode(name, hop, sid, desc);
@@ -840,7 +840,7 @@ public class Protocol extends Exception {
             String[] string = raw.split(" ", 4);
             ServerNode server = serverList.get(myPeerServerId);
             server.setServerName(string[1]);
-            server.setServerDistance(string[2]);
+            server.setServerDistance(Integer.valueOf(string[2]));
             server.setServerDescription((string[3].split(":"))[1]);
             
             serverList.get(config.getServerId()).setServerPeerResponded(true);

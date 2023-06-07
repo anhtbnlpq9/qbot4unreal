@@ -150,6 +150,7 @@ public class CService {
     public void handleMessage(UserNode fromNickRaw, String str) {
         UserNode fromNick = fromNickRaw;
 
+        String returnStrUnknownCommand = "Unknown command %s. Type SHOWCOMMANDS for a list of available commands."; 
 
         if (str.toUpperCase().startsWith("HELP")) { 
             String[] helpCommandNameSplit = str.toUpperCase().split(" ", 3);
@@ -240,10 +241,8 @@ public class CService {
         else if (str.toUpperCase().startsWith("CERTFPDEL")) { /* CERTFPDEL <certfp> */
             cServeCertfpDel(fromNickRaw, str);
         }
-
-
         else { // Unknown command
-            protocol.sendNotice(client, myUserNode, fromNick, "Unknown command \"" + str.split(" ",2)[0] + "\". Type SHOWCOMMANDS for a list of available commands.");
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(returnStrUnknownCommand, str.split(" ",2)[0]));
         }
     }
 
@@ -397,8 +396,15 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "Known on the following channels:");
                 protocol.sendNotice(client, myUserNode, fromNick, "Channel                        Flags:");
 
+                var wrapperCL = new Object() { Integer chanlev;};
                 whoisUserAccount.getUserChanlev().forEach( (chan, chanlev) -> {
-                    protocol.sendNotice(client, myUserNode, fromNick, " " + chan + spaceFill.repeat(30-chan.length()) +"+" + Flags.flagsIntToChars("chanlev", chanlev));
+                    wrapperCL.chanlev = chanlev;
+                    //if (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+                    //    wrapperCL.chanlev = Flags.stripChanlevPunishFlags(wrapperCL.chanlev);
+                    //}
+                    if (wrapperCL.chanlev != 0) {
+                        protocol.sendNotice(client, myUserNode, fromNick, " " + chan + spaceFill.repeat(30-chan.length()) +"+" + Flags.flagsIntToChars("chanlev", wrapperCL.chanlev));
+                    }
                 } );
 
             }
