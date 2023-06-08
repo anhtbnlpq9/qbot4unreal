@@ -784,11 +784,40 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " userflags.");
+            throw new Exception("Could not get user " + username + " id.");
         } 
         statement.close();
         return userId;
     }
+
+    /**
+     * Returns the user account id
+     * @param username username
+     * @return user id
+     * @throws Exception
+     */
+    public Integer getChanId(ChannelNode chan) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Integer userId           = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT cid FROM channels WHERE name='" + chan.getChanName() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            userId = resultSet.getInt("cid");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get chan " + chan.getChanName() + " id.");
+        } 
+        statement.close();
+        return userId;
+    }
+
 
     public HashSet<String> getCertfp(UserAccount userAccount) throws Exception {
         Statement statement      = null;
@@ -1245,6 +1274,73 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + user.getUserAccount() + "."); }
     }
+
+    public void addSuspendHistory(Object node, String reason) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        Integer nodeType;
+        Long unixTime;
+
+        unixTime = Instant.now().getEpochSecond();
+
+        if (node instanceof UserAccount) {
+            UserAccount theNode = (UserAccount) node;
+            nodeType = Const.ENTITY_USERACCOUNT;
+            sql = "INSERT INTO suspendhistory (itemId, itemType, suspendTS, reason) VALUES ('" + theNode.getUserAccountId() + "', '" + nodeType + "', '" + unixTime + "', '" + reason + "');";
+        }
+        else if (node instanceof ChannelNode) {
+            ChannelNode theNode = (ChannelNode) node;
+            nodeType = Const.ENTITY_CHANNEL;
+            sql = "INSERT INTO suspendhistory (itemId, itemType, suspendTS, reason) VALUES ('" + theNode.getChanId() + "', '" + nodeType + "', '" + unixTime + "', '" + reason + "');";
+        }
+        else {
+            log.error("Suspend add history: unknown node type: " + node.getClass());
+            throw new Exception("Suspend add history: unknown entity");
+        }
+
+        try { 
+            statement = connection.createStatement();
+            
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add suspend history line for that entity."); }
+    }
+
+    public void addUnSuspendHistory(Object node) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+
+        Integer nodeType;
+
+        Long unixTime;
+
+        unixTime = Instant.now().getEpochSecond();
+
+        if (node instanceof UserAccount) {
+            UserAccount theNode = (UserAccount) node;
+            nodeType = Const.ENTITY_USERACCOUNT;
+            sql = "UPDATE suspendhistory SET unsuspendTS='" + unixTime + "' WHERE itemId='"+ theNode.getUserAccountId() +"' AND itemType='" + nodeType + "' AND unsuspendTS IS NULL;";
+        }
+        else if (node instanceof ChannelNode) {
+            ChannelNode theNode = (ChannelNode) node;
+            nodeType = Const.ENTITY_CHANNEL;
+            sql = "UPDATE suspendhistory SET unsuspendTS='" + unixTime + "' WHERE itemId='"+ theNode.getChanId() +"' AND itemType='" + nodeType + "' AND unsuspendTS IS NULL;";
+        }
+        else {
+            log.error("UnSuspend add history: unknown node type: " + node.getClass());
+            throw new Exception("UnSuspend add history: unknown entity");
+        }
+
+        try { 
+            statement = connection.createStatement();
+            
+            statement.executeUpdate(sql);
+            statement.close();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not update suspend history line for that entity."); }
+    }
+
 
     public ArrayList<HashMap<String, Object>> getAuthHistory(UserAccount userAccount) throws Exception {
         Statement statement      = null;

@@ -18,6 +18,7 @@ public class ChannelNode {
     private Integer autoLimit      = 10;
     private Integer banTime        = 0;
     private Integer channelId;
+    private Integer id = 0;
 
     private String channelName;
     private String topic               = "";
@@ -80,6 +81,13 @@ public class ChannelNode {
         this.chanRegisteredTopic = chanRegTopic;
         this.banTime = banTime;
         this.autoLimit = autoLimit;
+
+        try {
+            this.id = sqliteDb.getChanId(this);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -258,6 +266,12 @@ public class ChannelNode {
 
     public String getChanName() {
         return this.channelName;
+    public Integer getChanId() {
+        return this.id;
+    }
+
+    public void setChanId(Integer id) {
+        this.id = id;
     }
 
     public Long getChanTS() {

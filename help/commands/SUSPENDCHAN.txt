@@ -1,0 +1,15 @@
+Usage: SUSPEND <channel> <reason>
+Suspends a channel where:
+ channel - channel to suspend
+ reason  - reason for suspension
+This will set the chanflags to +z-j. The bot will
+leave the channel and the channel will appear unregistered.
+While the channel is suspended, it is not possible to change
+the channel parameters such as CHANLEV, CHANFLAGS, ... or 
+commands that would involve actions on the channel (e.g. REJOIN),
+however it is still possible to read those parameters (for
+the staff, users will not have access to read the information).
+Also, while the channel is suspended, it is not possible to 
+use REQUESTBOT/ADDCHAN on it, nor that the bot will perform any
+action on the channel (bans, AUTOLIMIT, etc.)
+End of help.

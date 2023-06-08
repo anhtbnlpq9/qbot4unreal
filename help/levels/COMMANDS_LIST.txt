@@ -41,11 +41,13 @@ HELP               Displays help on a specific command.
 //000!RESET              Restores the old details on an account after a change. 
 050!SETTOPIC           Changes the topic on a channel.
 100!SERVERLIST         List of the current connected servers on the network.
-SHOWCOMMANDS       Lists available commands. 
+SHOWCOMMANDS       Lists available commands.
+100!SUSPENDCHAN        Suspends a channel.
 //050!TEMPBAN            Bans a hostmask on a channel for a specified time period.
 //050!UNBANALL           Removes all bans from a channel.
 //050!UNBANMASK          Removes bans matching a particular mask from a channel.
 //050!UNBANME            Removes any bans affecting you from a channel.
+100!UNSUSPENDCHAN      Unsuspends a channel.
 050!USERFLAGS          Shows or changes user flags.
 100!USERLIST           List of the current connected users on the network.
 //USERS              Displays a list of users on the channel.

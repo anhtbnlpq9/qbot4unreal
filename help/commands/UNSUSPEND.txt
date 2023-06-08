@@ -1,0 +1,8 @@
+Usage: UNSUSPEND <channel>
+Suspends a channel where:
+ channel - channel to suspend
+This will set the chanflags to +j-z. The bot will
+join the channel and the channel will appear registered, like
+when the bot joins it for the first time.
+The bot will performs what is necessary to respect CHANLEV/CHANFLAGS/etc.
+End of help.

@@ -105,26 +105,28 @@ public class CService {
 
         HashMap<String, ChannelNode> regChannels = protocol.getRegChanList();
         regChannels.forEach( (regChannelName, regChannelNode) -> {
-            /* Making the bot join the registered channels */
-            protocol.chanJoin(client, myUserNode, regChannelNode);
-            try { protocol.setMode(client, regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getUserNick()); }
-            catch (Exception e) { e.printStackTrace(); }
+            if (Flags.isChanJoined(regChannelNode.getChanFlags()) == true) {
+                /* Making the bot join the registered (and +j) channels */
+                protocol.chanJoin(client, myUserNode, regChannelNode);
+                try { protocol.setMode(client, regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getUserNick()); }
+                catch (Exception e) { e.printStackTrace(); }
 
-            /* Look into every user account belonging to the channel chanlev and applying rights to authed logins of accounts */
-            regChannelNode.getChanlev().forEach( (username, chanlev) -> {
+                /* Look into every user account belonging to the channel chanlev and applying rights to authed logins of accounts */
+                regChannelNode.getChanlev().forEach( (username, chanlev) -> {
 
-                UserAccount useraccount;
-                try { useraccount = protocol.getRegUserAccount(username); }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-                useraccount.getUserLogins().forEach( (usernode) -> {
-                    if (usernode.getUserChanList().containsKey(regChannelNode.getChanName())) {
-                        this.handleJoin(usernode, regChannelNode);
+                    UserAccount useraccount;
+                    try { useraccount = protocol.getRegUserAccount(username); }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        return;
                     }
+                    useraccount.getUserLogins().forEach( (usernode) -> {
+                        if (usernode.getUserChanList().containsKey(regChannelNode.getChanName())) {
+                            this.handleJoin(usernode, regChannelNode);
+                        }
+                    });
                 });
-            });
+            }
         });
 
         cServiceReady = true;
@@ -244,6 +246,12 @@ public class CService {
         else if (str.toUpperCase().startsWith("CERTFPDEL")) { /* CERTFPDEL <certfp> */
             cServeCertfpDel(fromNickRaw, str);
         }
+        else if (str.toUpperCase().startsWith("SUSPENDCHAN")) {
+            cServeSuspendChan(fromNick, str);
+        }
+        else if (str.toUpperCase().startsWith("UNSUSPENDCHAN")) {
+            cServeUnSuspendChan(fromNick, str);
+        }
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, String.format(returnStrUnknownCommand, str.split(" ",2)[0]));
         }
@@ -255,6 +263,11 @@ public class CService {
      * @param channel channel node joined
      */
     public void handleJoin(UserNode user, ChannelNode channel, Boolean dispWelcome) {
+
+        if (Flags.isChanJoined(channel.getChanFlags()) == false) {
+            /* Channel does not have +j flag (could be suspended or something) */
+            return;
+        }
 
         // check if user is authed
 
@@ -327,6 +340,12 @@ public class CService {
 
     public void handleTopic(ChannelNode chanNode) {
         String savedTopic = "";
+
+        if (Flags.isChanJoined(chanNode.getChanFlags()) == false) {
+            /* Channel does not have +j flag (could be suspended or something) */
+            return;
+        }
+
         try {
             savedTopic = sqliteDb.getTopic(chanNode);
         }
@@ -551,6 +570,7 @@ public class CService {
         String chanlevStrListHeader      = "Displaying CHANLEV for channel %s:";
         String chanlevStrListFooter      = "End of list.";
         String chanlevStrDropChanLEmpty  = "Channel has been dropped because its chanlev was left empty.";
+        String chanLevStrErrSuspended    = "Can't change this setting while the channel is suspended.";
 
         /* Define the lambda function to display chanlev */
         ChanlevList displayCL = (fromN, channode, useraccount) -> {
@@ -656,6 +676,11 @@ public class CService {
         try {  chanlevModRaw =  command[3]; }
         catch (ArrayIndexOutOfBoundsException e) {
             displayCL.displayCL(fromNick, chanNode, userAccount);
+            return;
+        }
+
+        if (Flags.isChanSuspended(chanNode.getChanFlags()) == true) {
+            protocol.sendNotice(client, myUserNode, fromNick, chanLevStrErrSuspended);
             return;
         }
 
@@ -883,6 +908,7 @@ public class CService {
 
         String chanFlagsModRaw = "";
         String channel         = "";
+        String strErrSuspended = "Can't change this setting while the channel is suspended.";
 
         Integer chanNewFlagsInt = 0;
         Integer chanCurFlagsInt = 0;
@@ -925,6 +951,11 @@ public class CService {
             else { applicableChFlagsStr = "(none)"; }
 
             protocol.sendNotice(client, myUserNode, fromNick, "Channel flags for " + chanNode.getChanName() + ": " + applicableChFlagsStr); 
+            return;
+        }
+
+        if (Flags.isChanSuspended(chanNode.getChanFlags()) == true) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrSuspended);
             return;
         }
 
@@ -1799,6 +1830,11 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, userNode, "Can't find this channel."); 
                 return;
             }
+            if (Flags.isChanJoined(chanNode.getChanFlags()) == false) {
+                /* Channel does not have +j flag (could be suspended or something) */
+                protocol.sendNotice(client, myUserNode, userNode, "Can't use that command on a -j channel."); 
+                return;
+            }
             protocol.chanPart(client, myUserNode, chanNode);
             protocol.chanJoin(client, myUserNode, chanNode);
             try {
@@ -2069,7 +2105,7 @@ public class CService {
                 curChanModeLimit = 0;
             }
 
-            if ((Flags.isChanAutolimit(chanNode.getChanFlags()) == true) && newLimit != curChanModeLimit) {
+            if (Flags.isChanAutolimit(chanNode.getChanFlags()) == true && Flags.isChanJoined(chanNode.getChanFlags()) == true && newLimit != curChanModeLimit) {
                 try {
                     protocol.setMode(client, myUserNode, chanNode, "+l", String.valueOf(newLimit));
                     log.info("Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
@@ -2164,5 +2200,188 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, String.format(autoLimStrNoAccess, chanNode.getChanName()));
             return;
         }
+    }
+
+    /**
+     * SUSPENDCHAN command
+     * Syntax: SUSPENDCHAN <channel> <reason>
+     * @param fromNick
+     * @param str
+     */
+    private void cServeSuspendChan(UserNode fromNick, String str) {
+        String strErrNoAuth        = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
+        String strErrNoSyntax      = "Invalid command. SUSPENDCHAN <channel> <reason>.";
+        String strErrChanNoReg     = "Can't find this channel.";
+        String strErrChanSuspended = "This channel is already suspended.";
+        String strErrChanHistory   = "Cannot add suspend to history for channel: %s";
+        String strSuccess = "Done.";
+
+        String[] command = str.split(" ",3);
+
+        String reason;
+        String channel = "";
+
+        ChannelNode chanNode;
+
+        Integer curChanFlags;
+        Integer newChanFlags;
+
+
+
+        /* Preliminary checks */
+        if (fromNick.getUserAuthed() == false || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoAuth); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+        try { reason = command[2]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
+            return;
+        }
+        
+        if (chanNode.getRegistered() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
+            return;
+        }
+
+        if (Flags.isChanSuspended(chanNode.getChanFlags()) == true) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrChanSuspended);
+            return;
+        }
+
+
+        /* The suspend thing */
+        curChanFlags = chanNode.getChanFlags();
+        newChanFlags = curChanFlags;
+        newChanFlags = Flags.setChanSuspended(newChanFlags);
+        newChanFlags = Flags.clearChanJoined(newChanFlags);
+
+        try {
+            sqliteDb.setChanFlags(chanNode, newChanFlags);
+        }
+        catch (Exception e) {
+            log.error("Cannot suspend channel" + chanNode.getChanName());
+            return;
+        }
+        chanNode.setChanFlags(newChanFlags);
+
+        protocol.chanPart(client, myUserNode, chanNode);
+        try {
+            protocol.setMode(client, chanNode, "-r", null);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            sqliteDb.addSuspendHistory(chanNode, reason);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrChanHistory, chanNode.getChanName())); 
+            log.error(String.format(strErrChanHistory, chanNode.getChanName()));
+            return;
+        }
+
+        protocol.sendNotice(client, myUserNode, fromNick, strSuccess);
+    }
+
+    private void cServeUnSuspendChan(UserNode fromNick, String str) {
+        String strErrNoAuth           = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
+        String strErrNoSyntax         = "Invalid command. UNSUSPENDCHAN <channel>.";
+        String strErrChanNoReg        = "Can't find this channel.";
+        String strErrChanNotSuspended = "This channel is not suspended.";
+        String strErrChanHistory      = "Cannot update suspend to history for channel: %s";
+        String strSuccess             = "Done.";
+
+        String[] command = str.split(" ",3);
+
+        String channel = "";
+
+        ChannelNode chanNode;
+
+        Integer curChanFlags;
+        Integer newChanFlags;
+
+
+
+        /* Preliminary checks */
+        if (fromNick.getUserAuthed() == false || Flags.hasUserOperPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoAuth); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByName(channel); }
+        catch (Exception e) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
+            return;
+        }
+        
+        if (chanNode.getRegistered() == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
+            return;
+        }
+
+        if (Flags.isChanSuspended(chanNode.getChanFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrChanNotSuspended);
+            return;
+        }
+
+
+        /* The unsuspend thing */
+        curChanFlags = chanNode.getChanFlags();
+        newChanFlags = curChanFlags;
+        newChanFlags = Flags.clearChanSuspended(newChanFlags);
+        newChanFlags = Flags.setChanJoined(newChanFlags);
+
+        try {
+            sqliteDb.setChanFlags(chanNode, newChanFlags);
+        }
+        catch (Exception e) {
+            log.error("Cannot unsuspend channel" + chanNode.getChanName());
+            return;
+        }
+        chanNode.setChanFlags(newChanFlags);
+
+        protocol.chanJoin(client, myUserNode, chanNode);
+        try {
+            protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getUserNick());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+
+        try {
+            sqliteDb.addUnSuspendHistory(chanNode);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrChanHistory, chanNode.getChanName())); 
+            log.error(String.format(strErrChanHistory, chanNode.getChanName()));
+            return;
+        }
+
+        protocol.sendNotice(client, myUserNode, fromNick, strSuccess);
     }
 }

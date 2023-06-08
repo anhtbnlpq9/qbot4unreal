@@ -48,6 +48,16 @@ public abstract class Const {
 
     private static final Map<Integer, String> constIntToStr = dictionaryRev(constStrToInt);
 
+
+
+    public static final Integer      ENTITY_CHANNEL           = 0x0001;
+    public static final Integer      ENTITY_USERACCOUNT       = 0x0002;
+
+
+
+
+
+
     public static String getAuthTypeString(Integer type) {
         if (constIntToStr.containsKey(type)) return constIntToStr.get(type);
         else { return "Other/Unknown";}
