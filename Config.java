@@ -184,6 +184,103 @@ public class Config {
 
 
     }
+    
+
+    public Boolean checkConfig() {
+
+        Integer configErrors = 0;
+
+        /* Server parameters */
+        if (serverName.isEmpty() == true) {
+            log.fatal("Configuration: me::name is not defined!");
+            configErrors++;
+        }
+        if (serverId.isEmpty() == true) {
+            log.fatal("Configuration: me::sid is not defined!");
+            configErrors++;
+        }
+        if (serverDescription.isEmpty() == true) {
+            log.fatal("Configuration: me::description is not defined!");
+            configErrors++;
+        }
+
+        /* Link parameters */
+        if (linkPeer.isEmpty() == true) {
+            log.fatal("Configuration: link::peer is not defined!");
+            configErrors++;
+        }
+        if (linkHost.isEmpty() == true) {
+            log.fatal("Configuration: link::host is not defined!");
+            configErrors++;
+        }
+        if (linkPort.equals(0) == true) {
+            log.fatal("Configuration: link::port is not defined!");
+            configErrors++;
+        }
+        if (linkPassword.isEmpty() == true) {
+            log.warn("Configuration: link::password is not defined. Unless you are using certificate authentication (in whoch case you should put * as password), the link may not work.");
+            configErrors++;
+        }
+
+        /* Chanservice parameters */
+        if (cserviceNick.isEmpty() == true) {
+            log.fatal("Configuration: cservice::nick is not defined!");
+            configErrors++;
+        }
+        if (cserviceUid.isEmpty() == true) {
+            log.fatal("Configuration: cservice::uid is not defined!");
+            configErrors++;
+        }
+        if (cserviceReal.isEmpty() == true) {
+            log.fatal("Configuration: cservice::realname is not defined!");
+            configErrors++;
+        }
+        if (cserviceIdent.isEmpty() == true) {
+            log.fatal("Configuration: cservice::ident is not defined!");
+            configErrors++;
+        }
+        if (cserviceHost.isEmpty() == true) {
+            log.fatal("Configuration: cservice::host is not defined!");
+            configErrors++;
+        }
+        if (cserviceModes.isEmpty() == true) {
+            log.fatal("Configuration: cservice::modes is not defined!");
+            configErrors++;
+        }
+
+        /* Network parameters */
+        if (networkName.isEmpty() == true) {
+            log.fatal("Configuration: network::name is not defined!");
+            configErrors++;
+        }
+
+        /* Database parameters */
+        if (databasePath.isEmpty() == true) {
+            log.fatal("Configuration: database::path is not defined!");
+            configErrors++;
+        }
+
+        /* SSL parameters */
+        if (sslTruststorePath.isEmpty() == true) {
+            log.fatal("Configuration:ssl::truststore::path is not defined!");
+            configErrors++;
+        }
+        if (sslTruststorePassword.isEmpty() == true) {
+            log.fatal("Configuration: ssl::truststore::password is not defined!");
+            configErrors++;
+        }
+        if (sslKeystorePath.isEmpty() == true) {
+            log.fatal("Configuration: ssl::keystore::path is not defined!");
+            configErrors++;
+        }
+        if (sslKeystorePassword.isEmpty() == true) {
+            log.fatal("Configuration: ssl::keystore::password is not defined!");
+            configErrors++;
+        }
+
+        if (configErrors > 0) return false;
+        else return true;
+    }
 
     /**
      * Returns the server name
