@@ -205,8 +205,6 @@ abstract class Flags {
     private static final Integer   CHFLAG_GLINED        = 0x00000002; // +y
     private static final Integer   CHFLAG_SUSPENDED     = 0x00000001; // +z
 
-    private static final Integer   CHFLAG_ALL           = 0xfffeffff; // except +j
-
     private static final Integer   CHFLAG_MASTERCONTROL  = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_PROTECT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
                                                            CHFLAG_TOPICSAVE | CHFLAG_VOICEALL);
 
@@ -223,6 +221,8 @@ abstract class Flags {
     private static final Integer   CHFLAGS_ALLOWED      = ( CHFLAG_MASTERCONTROL | CHFLAG_OWNERCONTROL | CHFLAG_ADMINCONTROL | CHFLAG_OPERCONTROL );
 
     private static final Integer   CHFLAGS_NEW_CHAN     = (CHFLAG_WELCOME | CHFLAG_JOINED);
+
+    private static final Integer   CHFLAG_ALL           = 0xffffffff & ~CHFLAGS_READONLY;
 
 
     /**
@@ -355,7 +355,7 @@ abstract class Flags {
     private static final Integer   CLFLAG_MASTERCON     = (CLFLAG_AUTO | CLFLAG_BANNED | CLFLAG_DENYOP | CLFLAG_OP | CLFLAG_HALFOP | 
                                                            CLFLAG_DENYVOICE | CLFLAG_TOPIC | CLFLAG_VOICE | CLFLAG_PROTECT);
 
-    private static final Integer   CLFLAG_OWNERCON     = (CLFLAG_MASTERCON | CLFLAG_OWNER | CLFLAG_MASTER);
+    private static final Integer   CLFLAG_OWNERCON      = (CLFLAG_MASTERCON | CLFLAG_OWNER | CLFLAG_MASTER);
 
     private static final Integer   CLFLAG_SELFCON       = (CLFLAG_OP | CLFLAG_VOICE | CLFLAG_AUTO | CLFLAG_TOPIC);
 
