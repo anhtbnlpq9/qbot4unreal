@@ -656,6 +656,78 @@ public class Protocol extends Exception {
         sendSvsLogin(user, account, true);
     }
 
+    public HashMap<String, String> parseChanModes(String str) {
+        HashMap<String, String> chanModes = new HashMap<>();
+
+        /*
+         * str = "+abc-de+g-hijk... param1 param2 param3 param4 param5..."
+         */
+
+        String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (lists) parameter for set, parameter for unset
+        String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
+        String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
+        String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
+        String networkChanUserModes          = protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", ""); // Channel modes for users
+
+
+        /*
+         *      Modes = strSplit[0]
+         * Parameters = strSplit[1+]
+         */
+        String[] strSplit = str.split(" ");
+
+        String modes = strSplit[0];
+        char modeAction = '+';
+
+        String curMode;
+
+        Integer modeIndex=0;
+        Integer paramIndex=1;
+        while(modeIndex < modes.length()) {
+            curMode = String.valueOf(modes.charAt(modeIndex));
+
+            switch(curMode) {
+                case "+": modeAction = '+'; break;
+                case "-": modeAction = '-'; break;
+            }
+
+            if (curMode.matches("[A-Za-z]") == true) {
+
+                if (curMode.matches("[" + networkChanModesGroup1 + "]")) {
+                    chanModes.put(modeAction + curMode, strSplit[paramIndex]);
+                    paramIndex++;
+                }
+
+                else if (curMode.matches("[" + networkChanModesGroup2 + "]")) {
+                    chanModes.put(modeAction + curMode, strSplit[paramIndex]);
+                    paramIndex++;
+                }
+
+                else if (curMode.matches("[" + networkChanModesGroup3 + "]")) {
+                    if (modeAction == '+') {
+                        chanModes.put(modeAction + curMode, strSplit[paramIndex]);
+                        paramIndex++;
+                    }
+                    else {
+                        chanModes.put(modeAction + curMode, "");
+                    }
+                }
+
+                else if (curMode.matches("[" + networkChanModesGroup4 + "]")) {
+                    chanModes.put(modeAction + curMode, "");
+                }
+
+                else if (curMode.matches("[" + networkChanUserModes + "]")) {
+                    chanModes.put(modeAction + curMode, strSplit[paramIndex]);
+                    paramIndex++;
+                }
+            }
+
+            modeIndex++;
+        }
+
+        return chanModes;
+    }
 
 
     public void getResponse(String raw) throws Exception {
