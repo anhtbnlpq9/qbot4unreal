@@ -202,7 +202,7 @@ abstract class Flags {
     private static final Integer   CHFLAG_VOICEALL      = 0x00000010; // +v
     private static final Integer   CHFLAG_WELCOME       = 0x00000008; // +w
     //private static final Integer   CHFLAG_SPARE_x       = 0x00000004; // +x
-    //private static final Integer   CHFLAG_SPARE_y       = 0x00000002; // +y
+    private static final Integer   CHFLAG_GLINED        = 0x00000002; // +y
     private static final Integer   CHFLAG_SUSPENDED     = 0x00000001; // +z
 
     private static final Integer   CHFLAG_ALL           = 0xfffeffff; // except +j
@@ -215,7 +215,7 @@ abstract class Flags {
     private static final Integer   CHFLAG_OPERCONTROL   = ( CHFLAG_OWNERCONTROL | CHFLAG_MASTERCONTROL );
     private static final Integer   CHFLAG_ADMINCONTROL  = ( CHFLAG_OPERCONTROL );
                                                            
-    private static final Integer   CHFLAGS_READONLY     = ( CHFLAG_SUSPENDED | CHFLAG_JOINED ); /* flags non-settable through CHANFLAGS */
+    private static final Integer   CHFLAGS_READONLY     = ( CHFLAG_SUSPENDED | CHFLAG_JOINED | CHFLAG_GLINED); /* flags non-settable through CHANFLAGS */
 
     private static final Integer   CHFLAGS_PUBLIC       = ( CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_JOINED | CHFLAG_KNOWNONLY | 
                                                             CHFLAG_TOPICSAVE | CHFLAG_VOICEALL | CHFLAG_WELCOME);
@@ -239,6 +239,7 @@ abstract class Flags {
         entry("t",   CHFLAG_TOPICSAVE),
         entry("v",   CHFLAG_VOICEALL),
         entry("w",   CHFLAG_WELCOME),
+        entry("y",   CHFLAG_GLINED),
         entry("z",   CHFLAG_SUSPENDED)
     );
 
@@ -1235,6 +1236,16 @@ abstract class Flags {
     }
 
     /**
+     * Returns if the channel has flag GLINED
+     * @param userFlags Channel flags
+     * @return True or False
+     */    
+    public static Boolean isChanGlined(Integer chanFlags) {
+        if ( (chanFlags & CHFLAG_GLINED) == 0) return false;
+        else return true;
+    }
+
+    /**
      * Sets the chan flag BITCH
      * @param chanFlags Chan flags
      * @return Resulting chanflag
@@ -1334,6 +1345,15 @@ abstract class Flags {
     }
 
     /**
+     * Sets the chan flag GLINED
+     * @param chanFlags Chan flags
+     * @return Resulting chanflag
+     */
+    public static Integer setChanGlined(Integer chanFlags) {
+        return (chanFlags | CHFLAG_GLINED);
+    }
+
+    /**
      * Clears the chan flag BITCH
      * @param chanFlags Chan flags
      * @return Resulting chanflag
@@ -1430,6 +1450,15 @@ abstract class Flags {
      */
     public static Integer clearChanSuspended(Integer chanFlags) {
         return (chanFlags & ~CHFLAG_SUSPENDED);
+    }
+
+    /**
+     * Clears the chan flag GLINED
+     * @param chanFlags Chan flags
+     * @return Resulting chanflag
+     */
+    public static Integer clearChanGlined(Integer chanFlags) {
+        return (chanFlags & ~CHFLAG_GLINED);
     }
 
     /**
