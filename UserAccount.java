@@ -349,12 +349,13 @@ public class UserAccount {
     public void authUserToAccount(UserNode usernode, String inputChallenge, Integer authType) throws Exception {
 
         if (auth(usernode, inputChallenge, authType) == false) {
-            Thread.sleep(config.getCServeAccountWrongCredWait() *1000);
-            throw new Exception("(II) Auth failed (invalid credentials): " + this.getUserAccountName() + " by " + usernode.getUserNick());
+            log.warn("Command AUTH (" + Const.getAuthTypeString(authType) + ") failed (incorrect credentials) on user account " + this.getName() + " by the nick " + usernode.getMask1());
+            throw new Exception("(II) Auth failed (invalid credentials): " + this.getName() + " used by nick" + usernode.getMask1());
         }
 
-        if (Flags.isUserSuspended(this.getUserAccountFlags()) == true) {
-            throw new Exception("(II) Auth failed (account suspended): " + this.getUserAccountName() + " by " + usernode.getUserNick());
+        if (Flags.isUserSuspended(this.getFlags()) == true) {
+            log.warn("Command AUTH (" + Const.getAuthTypeString(authType) + ") failed (suspended account) on user account " + this.getName() + " by the nick " + usernode.getMask1());
+            throw new Exception("(II) Auth failed (account suspended): " + this.getName() + " used by nick " + usernode.getMask1());
         }
 
         usernode.setUserAuthed(true);
@@ -363,7 +364,8 @@ public class UserAccount {
             sqliteDb.addUserAuth(usernode, authType);
         }
         catch (Exception e) {
-            throw new Exception("(EE) auth: Error finalizing the auth: nick = " + usernode.getUserNick() + ", account = " + this.getUserAccountName());
+            log.error("Command AUTH: Error finalizing the auth: nick = " + usernode.getMask1() + ", account = " + this.getName());
+            throw new Exception("Command AUTH: Error finalizing the auth: nick = " + usernode.getMask1() + ", account = " + this.getName());
             //protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing the auth.");
         }
     }
