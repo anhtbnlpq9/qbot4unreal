@@ -43,7 +43,6 @@ public class Config {
 
     /* Chanservice parameters */
     private String    cserviceNick;
-    private String    cserviceUniq;
     private String    cserviceIdent;
     private String    cserviceHost;
     private String    cserviceReal;
@@ -58,6 +57,7 @@ public class Config {
     private Integer   cserviceAccountMaxAuthHistory;
     private Integer   cserviceChanAutoLimitFreq;
     private Integer   cserviceChanMaxChanlevs;
+    private String    cserviceUid                    = "";
 
 
     /* Network parameters */
@@ -114,7 +114,7 @@ public class Config {
         
         HashMap<String, Object> confcservice   = (HashMap<String, Object>) data.get("cservice");
         cserviceNick                           = (String) confcservice.get("nick");
-        cserviceUniq                           = (String) confcservice.get("uniq");
+        cserviceUid                            = (String) confcservice.get("uid");
         cserviceIdent                          = (String) confcservice.get("ident");
         cserviceHost                           = (String) confcservice.get("host");
         cserviceReal                           = (String) confcservice.get("realname");
@@ -278,7 +278,7 @@ public class Config {
      * @return
      */
     public String getCServeUniq() {
-        return this.cserviceUniq;
+        return this.cserviceUid;
     }
 
     /**

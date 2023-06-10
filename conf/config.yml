@@ -102,7 +102,7 @@ cservice:
     # Defines the user ID used by the CService
     # The format is 6 alphanumeric characters
     # Must be unique within a server
-    uniq: AAAAAA
+    uid: AAAAAA
 
     # Defines the ident of the bot
     ident: qb4u
