@@ -250,6 +250,9 @@ public class CService {
         else if (str.toUpperCase().startsWith("UNSUSPENDCHAN")) {
             cServeUnSuspendChan(fromNick, str);
         }
+        else if (str.toUpperCase().startsWith("CLEARTOPIC")) {
+            cServeClearTopic(fromNick, str);
+        }
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, String.format(returnStrUnknownCommand, str.split(" ",2)[0]));
         }
