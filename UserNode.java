@@ -489,4 +489,36 @@ public class UserNode {
         this.ipAddress = ip;
     }
 
+    /**
+     * Returns the user mask as NICK!IDENT@REALHOST (IP)
+     * @return NICK!IDENT@REALHOST (IP)
+     */    
+    public String getMask1() {
+        return String.format("%s!%s@%s (%s)", userNick, userIdent, userHost, "");
+    }
+
+    /**
+     * Returns the user mask as IDENT@REALHOST (IP)
+     * @return IDENT@REALHOST (IP)
+     */
+    public String getMask2() {
+        return String.format("%s@%s (%s)", userIdent, userHost, "");
+    }
+
+    /**
+     * Returns the user mask as NICK!IDENT@REALHOST
+     * @return NICK!IDENT@REALHOST
+     */    
+    public String getMask3() {
+        return String.format("%s!%s@%s", userNick, userIdent, userHost);
+    }
+
+    /**
+     * Returns the user mask as IDENT@REALHOST
+     * @return IDENT@REALHOST
+     */
+    public String getMask4() {
+        return String.format("%s@%s", userIdent, userHost);
+    }
+
 }
