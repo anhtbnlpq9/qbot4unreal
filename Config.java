@@ -130,6 +130,7 @@ public class Config {
         HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
         cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
         cserviceChanMaxChanlevs                = (Integer) cservicechan.get("maxchanlevs");
+        cserviceChanDefaultModes               = (String)  cservicechan.get("defaultmodes");
 
         HashMap<String, Object> confNetwork  = (HashMap<String, Object>) data.get("network");
         networkName                          = (String) confNetwork.get("name");
@@ -463,6 +464,10 @@ public class Config {
 
     public String getCServeVersionString() {
         return this.serverVersionString;
+    }
+
+    public String getCserveChanDefaultModes() {
+        return this.cserviceChanDefaultModes;
     }
 
 
