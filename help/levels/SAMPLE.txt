@@ -1,0 +1,20 @@
+This file uses tags to determine which level (no authed, authed, staff, ...) has access to which commands.
+Lines can begin with:
+ - comment tag: line begin with // => this line is never printed
+ - level-less: the line begins directly) => this line will be printed whatever the level
+ - level-ful: <LEVEL>!<LINE> => this line will be printed if the user has access level
+                                note that access level can be a combination of several levels
+                                (an user could be authed and oper)
+Current levels:
+000 = unauth user
+050 = authed user
+100 = staff member
+150 = oper member
+200 = admin member
+900 = developper member
+950 = debug member
+
+
+This line is always printed
+//This line is never printed
+050!This line is printed to authed users only
