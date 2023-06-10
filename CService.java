@@ -250,6 +250,12 @@ public class CService {
         else if (str.toUpperCase().startsWith("UNSUSPENDCHAN")) {
             cServeUnSuspendChan(fromNick, str);
         }
+        else if (str.toUpperCase().startsWith("SUSPENDUSER")) {
+            cServeSuspendUser(fromNick, str);
+        }
+        else if (str.toUpperCase().startsWith("UNSUSPENDUSER")) {
+            cServeUnSuspendUser(fromNick, str);
+        }
         else if (str.toUpperCase().startsWith("CLEARTOPIC")) {
             cServeClearTopic(fromNick, str);
         }
@@ -406,6 +412,8 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "Email address  : " + whoisUserAccount.getEmail() );
                 //protocol.sendNotice(client, myUserNode, fromNick, "Email last set : ");
                 //protocol.sendNotice(client, myUserNode, fromNick, "Pass last set  : ");
+                protocol.sendNotice(client, myUserNode, fromNick, String.format("Account suspensions: %s, suspended: %s (Since/Last: %s)"));
+                protocol.sendNotice(client, myUserNode, fromNick, String.format("Account suspended: %s (Since: %s)"));
 
                 protocol.sendNotice(client, myUserNode, fromNick, "List of registered certificate fingerprints:");
                 var wrapperCertfp = new Object(){ Integer lineCounter=1;};
@@ -2374,6 +2382,220 @@ public class CService {
             e.printStackTrace();
             protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrChanHistory, chanNode.getName())); 
             log.error(String.format(strErrChanHistory, chanNode.getName()));
+            return;
+        }
+
+        protocol.sendNotice(client, myUserNode, fromNick, strSuccess);
+    }
+
+
+
+    /**
+     * SUSPENDUSER command
+     * Syntax: SUSPENDUSER <nick|#user> <reason>
+     * 
+     * Suspends an user based on its username or one of his logged nicks. Deauth all logins.
+     * @param fromNick
+     * @param str
+     */
+    private void cServeSuspendUser(UserNode fromNick, String str) {
+        String strErrNoAuth        = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
+        String strErrNoSyntax      = "Invalid command. SUSPENDUSER <nick|#user> <reason>.";
+        String strErrUserNoReg     = "Can't find this user.";
+        String strErrNoNick        = "Can't find this user.";
+        String strErrUserNoAuth    = "Can't find this user.";
+        String strErrUserSuspended = "This user is already suspended.";
+        String strErrUserHistory   = "Cannot add suspend to history for user: %s";
+        String strErrGeneric       = "Error suspending the user.";
+        String strSuspendNotice    = "You have been deauthed because your account has been suspended (reason: %s).";
+        String strSuccess          = "Done.";
+
+        String[] command = str.split(" ",3);
+
+        String reason;
+        String user = "";
+
+        UserAccount userAccount;
+        UserNode userNode;
+
+        Integer curFlags;
+        Integer newFlags;
+
+        HashSet<UserNode>    loggedUserNodes  = new HashSet<>();
+
+
+
+        /* Preliminary checks */
+        if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoAuth); 
+            return;
+        }
+
+        try { user = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+        try { reason = command[2]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+        if (user.startsWith("#") == true) {
+            try {
+                userAccount = protocol.getRegUserAccount(user.replaceFirst("#", ""));
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, strErrUserNoReg);
+                return;
+            }
+        }
+        else {
+            try {
+                userNode = protocol.getUserNodeByNick(user);
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, strErrNoNick);
+                return;
+            }
+
+            try {
+                userAccount = userNode.getAccount();
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, strErrUserNoAuth);
+                return;
+            }
+        }
+
+        if (Flags.isUserSuspended(userAccount.getFlags()) == true) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrUserSuspended);
+            return;
+        }
+
+
+        /* The suspend thing */
+        curFlags = userAccount.getFlags();
+        newFlags = curFlags;
+        newFlags = Flags.setUserSuspended(newFlags);
+
+        try {
+            sqliteDb.setUserFlags(userAccount, newFlags);
+        }
+        catch (Exception e) {
+            log.error("Cannot suspend user" + userAccount.getName());
+            return;
+        }
+        userAccount.setFlags(newFlags);
+
+        try {
+            sqliteDb.addSuspendHistory(userAccount, reason);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrUserHistory, userAccount.getName())); 
+            log.error(String.format(strErrUserHistory, userAccount.getName()));
+            return;
+        }
+
+        try {
+            /* Deauth all the nicks associated */
+            userAccount.getUserLogins().forEach( (usernode) -> {
+                loggedUserNodes.add(usernode);
+            });
+            for (UserNode loggedUserNode : loggedUserNodes) {
+                try {
+                    this.logoutUser(loggedUserNode, Const.DEAUTH_TYPE_DROP);
+                    protocol.sendNotice(client, myUserNode, loggedUserNode, String.format(strSuspendNotice, reason));
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    log.error("Suspenduser: could not deauthenticate: " + loggedUserNode.getNick() + ".");
+                }
+            }
+        }
+        catch (Exception e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrGeneric);
+            log.error("Suspenduser: could not deauth user: " + userAccount.getName() + ".");
+            e.printStackTrace();
+            return;
+        }
+
+        protocol.sendNotice(client, myUserNode, fromNick, strSuccess);
+    }
+
+    private void cServeUnSuspendUser(UserNode fromNick, String str) {
+        String strErrNoAuth        = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
+        String strErrNoSyntax      = "Invalid command. UNSUSPENDUSER <#user>.";
+        String strErrUserNoReg     = "Can't find this user.";
+        String strErrUserSuspended = "This user is not suspended.";
+        String strErrUserHistory   = "Cannot update suspend to history for user: %s";
+        String strSuccess          = "Done.";
+
+        String[] command = str.split(" ",3);
+
+        String user = "";
+
+        UserAccount userAccount;
+
+        Integer curFlags;
+        Integer newFlags;
+
+
+        /* Preliminary checks */
+        if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoAuth); 
+            return;
+        }
+
+        try { user = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+        if (user.startsWith("#") == true) {
+            try {
+                userAccount = protocol.getRegUserAccount(user.replaceFirst("#", ""));
+            }
+            catch (Exception e) {
+                protocol.sendNotice(client, myUserNode, fromNick, strErrUserNoReg);
+                return;
+            }
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrNoSyntax); 
+            return; 
+        }
+
+        if (Flags.isUserSuspended(userAccount.getFlags()) == false) {
+            protocol.sendNotice(client, myUserNode, fromNick, strErrUserSuspended);
+            return;
+        }
+
+        /* The suspend thing */
+        curFlags = userAccount.getFlags();
+        newFlags = curFlags;
+        newFlags = Flags.clearUserSuspended(newFlags);
+
+        try {
+            sqliteDb.setUserFlags(userAccount, newFlags);
+        }
+        catch (Exception e) {
+            log.error("Cannot unsuspend user" + userAccount.getName());
+            return;
+        }
+        userAccount.setFlags(newFlags);
+
+        try {
+            sqliteDb.addUnSuspendHistory(userAccount);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrUserHistory, userAccount.getName())); 
+            log.error(String.format(strErrUserHistory, userAccount.getName()));
             return;
         }
 
