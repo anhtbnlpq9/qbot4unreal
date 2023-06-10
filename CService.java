@@ -952,7 +952,15 @@ public class CService {
             if ( Flags.hasUserStaffPriv(fromNick.getAccount().getFlags()) == true ) {
                 applicableChFlagsInt = chanNode.getFlags();
             }
-            else { applicableChFlagsInt = Flags.stripChanNonPublicFlags(chanNode.getChanFlags()); } 
+            else {
+                if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == true) {
+                    applicableChFlagsInt = Flags.stripChanNonPublicFlags(chanNode.getFlags()); 
+                }
+                else {
+                    protocol.sendNotice(client, myUserNode, fromNick, "You do not have sufficient access on " + chanNode.getName() + " to use chanflags."); 
+                    return;
+                }
+            } 
 
             if (applicableChFlagsInt > 0) {
                 applicableChFlagsStr = "+" + Flags.flagsIntToChars("chanflags", applicableChFlagsInt);
