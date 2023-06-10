@@ -1601,6 +1601,17 @@ public class CService {
             protocol.sendNotice(client, myUserNode, userNode, "Invalid command. CERTFPADD <certfp>."); 
             return; 
         }
+        */
+        if (userNode.getCertFP().isEmpty() == false) {
+            certfp = userNode.getCertFP();
+        }
+        else {
+            protocol.sendNotice(client, myUserNode, userNode, "There is no CertFP to add. You must connect using a certificate in order to use this command."); 
+            return; 
+        }
+
+
+
 
         if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
             protocol.sendNotice(client, myUserNode, userNode, "Malformed certificate fingerprint. Fingerprint must contains only hexadecimal characters (a-f, 0-9) and be <= 128 bytes long."); 
