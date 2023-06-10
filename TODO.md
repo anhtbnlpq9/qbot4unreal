@@ -4,7 +4,7 @@
 
 ### General
 - [ ] conf REHASH
-- [ ] logging
+- [X] logging
 - [ ] i18n
 
 ### Accounts
@@ -46,9 +46,10 @@
 - [X] adapt to IRCd implementing +q/+a/+o/+h/+v or not
 
 ## Oper stuff
-- [ ] account suspension
-- [ ] channel suspension
+- [X] account suspension
+- [X] channel suspension
 - [ ] user gline
+- [ ] channel gline
 
 
 ## Original Q bot commands
@@ -92,16 +93,17 @@
 - [ ] REQUESTOWNER
 - [X] SETTOPIC
 - [X] SHOWCOMMANDS
-- [ ] SUSPENDCHAN
+- [X] SUSPENDCHAN
 - [ ] SUSPENDCHANLIST
-- [ ] SUSPENDUSER
+- [ ] SUSPENDHISTORY
+- [X] SUSPENDUSER
 - [ ] SUSPENDUSERLIST
 - [ ] TEMPBAN
 - [ ] UNBANALL
 - [ ] UNBANMASK
 - [ ] UNBANME
-- [ ] UNSUSPENDCHAN
-- [ ] UNSUSPENDUSER
+- [X] UNSUSPENDCHAN
+- [X] UNSUSPENDUSER
 - [ ] USERCOMMENT
 - [X] USERFLAGS
 - [ ] USERS
@@ -125,12 +127,13 @@
 - [X] SERVERLIST
 - [X] USERLIST
 - [ ] HALFOP
-- [ ] MODEADMIN => rename to something better
-- [ ] MODEOWNER => rename to something better
+- [ ] ADMIN
+- [ ] OWNER
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
 - [X] CERTFPADD
 - [X] CERTFPDEL
+- [ ] MODELOCK
 
 ## Interesting commands/features
 - [ ] user modes setting on auth
