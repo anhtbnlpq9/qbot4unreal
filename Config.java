@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.yaml.snakeyaml.Yaml;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 public class Config {
 
     private static Logger log = LogManager.getLogger("common-log");
-    private static final Level INFO2 = Level.forName("INFO2", 050);
 
     private InputStream inputStream = null; 
 
@@ -149,6 +147,7 @@ public class Config {
         featuresList.put("svslogin",    featureSvslogin);
         featuresList.put("chghost",     featureChgHost);
 
+
         HashMap<String, Object> confDatabase    = (HashMap<String, Object>) data.get("database");
         databasePath                            = (String) confDatabase.get("path");
 
@@ -164,9 +163,13 @@ public class Config {
 
         log.info("Configuration loaded:");
         log.info("Me ");
-        log.info(" -> My name         = " + serverName);
-        log.info(" -> My SID          = " + serverId);
-        log.info(" -> My description  = " + serverDescription);
+        log.info(" -> My name             = " + serverName);
+        log.info(" -> My SID              = " + serverId);
+        log.info(" -> My description      = " + serverDescription);
+        log.info(" -> My protocolVersion  = " + serverProtocolVersion);
+        log.info(" -> My versionFlags     = " + serverVersionFlags);
+        log.info(" -> My fullVersionText  = " + serverFullVersionText);
+        log.info(" -> My versionString    = " + serverVersionString);
 
         log.info("Peer ");
         //log.info(" -> Peer name      = " + linkPeer);

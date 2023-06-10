@@ -13,14 +13,14 @@ import java.util.UUID;
  
 public class ChannelNode {
     
-    private Integer chanUserCount  = 0;
-    private Integer channelFlags   = 0;
+    private Integer userCount  = 0;
+    private Integer flags   = 0;
     private Integer autoLimit      = 10;
     private Integer banTime        = 0;
     private Integer channelId;
     private Integer id = 0;
 
-    private String channelName;
+    private String name;
     private String topic               = "";
     private String chanRegisteredTopic = "";
     private String chanWelcomeMsg      = "";
@@ -55,7 +55,7 @@ public class ChannelNode {
      * @param channelTS
      */
     public ChannelNode(String channelName, long channelTS) {
-        this.channelName = channelName;
+        this.name = channelName;
         this.channelTS = channelTS;
     }
 
@@ -72,9 +72,9 @@ public class ChannelNode {
      * @param autoLimit
      */
     public ChannelNode(SqliteDb sqliteDb, String channelName, Long channelTS, Integer channelFlags, Integer chanId, String chanWelcomeMsg, String chanRegTopic, Integer banTime, Integer autoLimit) {
-        this.channelName = channelName;
+        this.name = channelName;
         this.channelTS = channelTS;
-        this.channelFlags = channelFlags;
+        this.flags = channelFlags;
         this.channelRegistered = true;
         this.channelId = chanId;
         this.chanWelcomeMsg = chanWelcomeMsg;
@@ -106,7 +106,7 @@ public class ChannelNode {
                         ArrayList<String> exceptList,
                         ArrayList<String> inviteList)
     {
-        this.channelName = channelName;
+        this.name = channelName;
         this.channelTS = channelTS;
         this.channelModes = channelModes;
         this.banList = banList;
@@ -151,28 +151,28 @@ public class ChannelNode {
         this.channelOwner = user;
     }
 
-    public void setChanChanlev(Map<String, Integer> chanChanlev) {
+    public void setChanlev(Map<String, Integer> chanChanlev) {
         this.chanChanlev = chanChanlev;
     }
 
-    public void setChanChanlev(UserNode user, Integer chanlev) {
+    public void setChanlev(UserNode user, Integer chanlev) {
         if (chanlev != 0) {
-            if (this.chanChanlev.containsKey(user.getUserAccount().getUserAccountName()) == true) {
-                this.chanChanlev.replace(user.getUserAccount().getUserAccountName(), chanlev);
+            if (this.chanChanlev.containsKey(user.getAccount().getName()) == true) {
+                this.chanChanlev.replace(user.getAccount().getName(), chanlev);
             }
             else {
-                this.chanChanlev.put(user.getUserAccount().getUserAccountName(), chanlev);
+                this.chanChanlev.put(user.getAccount().getName(), chanlev);
             }
         }
         else {
-            if (this.chanChanlev.containsKey(user.getUserAccount().getUserAccountName()) == true) {
-                this.chanChanlev.remove(user.getUserAccount().getUserAccountName());
+            if (this.chanChanlev.containsKey(user.getAccount().getName()) == true) {
+                this.chanChanlev.remove(user.getAccount().getName());
             }
         }
     }
 
     public void clearChanChanlev(UserNode user) {
-        setChanChanlev(user, 0);
+        setChanlev(user, 0);
     }
 
     public void addBanList(String str) {
@@ -231,7 +231,7 @@ public class ChannelNode {
         return this.channelModes.get(mode);
     }
 
-    public void setChanModes(Map<String, String> channelModes) {
+    public void setModes(Map<String, String> channelModes) {
         this.channelModes = channelModes;
     }
 
@@ -264,13 +264,15 @@ public class ChannelNode {
         return chanlevMap;
     }
 
-    public String getChanName() {
-        return this.channelName;
-    public Integer getChanId() {
+    public String getName() {
+        return this.name;
+    }
+
+    public Integer getId() {
         return this.id;
     }
 
-    public void setChanId(Integer id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -282,27 +284,27 @@ public class ChannelNode {
         this.channelTS = channelTS;
     }
 
-    public Integer getChanUserCount() {
-        return this.chanUserCount;
+    public Integer getUserCount() {
+        return this.userCount;
     }
 
-    public void setChanUserCount(Integer count) {
-        this.chanUserCount = count;
+    public void setUserCount(Integer count) {
+        this.userCount = count;
     }
 
-    public void setChanFlags(Integer chanFlags) {
-        this.channelFlags = chanFlags;
+    public void setFlags(Integer chanFlags) {
+        this.flags = chanFlags;
     }
 
-    public Integer getChanFlags() {
-        return this.channelFlags;
+    public Integer getFlags() {
+        return this.flags;
     }
 
     public HashMap<String, UserNode> getUsers() {
         return this.chanUserList;
     }
 
-    public Integer getChanAutoLimit() {
+    public Integer getAutoLimit() {
         return this.autoLimit;
     }
 

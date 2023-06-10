@@ -98,7 +98,7 @@ public class UserNode {
      * Sets the user nickname
      * @param nick User nick
      */
-    public void setUserNick(String nick) {
+    public void setNick(String nick) {
         this.userOldNick = this.userNick;
         this.userNick = nick;
     }
@@ -107,7 +107,7 @@ public class UserNode {
      * Sets the user ident
      * @param ident User ident
      */
-    public void setUserIdent(String ident) {
+    public void setIdent(String ident) {
         this.userIdent = ident;
     }
 
@@ -115,7 +115,7 @@ public class UserNode {
      * Sets the user (v)host
      * @param host User (v)host
      */
-    public void setUserHost(String host) {
+    public void setHost(String host) {
         this.userHost = host;
     }
 
@@ -123,7 +123,7 @@ public class UserNode {
      * Sets the user real host
      * @param rhost User real host
      */
-    public void setUserRealHost(String rhost) {
+    public void setRealHost(String rhost) {
         this.userRealHost = rhost;
     }
 
@@ -131,7 +131,7 @@ public class UserNode {
      * Sets the user real name (gecos)
      * @param realName User gecos
      */
-    public void setUserRealName(String realName) {
+    public void setRealName(String realName) {
         this.userRealName = realName;
     }
 
@@ -139,7 +139,7 @@ public class UserNode {
      * Sets the user SID
      * @param uniq User SID
      */
-    public void setUserUniq(String uniq) {
+    public void setUid(String uniq) {
         this.userUniq = uniq;
     }
 
@@ -155,7 +155,7 @@ public class UserNode {
      * Sets the user server
      * @param server User server
      */
-    public void setUserServer(ServerNode server) {
+    public void setServer(ServerNode server) {
         this.userServer = server;
     }
 
@@ -163,7 +163,7 @@ public class UserNode {
      * Sets the user certificate fingerprint
      * @param certfp User certfp
      */
-    public void setUserCertFP(String certfp) {
+    public void setCertFP(String certfp) {
         this.userCertFP = certfp.toLowerCase(); // putting lowercased certfp to node
     }
 
@@ -171,7 +171,7 @@ public class UserNode {
      * Sets the user account for the user node
      * @param account user account object
      */
-    public void setUserAccount(UserAccount account) {
+    public void setAccount(UserAccount account) {
         if (this.userAuthed == true) {
             if (account != null) {
                 this.userAccount = account;
@@ -273,7 +273,7 @@ public class UserNode {
      * Fetches the user nickname
      * @return User nickname
      */
-    public String getUserNick() {
+    public String getNick() {
         return this.userNick;
     }
 
@@ -281,7 +281,7 @@ public class UserNode {
      * Fetches the user previous nickname
      * @return Previous user nickname
      */
-    public String getUserOldNick() {
+    public String getOldNick() {
         return this.userOldNick;
     }
 
@@ -289,7 +289,7 @@ public class UserNode {
      * Fetches the user ident
      * @return User ident
      */
-    public String getUserIdent() {
+    public String getIdent() {
         return this.userIdent;
     }
 
@@ -297,7 +297,7 @@ public class UserNode {
      * Fetches the user (v)host
      * @return User (v)host
      */
-    public String getUserHost() {
+    public String getHost() {
         return this.userHost;
     }
 
@@ -305,7 +305,7 @@ public class UserNode {
      * Fetches the user real host
      * @return User realhost
      */
-    public String getUserRealHost() {
+    public String getRealHost() {
         return this.userRealHost;
     }
 
@@ -313,7 +313,7 @@ public class UserNode {
      * Fetches the user real name (gecos)
      * @return User gecos
      */
-    public String getUserRealName() {
+    public String getRealName() {
         return this.userRealName;
     }
 
@@ -321,7 +321,7 @@ public class UserNode {
      * Fetches the user SID
      * @return User SID
      */
-    public String getUserUniq() {
+    public String getUid() {
         return this.userUniq;
     }
 
@@ -329,7 +329,7 @@ public class UserNode {
      * Fetches the user usermodes
      * @return User usermodes
      */
-    public String getUserModes() {
+    public String getModes() {
         return this.userModes;
     }
 
@@ -337,7 +337,7 @@ public class UserNode {
      * Fetches the user server SID
      * @return User server SID
      */
-    public ServerNode getUserServer() {
+    public ServerNode getServer() {
         return this.userServer;
     }
 
@@ -345,7 +345,7 @@ public class UserNode {
      * Fetches the user certificate fingerprint
      * @return User certfp
      */
-    public String getUserCertFP() {
+    public String getCertFP() {
         return this.userCertFP;
     }
 
@@ -353,7 +353,7 @@ public class UserNode {
      * Fetches the account name the user is authed as
      * @return User account name
      */
-    public UserAccount getUserAccount() {
+    public UserAccount getAccount() {
         return this.userAccount;
     }
 
@@ -377,7 +377,7 @@ public class UserNode {
      * Fetches whether the user is authed
      * @return User auth status
      */
-    public Boolean getUserAuthed() {
+    public Boolean isAuthed() {
         return this.userAuthed;
     }
 
@@ -385,7 +385,7 @@ public class UserNode {
      * Fetches whether the user's nick is registered
      * @return User nick registration status
      */
-    public Boolean getUserNickRegistered() {
+    public Boolean isNickRegistered() {
         return this.userNickRegistered;
     }
 
@@ -438,11 +438,11 @@ public class UserNode {
         return new String(charArray);
     }
     
-    public UUID getUserAuth() {
+    public UUID getAuthUuid() {
         return this.authSessUUID;
     }
 
-    public Long getUserAuthTS() {
+    public Long getAuthTS() {
         return this.authTS;
     }
 
@@ -481,7 +481,7 @@ public class UserNode {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("(EE) Could not set the IP of client: " + this.getUserNick());
+            log.error("(EE) Could not set the IP of client: " + this.getNick());
         }
     }
 

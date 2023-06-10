@@ -60,8 +60,17 @@ public class Protocol extends Exception {
         sqliteDb.setProtocol(this);
 
         sqliteDb.getRegUsers().forEach( (username, userHM) -> {
-            this.userAccounts.put(username, new UserAccount(sqliteDb, (String) userHM.get("name"), (Integer) userHM.get("uid"), (Integer) userHM.get("userFlags"), (String) userHM.get("email"), (HashSet<String>) userHM.get("certfp"), (Long) userHM.get("regTS")));
-            //System.out.println("BFK username=" + username + " account=" +this.userAccounts.get(username));
+            this.userAccounts.put(
+                username, 
+                new UserAccount(
+                    sqliteDb, 
+                    (String) userHM.get("name"), 
+                    (Integer) userHM.get("uid"), 
+                    (Integer) userHM.get("userFlags"), 
+                    (String) userHM.get("email"), 
+                    (HashSet<String>) userHM.get("certfp"), 
+                    (Long) userHM.get("regTS"))
+                );
             this.userAccounts.get(username).setConfigRef(config);
         });
 
@@ -169,7 +178,7 @@ public class Protocol extends Exception {
     public UserAccount getUserAccount(Integer userId) {
         var wrapper = new Object(){ UserAccount userAccountFound = null; };
         this.getRegUserList().forEach( (userName, userAccount) -> {
-            if (userAccount.getUserAccountId() == userId) { 
+            if (userAccount.getId() == userId) { 
                 wrapper.userAccountFound = userAccount;
             }
         });
@@ -248,7 +257,7 @@ public class Protocol extends Exception {
      * @param msg message string
      */
     public void sendPrivmsg(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
-        String str = ":" + from.getUserUniq() + " PRIVMSG " + to.getUserUniq() + " :" + msg;
+        String str = ":" + from.getUid() + " PRIVMSG " + to.getUid() + " :" + msg;
         client.write(str);
     }
     
@@ -260,12 +269,12 @@ public class Protocol extends Exception {
      * @param msg message string
      */
     public void sendNotice(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
-        String str = ":" + from.getUserUniq() + " NOTICE " + to.getUserUniq() + " :" + msg;
+        String str = ":" + from.getUid() + " NOTICE " + to.getUid() + " :" + msg;
         client.write(str);
     }
 
     public void sendInvite(Client client, UserNode to, ChannelNode chanNode) /*throws Exception*/ {
-        String str = ":" + config.getServerId() + config.getCServeUniq() + " INVITE " + to.getUserUniq() + " " + chanNode.getChanName();
+        String str = ":" + config.getServerId() + config.getCServeUniq() + " INVITE " + to.getUid() + " " + chanNode.getName();
         client.write(str);
     }
 
@@ -278,29 +287,29 @@ public class Protocol extends Exception {
     public void chanJoin(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
         String str;
 
-        str = ":" + who.getUserUniq() + " JOIN " + chan.getChanName();
+        str = ":" + who.getUid() + " JOIN " + chan.getName();
         int chanUserCount=0;
 
-        if (channelList.containsKey(chan.getChanName())) {
-            chanUserCount = chan.getChanUserCount();
+        if (channelList.containsKey(chan.getName())) {
+            chanUserCount = chan.getUserCount();
         }
         else {
             unixTime = Instant.now().getEpochSecond();
-            ChannelNode newChannel = new ChannelNode(chan.getChanName(), unixTime);
-            channelList.put(chan.getChanName(), newChannel);
+            ChannelNode newChannel = new ChannelNode(chan.getName(), unixTime);
+            channelList.put(chan.getName(), newChannel);
         }
 
-        who.addUserToChan(chan.getChanName(), chan, "");
+        who.addUserToChan(chan.getName(), chan, "");
         try {
-            chan.setChanChanlev(sqliteDb.getChanChanlev(chan));
+            chan.setChanlev(sqliteDb.getChanChanlev(chan));
         }
         catch (Exception e) { e.printStackTrace(); return; }
 
-        chan.setChanUserCount(chanUserCount+1);
+        chan.setUserCount(chanUserCount+1);
         client.write(str);
 
         /* Set topic when joining the chan (if cflag SAVETOPIC) */
-        if (Flags.isChanTopicSave(chan.getChanFlags()) == true) {
+        if (Flags.isChanTopicSave(chan.getFlags()) == true) {
             String savedTopic = "";
 
             try {
@@ -308,7 +317,7 @@ public class Protocol extends Exception {
             }
             catch (Exception e) { return; }
  
-            str = ":" + who.getUserUniq() + " TOPIC " + chan.getChanName() + " :" + savedTopic;
+            str = ":" + who.getUid() + " TOPIC " + chan.getName() + " :" + savedTopic;
             client.write(str);
         }
     }
@@ -320,19 +329,19 @@ public class Protocol extends Exception {
      * @param chan channelnode
      */
     public void chanPart(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
-        String str = ":" + who.getUserUniq() + " PART " + chan.getChanName();
+        String str = ":" + who.getUid() + " PART " + chan.getName();
 
         ChannelNode chanUserPart = chan;
-        who.delUserFromChan(chan.getChanName());
+        who.delUserFromChan(chan.getName());
 
-        int chanUserCount = chanUserPart.getChanUserCount();
+        int chanUserCount = chanUserPart.getUserCount();
 
         if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
             chanUserPart = null;
-            channelList.remove( chan.getChanName() );
+            channelList.remove( chan.getName() );
         }
         else {
-            chanUserPart.setChanUserCount(chanUserCount - 1);
+            chanUserPart.setUserCount(chanUserCount - 1);
         }
 
         client.write(str);
@@ -347,20 +356,20 @@ public class Protocol extends Exception {
      * @param reason reason
      */
     public void chanKick(Client client, UserNode who, ChannelNode chan, UserNode target, String reason) /*throws Exception*/ {
-        String str = ":" + who.getUserUniq() + " KICK " + chan.getChanName() + " " + target.getUserNick() + " :" + reason;
+        String str = ":" + who.getUid() + " KICK " + chan.getName() + " " + target.getNick() + " :" + reason;
         
         ChannelNode chanUserPart = chan;
-        who.delUserFromChan(chan.getChanName());
+        who.delUserFromChan(chan.getName());
 
-        int chanUserCount = chanUserPart.getChanUserCount();
+        int chanUserCount = chanUserPart.getUserCount();
 
         
         if (chanUserCount == 1 && chanUserPart.getModes().containsKey("P") == false ) {
             chanUserPart = null;
-            channelList.remove( chan.getChanName() );
+            channelList.remove( chan.getName() );
         }
         else {
-            chanUserPart.setChanUserCount(chanUserCount - 1);
+            chanUserPart.setUserCount(chanUserCount - 1);
         }
         client.write(str);
     }
@@ -394,7 +403,7 @@ public class Protocol extends Exception {
         else str = ":" + who + " MODE " + target + " " + modes + " " + parameters;
 
         
-        userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getUserNick(), userSid); });
+        userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getNick(), userSid); });
 
         if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanUserModes + "]")) {
             if(modes.startsWith("+")) {
@@ -485,8 +494,8 @@ public class Protocol extends Exception {
      * @throws Exception
      */
     public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
-        String who = fromWho.getUserUniq();
-        String target = toTarget.getUserNick();
+        String who = fromWho.getUid();
+        String target = toTarget.getNick();
         setMode(client, who, target, modes, parameters);
     }
 
@@ -501,7 +510,7 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getServerId();
-        String target = toTarget.getUserNick();
+        String target = toTarget.getNick();
         setMode(client, who, target, modes, parameters);
     }
 
@@ -515,8 +524,8 @@ public class Protocol extends Exception {
      * @throws Exception
      */
     public void setMode(Client client, UserNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
-        String who = fromWho.getUserUniq();
-        String target = toTarget.getChanName();
+        String who = fromWho.getUid();
+        String target = toTarget.getName();
         setMode(client, who, target, modes, parameters);
     }
 
@@ -526,7 +535,7 @@ public class Protocol extends Exception {
         Long unixTime;
         unixTime = Instant.now().getEpochSecond();
 
-        str = String.format(":%s MLOCK %s %s %s", fromWho.getServerId(), unixTime, toTarget.getChanName(), modes);
+        str = String.format(":%s MLOCK %s %s %s", fromWho.getServerId(), unixTime, toTarget.getName(), modes);
         client.write(str);
     }
 
@@ -540,7 +549,7 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getServerId();
-        String target = toTarget.getChanName();
+        String target = toTarget.getName();
         setMode(client, who, target, modes, parameters);
     }
 
@@ -554,12 +563,12 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = config.getServerId();
-        String target = toTarget.getChanName();
+        String target = toTarget.getName();
         setMode(client, who, target, modes, parameters);
     }
 
     public void setTopic(Client client, UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
-        String str = ":" + from.getUserUniq() + " TOPIC " + to.getChanName() + " :" + topic;
+        String str = ":" + from.getUid() + " TOPIC " + to.getName() + " :" + topic;
         client.write(str);
     }
 
@@ -568,9 +577,9 @@ public class Protocol extends Exception {
         String vhostComplete = config.getCServeHostPrefix() + vhost + config.getCServeHostSuffix();
         String str;
 
-        if (toTarget.getUserHost().equals(vhostComplete)) return;
+        if (toTarget.getHost().equals(vhostComplete)) return;
         
-        str= ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
+        str= ":" + who + " CHGHOST " + toTarget.getUid() + " " + vhostComplete;
         client.write(str);
     }
 
@@ -579,9 +588,9 @@ public class Protocol extends Exception {
         String vhostComplete = vhost;
         String str;
 
-        if (toTarget.getUserHost().equals(vhostComplete)) return;
+        if (toTarget.getHost().equals(vhostComplete)) return;
         
-        str = ":" + who + " CHGHOST " + toTarget.getUserUniq() + " " + vhostComplete;
+        str = ":" + who + " CHGHOST " + toTarget.getUid() + " " + vhostComplete;
         client.write(str);
     }
 
@@ -610,15 +619,15 @@ public class Protocol extends Exception {
     private void sendSaslResult(UserNode user, Boolean success) {
         String str;
         
-        if (success == true) str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D S";
-        else                 str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " D F";
+        if (success == true) str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUid() + " D S";
+        else                 str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUid() + " D F";
         client.write(str);
     }
 
     private void sendSaslQuery(UserNode user) {
         String str;
 
-        str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUserUniq() + " C +";
+        str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUid() + " C +";
         client.write(str);
     }
 
@@ -630,12 +639,12 @@ public class Protocol extends Exception {
             toServerSid = user.getSaslAuthParam("authServer");
         }
         else {
-            toServerSid = user.getUserServer().getServerId();
+            toServerSid = user.getServer().getServerId();
         }
 
         // :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay
-        if (auth == true) str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " " + account.getUserAccountName();
-        else str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUserUniq() + " 0";
+        if (auth == true) str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUid() + " " + account.getName();
+        else str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUid() + " 0";
         client.write(str);
     }
 
@@ -786,7 +795,7 @@ public class Protocol extends Exception {
                     UserNode userNode;
                     if (target.length() == 9) { 
                         userNode = getUserNodeBySid(target);
-                        userNode.setUserCertFP(mdParams[3].replaceFirst(":", ""));
+                        userNode.setCertFP(mdParams[3].replaceFirst(":", ""));
                     } 
                     break;
             }
@@ -874,7 +883,7 @@ public class Protocol extends Exception {
 
             // List usernodes on those servers
             userList.forEach( (uniq, usernode) -> {
-                if(affectedServers.contains(usernode.getUserServer())) {
+                if(affectedServers.contains(usernode.getServer())) {
                     affectedUsers.add(usernode);
                 }
             });
@@ -882,11 +891,11 @@ public class Protocol extends Exception {
             // Delete the usernodes
             for(UserNode user : affectedUsers) {
                 // Deauth user if needed
-                if (user.getUserAuthed() == true) {
-                    user.getUserAccount().delUserAuth(user);
+                if (user.isAuthed() == true) {
+                    user.getAccount().delUserAuth(user);
                     user.setUserAuthed(false);
                 }
-                userList.remove(user.getUserUniq());
+                userList.remove(user.getUid());
             }
 
             // Delete the servers
@@ -915,7 +924,7 @@ public class Protocol extends Exception {
 
                 userList.put(command[5], user);
                 userNickSidLookup.put(command[0], command[5]);
-                user.setUserServer(serverList.get(fromEnt));
+                user.setServer(serverList.get(fromEnt));
                 user.setCloakedHost(command[9]);                    // cloaked host
                 user.setIpAddress(command[10]);                            // IP address
             }
@@ -923,11 +932,11 @@ public class Protocol extends Exception {
             else {
                 user = userList.get(command[5]);
 
-                user.setUserNick(command[0]);                       // nick
-                user.setUserIdent(command[3]);                      // ident
-                user.setUserHost(command[8]);                       // vhost
-                user.setUserRealHost(command[4]);                   // realhost
-                user.setUserRealName((command[11].split(":"))[1]);  // gecos
+                user.setNick(command[0]);                       // nick
+                user.setIdent(command[3]);                      // ident
+                user.setHost(command[8]);                       // vhost
+                user.setRealHost(command[4]);                   // realhost
+                user.setRealName((command[11].split(":"))[1]);  // gecos
                 user.setUserTS(Long.parseLong(command[2]));         // TS
                 user.setUserModes(command[7]);                      // modes
                 user.setCloakedHost(command[9]);                    // cloaked host
@@ -961,14 +970,14 @@ public class Protocol extends Exception {
                 if (accountToReauth != null) {
                     //System.out.println("BFB account found: " + accountToReauth.getUserAccountName());
                     user.setUserAuthed(true);
-                    user.setUserAccount(accountToReauth);
+                    user.setAccount(accountToReauth);
 
                     if (config.getFeature("svslogin") == true) {
-                        this.sendSvsLogin(user, user.getUserAccount());
+                        this.sendSvsLogin(user, user.getAccount());
                     }
             
-                    if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
-                        this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
+                    if (Flags.isUserAutoVhost(user.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
+                        this.chgHostVhost(client, user, user.getAccount().getName());
                     }
 
                     sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
@@ -1066,7 +1075,6 @@ public class Protocol extends Exception {
              */
             UserNode user;
             UserAccount userAccountToAuth;
-            HashMap<String, Integer> userChanlev;
 
             byte[] decodedAuthString;
             String authString;
@@ -1084,7 +1092,7 @@ public class Protocol extends Exception {
                     * command[5] = P if plaintext connection, else empty
                     */
                     user = new UserNode(command[1], command[3]);
-                    user.setUserServer(serverList.get(fromEnt));
+                    user.setServer(serverList.get(fromEnt));
                     userList.put(command[1], user);
                     break;
 
@@ -1103,7 +1111,7 @@ public class Protocol extends Exception {
                     if (command[3].equals("EXTERNAL")) { 
                         try {
                             user.setSaslAuthParam("authExt", command[4]);
-                            user.setUserCertFP(command[4]);
+                            user.setCertFP(command[4]);
                         }
                         catch (Exception e) {
                             log.warn("* User is trying SASL EXTERNAL but does not provide certfp");
@@ -1161,11 +1169,11 @@ public class Protocol extends Exception {
                                 this.sendSvsLogin(user, userAccountToAuth);
                             }
 
-                            if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
-                                this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
+                            if (Flags.isUserAutoVhost(user.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
+                                this.chgHostVhost(client, user, user.getAccount().getName());
                             }
 
-                            userAccountToAuth.getUserChanlev().forEach( (channel, chanlev) -> { 
+                            userAccountToAuth.getChanlev().forEach( (channel, chanlev) -> { 
                                 if (Flags.isChanLAutoInvite(chanlev) == true) {
                                     this.sendInvite(client, user, this.getChannelNodeByName(channel));
                                 }
@@ -1212,12 +1220,9 @@ public class Protocol extends Exception {
                             return;
                         }
                         
-                            
-                        HashMap<String, String> userAccountParams = sqliteDb.getUser(userAccountToAuth);
-
                         userAccountToAuth.authUserToAccount(user, password, authType);
 
-                        if (user.getUserAuthed() == false) { /* Auth failed */
+                        if (user.isAuthed() == false) { /* Auth failed */
                             //Thread.sleep(config.getCServeAccountWrongCredWait() *1000);
                             this.sendSaslResult(user, false);
                             return;
@@ -1229,11 +1234,11 @@ public class Protocol extends Exception {
                         if (config.getFeature("svslogin") == true) {
                             this.sendSvsLogin(user, userAccountToAuth);
                         }
-                        if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
-                            this.chgHostVhost(client, user, user.getUserAccount().getUserAccountName());
+                        if (Flags.isUserAutoVhost(user.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
+                            this.chgHostVhost(client, user, user.getAccount().getName());
                         }
 
-                        userAccountToAuth.getUserChanlev().forEach( (channel, chanlev) -> { 
+                        userAccountToAuth.getChanlev().forEach( (channel, chanlev) -> { 
                             if (Flags.isChanLAutoInvite(chanlev) == true) {
                                 this.sendInvite(client, user, this.getChannelNodeByName(channel));
                             }
@@ -1391,23 +1396,23 @@ public class Protocol extends Exception {
                 ChannelNode chan = new ChannelNode( channelName, channelTS, chanModeList, chanBanList, chanExceptList, chanInviteList );
 
                 channelList.put(channelName, chan);
-                channelList.get(channelName).setChanUserCount(chanUserCount);
-                channelList.get(channelName).setChanChanlev(sqliteDb.getChanChanlev(chan));
+                channelList.get(channelName).setUserCount(chanUserCount);
+                channelList.get(channelName).setChanlev(sqliteDb.getChanChanlev(chan));
                 //System.out.println("BBP chanUserCount newchan="+ channelName + " count=" + chanUserCount);
             }
             else {
                 sJoinChannel = channelList.get(channelName); 
                 sJoinChannel.setChanTS(channelTS);
-                sJoinChannel.setChanModes(chanModeList);
+                sJoinChannel.setModes(chanModeList);
                 sJoinChannel.setBanList(chanBanList);
                 sJoinChannel.setExceptList(chanExceptList);
                 sJoinChannel.setInviteList(chanInviteList);
 
-                if(sJoinChannel.getChanUserCount() > 0) { 
+                if(sJoinChannel.getUserCount() > 0) { 
                     //System.out.println("BBZ here");
-                    sJoinChannel.setChanUserCount(sJoinChannel.getChanUserCount()+1); 
+                    sJoinChannel.setUserCount(sJoinChannel.getUserCount()+1); 
                 }
-                else { sJoinChannel.setChanUserCount(chanUserCount); }
+                else { sJoinChannel.setUserCount(chanUserCount); }
             }
 
             chanUserMode.forEach( (user, modes) -> {
@@ -1463,7 +1468,7 @@ public class Protocol extends Exception {
             indexParam = 2; // indexParam begins at '2' because 1st param == modeList[2]
 
             Map<String, String> userNickSidLookup = new HashMap<String, String>(); // Lookup map for Nick -> Sid
-            userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getUserNick(), userSid); });
+            userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getNick(), userSid); });
             
             for (indexMode = 0; indexMode < chanModeRaw.length() ; indexMode++) {
                 //System.out.println("MMM " + chanModeRaw.charAt(indexMode) );
@@ -1565,7 +1570,7 @@ public class Protocol extends Exception {
                         else {
                             userList.get(userNickSidLookup.get(modeList[indexParam])).delUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
                             //System.out.println("MMH channel " + channelName + " user mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]);
-                            if (userList.get(userNickSidLookup.get(modeList[indexParam])).getUserNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == CService.getChanJoinModes().toCharArray()[0]) {
+                            if (userList.get(userNickSidLookup.get(modeList[indexParam])).getNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == CService.getChanJoinModes().toCharArray()[0]) {
                                 this.setMode(client, chan, "+" + CService.getChanJoinModes(), config.getCServeNick());
                             }
                         }
@@ -1596,16 +1601,16 @@ public class Protocol extends Exception {
 
             ChannelNode chanUserPart = channelList.get(fromChannel);
             
-            fromUser.delUserFromChan( chanUserPart.getChanName() );
-            chanUserCount = chanUserPart.getChanUserCount();
+            fromUser.delUserFromChan( chanUserPart.getName() );
+            chanUserCount = chanUserPart.getUserCount();
             //System.out.println("DDE chan=" + chanUserPart.getChanName() + " mode=" + chanUserPart.getModes().containsKey("P"));
             
             if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
-                channelList.remove( chanUserPart.getChanName() );
+                channelList.remove( chanUserPart.getName() );
                 chanUserPart = null;
             }
             else {
-                chanUserPart.setChanUserCount(chanUserCount - 1);
+                chanUserPart.setUserCount(chanUserCount - 1);
             }
         }
         else if (command[1].equals("KICK")) {
@@ -1621,15 +1626,15 @@ public class Protocol extends Exception {
             ChannelNode chanUserPart = channelList.get(kickChannelName);
             
             kickedUSer.delUserFromChan( kickChannelName );
-            chanUserCount = chanUserPart.getChanUserCount();
+            chanUserCount = chanUserPart.getUserCount();
             //System.out.println("DDE chan=" + chanUserPart.getChanName() + " mode=" + chanUserPart.getModes().containsKey("P"));
             
             if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
-                channelList.remove( chanUserPart.getChanName() );
+                channelList.remove( chanUserPart.getName() );
                 chanUserPart = null;
             }
             else {
-                chanUserPart.setChanUserCount(chanUserCount - 1);
+                chanUserPart.setUserCount(chanUserCount - 1);
             }
         }
         else if (command[1].equals("QUIT")) {
@@ -1641,10 +1646,10 @@ public class Protocol extends Exception {
             
             UserNode userToRemove = userList.get(fromEnt);
 
-            if (userToRemove.getUserAuthed() == true) sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
-            userToRemove.setUserAccount(null);
+            if (userToRemove.isAuthed() == true) sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
+            userToRemove.setAccount(null);
 
-            userNickSidLookup.remove(userToRemove.getUserNick());
+            userNickSidLookup.remove(userToRemove.getNick());
             userToRemove = null;
             userList.remove(fromEnt);
         }
@@ -1655,10 +1660,10 @@ public class Protocol extends Exception {
 
             fromEnt = (command[0].split(":"))[1];
             
-            userNickSidLookup.remove(userList.get(fromEnt).getUserNick());
+            userNickSidLookup.remove(userList.get(fromEnt).getNick());
             userNickSidLookup.put((command[2].split(" "))[0], fromEnt);
 
-            userList.get(fromEnt).setUserNick( (command[2].split(" "))[0] );
+            userList.get(fromEnt).setNick( (command[2].split(" "))[0] );
 
 
         }

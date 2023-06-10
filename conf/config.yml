@@ -179,6 +179,8 @@ cservice:
         # The time in seconds between each changes (if necessary) of +l channel mode when AUTOLIMIT is active on the channel
         autolimitfreq: 30
 
+        defaultmodes: "CTnt"
+
 
 operservice:
 

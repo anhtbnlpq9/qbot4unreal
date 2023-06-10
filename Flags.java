@@ -307,8 +307,6 @@ abstract class Flags {
      *          using the WHOIS command.
      */
 
-    private static final String    CLFLAGS_LIST         = "abdhjkmnoptuvw";
-
     //private static final Integer   CLFLAG_SPARE_A       = 0x80000000; // +A
     //private static final Integer   CLFLAG_SPARE_B       = 0x40000000; // +B
     //private static final Integer   CLFLAG_SPARE_C       = 0x20000000; // +C
@@ -420,14 +418,6 @@ abstract class Flags {
     /*
      * Chanlev-related methods
      */
-
-    /**
-     * Returns the allowed chanlev flags list TODO: to reimplement with numeric
-     * @return Allowed chanlev flags list
-     */
-    public static String getAllowedChanLFlags() {
-        return CLFLAGS_LIST;
-    }
 
     public static Integer stripUnknownChanlevFlags(Integer chanlev) {
         return (chanlev & CLFLAGS_ALLOWED);

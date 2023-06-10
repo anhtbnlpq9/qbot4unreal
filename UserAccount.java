@@ -160,7 +160,7 @@ public class UserAccount {
      * Sets the user chanlev
      * @param chanlev User chanlev
      */
-    public void setUserChanlev(HashMap<String, Integer> chanlev) {
+    public void setChanlev(HashMap<String, Integer> chanlev) {
         this.userChanlev = chanlev;
     }
 
@@ -169,18 +169,18 @@ public class UserAccount {
      * @param channel Channel node
      * @param chanlev Chanlev
      */
-    public void setUserChanlev(ChannelNode channel, Integer chanlev) {
-        if (this.userChanlev.containsKey(channel.getChanName()) == true) {
+    public void setChanlev(ChannelNode channel, Integer chanlev) {
+        if (this.userChanlev.containsKey(channel.getName()) == true) {
             if (chanlev != 0) {
-                this.userChanlev.replace(channel.getChanName(), chanlev);
+                this.userChanlev.replace(channel.getName(), chanlev);
             }
             else {
-                this.userChanlev.remove(channel.getChanName());
+                this.userChanlev.remove(channel.getName());
             }
         }
         else {
             if (chanlev != 0) {
-                this.userChanlev.put(channel.getChanName(), chanlev);
+                this.userChanlev.put(channel.getName(), chanlev);
             }
         }
     }
@@ -190,14 +190,14 @@ public class UserAccount {
      * @param channel channel object
      */
     public void clearUserChanlev(ChannelNode channel) {
-        setUserChanlev(channel, 0);
+        setChanlev(channel, 0);
     }
 
     /**
      * Fetches the user chanlev for all their known channels
      * @return Full user chanlev
      */
-    public HashMap<String, Integer> getUserChanlev() {
+    public HashMap<String, Integer> getChanlev() {
         return this.userChanlev;
     }
 
@@ -207,9 +207,9 @@ public class UserAccount {
      * @return Chanlev of the user on that channel
      * @throws Exception
      */
-    public Integer getUserChanlev(ChannelNode channel) {
-        if (this.userChanlev.containsKey(channel.getChanName()) == true) {
-            return this.userChanlev.get(channel.getChanName());
+    public Integer getChanlev(ChannelNode channel) {
+        if (this.userChanlev.containsKey(channel.getName()) == true) {
+            return this.userChanlev.get(channel.getName());
         }
         else return 0;
     }
@@ -218,7 +218,7 @@ public class UserAccount {
      * Returns user account id
      * @return user account id
      */
-    public Integer getUserAccountId() {
+    public Integer getId() {
         return this.userAccountId;
     }
 
@@ -246,7 +246,7 @@ public class UserAccount {
      * Returns the user account name
      * @return user account name
      */
-    public String getUserAccountName() {
+    public String getName() {
         return this.userAccountName;
     }
 
@@ -266,7 +266,7 @@ public class UserAccount {
      * Returns the user account email
      * @return user email
      */
-    public String getUserAccountEmail() {
+    public String getEmail() {
         return this.userAccountEmail;
     }
 
@@ -274,7 +274,7 @@ public class UserAccount {
      * Returns the user flags
      * @return user flags
      */
-    public Integer getUserAccountFlags() {
+    public Integer getFlags() {
         return this.userAccountFlags;
     }
 
@@ -290,7 +290,7 @@ public class UserAccount {
      * Sets the user flags
      * @param userflags user flags
      */
-    public void setUserAccountFlags(Integer userflags) {
+    public void setFlags(Integer userflags) {
         this.userAccountFlags = userflags;
     }
 
@@ -358,7 +358,7 @@ public class UserAccount {
         }
 
         usernode.setUserAuthed(true);
-        usernode.setUserAccount(this);
+        usernode.setAccount(this);
         try {
             sqliteDb.addUserAuth(usernode, authType);
         }
@@ -373,9 +373,9 @@ public class UserAccount {
         try { sqliteDb.delUserAuth(usernode, deAuthType, ""); }
         catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("(EE) auth: Error finalizing the deauth, user may still be authed: nick = " + usernode.getUserNick() + ", account = " + this.getUserAccountName());
+            throw new Exception("(EE) auth: Error finalizing the deauth, user may still be authed: nick = " + usernode.getNick() + ", account = " + this.getName());
         }
-        usernode.setUserAccount(null);
+        usernode.setAccount(null);
         usernode.setUserAuthed(false);
 
     }

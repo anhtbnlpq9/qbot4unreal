@@ -10,6 +10,8 @@ public class Qbot {
     private static final String CONFIG_FILE = "./conf/config.yml";
 
     private static Logger log = LogManager.getLogger("common-log");
+
+    /* This verbosity should always be displayed (displays title) */
     private static final Level INFO2 = Level.forName("INFO2", 050);
 
     /**
