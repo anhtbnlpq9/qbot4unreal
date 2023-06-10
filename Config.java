@@ -24,63 +24,64 @@ public class Config {
     private InputStream inputStream = null; 
 
     /* Server parameters */
-    private String serverName;
-    private String serverId;
-    private String serverDescription;
-    private String serverProtocolVersion;
-    private String serverVersionFlags;
-    private String serverFullVersionText;
-    private String serverVersionString;
+    private String serverName            = "";
+    private String serverId              = "";
+    private String serverDescription     = "";
+    private String serverProtocolVersion = "6000";
+    private String serverVersionFlags    = "";
+    private String serverFullVersionText = "qbot4u";
+    private String serverVersionString   = "qbot4u - The Q Bot for UnrealIRCd.";
 
     /* Admin parameters */
     private ArrayList<String> adminInformation = new ArrayList<String>();
     
     /* Link parameters */
-    private String  linkPeer;
-    private String  linkHost;
-    private Integer linkPort;
-    private String  linkPassword;    
+    private String  linkPeer     = "";
+    private String  linkHost     = "";
+    private Integer linkPort     = 0;
+    private String  linkPassword = "";    
 
     /* Chanservice parameters */
-    private String    cserviceNick;
-    private String    cserviceIdent;
-    private String    cserviceHost;
-    private String    cserviceReal;
-    private String    cserviceModes;
-    private String    cserviceAccountHostPrefix;
-    private String    cserviceAccountHostSuffix;
-    private Integer   cserviceAccountMaxCertFP;
-    private Integer   cserviceAccountMinPassLength;
-    private Integer   cserviceAccountMaxPassLength;
-    private Integer   cserviceAccountWrongCredWait;
-    private Integer   cserviceAccountMaxChannels;
-    private Integer   cserviceAccountMaxAuthHistory;
-    private Integer   cserviceChanAutoLimitFreq;
-    private Integer   cserviceChanMaxChanlevs;
+    private String    cserviceNick                   = "";
     private String    cserviceUid                    = "";
+    private String    cserviceIdent                  = "";
+    private String    cserviceHost                   = "";
+    private String    cserviceReal                   = "";
+    private String    cserviceModes                  = "";
+    private String    cserviceAccountHostPrefix      = "configureme";
+    private String    cserviceAccountHostSuffix      = "please";
+    private String    cserviceChanDefaultModes       = "";
+    private Integer   cserviceAccountMaxCertFP       = 10;
+    private Integer   cserviceAccountMinPassLength   = 10;
+    private Integer   cserviceAccountMaxPassLength   = 20;
+    private Integer   cserviceAccountWrongCredWait   = 3;
+    private Integer   cserviceAccountMaxChannels     = 50;
+    private Integer   cserviceAccountMaxAuthHistory  = 10;
+    private Integer   cserviceChanAutoLimitFreq      = 30;
+    private Integer   cserviceChanMaxChanlevs        = 50;
 
 
     /* Network parameters */
-    private String networkName;
+    private String networkName  = "";
 
     /* Features parameters */
-    private Boolean featureSasl;
-    private Boolean featureSvslogin;
-    private Boolean featureChgHost;
+    private Boolean featureSasl      = false;
+    private Boolean featureSvslogin  = false;
+    private Boolean featureChgHost   = false;
     HashMap<String, Boolean> featuresList = new HashMap<String, Boolean>();
 
     /* Logging parameters */
-    private Boolean logDebugIn;
-    private Boolean logDebugOut;
+    private Boolean logDebugIn  = false;
+    private Boolean logDebugOut = false;
 
     /* Database parameters */
-    private String databasePath;
+    private String databasePath = "";
 
     /* SSL parameters */
-    private String sslTruststorePath;
-    private String sslTruststorePassword;
-    private String sslKeystorePath;
-    private String sslKeystorePassword;
+    private String sslTruststorePath      = "";
+    private String sslTruststorePassword  = "";
+    private String sslKeystorePath        = "";
+    private String sslKeystorePassword    = "";
 
    /**
     * Constructor for the class
