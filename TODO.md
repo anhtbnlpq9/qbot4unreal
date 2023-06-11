@@ -117,7 +117,7 @@
 - [ ] CHANINFO
 - [ ] CHANORPHANS
 - [X] CHANLIST
-- [ ] DIE
+- [X] DIE
 - [X] DROP
 - [ ] GHOST
 - [X] LOGOUT
@@ -133,7 +133,7 @@
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
 - [X] CERTFPADD
 - [X] CERTFPDEL
-- [ ] MODELOCK
+- [ ] MLOCK
 
 ## Interesting commands/features
 - [ ] user modes setting on auth
@@ -144,8 +144,8 @@
 - [ ] searching data (for users, for opers)
 
 # Coding
-- [ ] rework SJOIN handling
-- [ ] rework MODE handling
+- [X] rework SJOIN handling
+- [X] rework MODE handling
 - [X] rework CHANLEV
 - [X] rework DROP commands to include some "safety integrity"
 - [ ] rework channel user count again
