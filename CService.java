@@ -119,7 +119,7 @@ public class CService {
                         return;
                     }
                     useraccount.getUserLogins().forEach( (usernode) -> {
-                        if (usernode.getUserChanList().containsKey(regChannelNode.getName())) {
+                        if (usernode.getChanList().containsKey(regChannelNode)) {
                             this.handleJoin(usernode, regChannelNode);
                         }
                     });
@@ -513,12 +513,12 @@ public class CService {
 
 
 
-                    user.getValue().getUserChanModes().forEach( (key, value) -> {
+                    user.getValue().getChanList().forEach( (chan, mode) -> {
                         wrappercServeWhois2.bufferMode = "";
 
-                        if (value.isEmpty() == false) { wrappercServeWhois2.bufferMode = "(+" + value + ")"; }
+                        if (mode.isEmpty() == false) { wrappercServeWhois2.bufferMode = "(+" + mode + ")"; }
 
-                        protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + " " + wrappercServeWhois2.bufferMode);
+                        protocol.sendNotice(client, myUserNode, fromNick, "| |- " + chan + " " + wrappercServeWhois2.bufferMode);
 
                     });
                 }
@@ -798,7 +798,7 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, String.format(chanlevStrSuccessSummary, userAccount.getName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
 
             userAccount.getUserLogins().forEach( (usernode) -> {
-                if (usernode.getUserChanList().containsKey(chanNode.getName())) {
+                if (usernode.getChanList().containsKey(chanNode)) {
                     this.handleJoin(usernode, chanNode);
                 }
             });
@@ -1401,7 +1401,7 @@ public class CService {
         }
 
         // First check that the user is on the channel and opped
-        if (user.getUserChanMode(channel).matches("(.*)o(.*)") == true || operMode == true) {
+        if (user.getChanList(chanNode).matches("(.*)o(.*)") == true || operMode == true) {
             try {
                 sqliteDb.addRegChan(chanNode);
                 
@@ -1565,7 +1565,7 @@ public class CService {
         }
 
         usernode.getAccount().getChanlev().forEach( (channel, chanlev) -> {
-            if (Flags.isChanLAutoInvite(chanlev) == true && usernode.getUserChanList().containsKey(channel) == false) {
+            if (Flags.isChanLAutoInvite(chanlev) == true && usernode.getChanList().containsKey(protocol.getChannelNodeByName(channel)) == false) {
                 protocol.sendInvite(client, usernode, protocol.getChannelNodeByName(channel));
             }
         });
@@ -1574,7 +1574,7 @@ public class CService {
 
         // Now we apply the modes of the user's chanlev as it was joining the channels
         // But no welcome message
-        usernode.getUserChanList().forEach( (chanName, chanObj) -> {
+        usernode.getChanList().forEach( (chanObj, mode) -> {
             this.handleJoin(usernode, chanObj, false);
         });
     }
