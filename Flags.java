@@ -265,6 +265,7 @@ abstract class Flags {
         entry(CHFLAG_TOPICSAVE,     "t"),
         entry(CHFLAG_VOICEALL,      "v"),
         entry(CHFLAG_WELCOME,       "w"),
+        entry(CHFLAG_GLINED,        "y"),
         entry(CHFLAG_SUSPENDED,     "z")
     );
 
