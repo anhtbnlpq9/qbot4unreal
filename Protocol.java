@@ -442,8 +442,8 @@ public class Protocol extends Exception {
         /* Sets the chan modes */
         modChanModes.forEach( (mode, parameter) -> {
             log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
-            if (mode.startsWith("+")) chan.addMode(mode, parameter);
-            else chan.delMode(mode, parameter);
+            if (mode.startsWith("+")) chan.addMode(String.valueOf(mode.charAt(1)), parameter);
+            else chan.delMode(String.valueOf(mode.charAt(1)), parameter);
         });
 
         /* Sets the chan lists */
@@ -1400,6 +1400,7 @@ public class Protocol extends Exception {
             }
             else { /* channel already exists because either it was registered or it is just a regular join after EOS */
                 chan = this.getChannelNodeByName(sJoinChan);
+                log.debug(String.format("Protocol/SJOIN: NOT creating channel %s (TS %s) because it already exists", chan.getName(), chan.getChanTS()));
             }
 
             /* 
@@ -1407,9 +1408,9 @@ public class Protocol extends Exception {
              */ 
 
             modChanModes.forEach( (mode, parameter) -> {
-                log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
-                if (mode.startsWith("+")) chan.addMode(mode, parameter);
-                else chan.delMode(mode, parameter);
+                log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set mode: %s %s", chan.getName(), mode, parameter));
+                if (mode.startsWith("+")) chan.addMode(String.valueOf(mode.charAt(1)), parameter);
+                else chan.delMode(String.valueOf(mode.charAt(1)), parameter);
             });
 
             /* Parsing the SJOIN list */
@@ -1537,8 +1538,8 @@ public class Protocol extends Exception {
             /* Sets the chan modes */
             modChanModes.forEach( (mode, parameter) -> {
                 log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
-                if (mode.startsWith("+")) chan.addMode(mode, parameter);
-                else chan.delMode(mode, parameter);
+                if (mode.startsWith("+")) chan.addMode(String.valueOf(mode.charAt(1)), parameter);
+                else chan.delMode(String.valueOf(mode.charAt(1)), parameter);
             });
 
             /* Sets the chan lists */
