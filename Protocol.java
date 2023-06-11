@@ -412,104 +412,61 @@ public class Protocol extends Exception {
      * @param parameters
      * @throws Exception
      */
-    public void setMode(Client client, String who, String target, String modes, String parameters) throws Exception { // XXX: to reimplement
-        String networkChanUserModes          = protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", "");
-        /*
-         * CHANMODES=beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ
-         *            |   |    |           `----------------------- group1: no parameter
-         *            |   |     `---------------------------------- group2: parameter for set, no parameter for unset
-         *            |    `--------------------------------------- group3: parameter for set, parameter for unset
-         *             `------------------------------------------- group4: (list) parameter for set, parameter for unset
-         */
-    
-        String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (list) parameter for set, parameter for unset
-        String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
-        String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
-        String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
+    public void setMode(Client client, String who, ChannelNode chan, String modes, String modesParams) throws Exception {
+
+        HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(modes + " " + modesParams);
+
+        HashMap<String, String>      modChanModes   =  modChanModesAll.get("chanModes");
+        HashMap<String, String>      modChanLists   =  modChanModesAll.get("chanLists");
+        HashMap<String, String>  modChanUserModes   =  modChanModesAll.get("chanUserModes");
+
+        /* Sets the chan user modes */
+        var wrapperUMode = new Object() { String[] nicks; UserNode userNode; };
+        modChanUserModes.forEach( (mode, nicks) -> {
+            wrapperUMode.nicks = nicks.split(" ");
+            for (String nick: wrapperUMode.nicks) {
+                if (nick.isEmpty() == false) {
+                    wrapperUMode.userNode = this.getUserNodeByNick(nick);
+                    log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change usermode: %s %s", chan.getName(), mode, nick));
+                    try {
+                        if (mode.startsWith("+")) wrapperUMode.userNode.addUserModeChan(chan, String.valueOf(mode.charAt(1)));
+                        else wrapperUMode.userNode.removeUserModeChan(chan, String.valueOf(mode.charAt(1)));
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        /* Sets the chan modes */
+        modChanModes.forEach( (mode, parameter) -> {
+            log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
+            if (mode.startsWith("+")) chan.addMode(mode, parameter);
+            else chan.delMode(mode, parameter);
+        });
+
+        /* Sets the chan lists */
+        var wrapperCList = new Object() { String[] parameters; };
+        modChanLists.forEach( (list, parameters) -> {
+            wrapperCList.parameters = parameters.split(" ");
+            for (String parameter: wrapperCList.parameters) {
+                if (parameter.isEmpty() == false) {
+                    log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change list: %s %s", chan.getName(), list, parameter));
+                    if (list.equals("+b")) chan.addBanList(parameter);
+                    else if (list.equals("-b")) chan.delBanList(parameter);
+                    else if (list.equals("+e")) chan.addExceptList(parameter);
+                    else if (list.equals("-e")) chan.delExceptList(parameter);
+                    else if (list.equals("+I")) chan.addInviteList(parameter);
+                    else if (list.equals("-I")) chan.delInviteList(parameter);
+                }
+            }
+        });
 
         String str;
-        if (who.isEmpty() == true) str = ":" + config.getServerId() + " MODE " + target + " " + modes + " " + parameters;
-        else str = ":" + who + " MODE " + target + " " + modes + " " + parameters;
+        if (who.isEmpty() == true) str = String.format(":%s MODE %s %s %s",  config.getServerId(), chan.getName(), modes, modesParams);
+        else str = String.format(":%s MODE %s %s %s", who, chan.getName(), modes, modesParams);
 
-        
-        userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getNick(), userSid); });
-
-        if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanUserModes + "]")) {
-            if(modes.startsWith("+")) {
-                userList.get(userNickSidLookup.get(parameters)).addUserModeChan(this.getChannelNodeByName(target), modes.replaceFirst("[^A-za-z0-9]", ""));
-            }
-            else if(modes.startsWith("-")) {
-                userList.get(userNickSidLookup.get(parameters)).removeUserModeChan(this.getChannelNodeByName(target), modes.replaceFirst("[^A-za-z0-9]", ""));
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }
-
-        }
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup4 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup3 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup2 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup1 + "]")) {
-            if(modes.startsWith("+")) {
-                switch(modes.charAt(1)) {
-                    case 'b':
-                    channelList.get(target).addBanList(parameters);
-                    break;
-
-                    case 'e':
-                    channelList.get(target).addExceptList(parameters);
-                    break;
-
-                    case 'I':
-                    channelList.get(target).addInviteList(parameters);
-                    break;
-
-                    default: throw new Exception("Unknown list.");
-                }
-            }
-            else if(modes.startsWith("-")) {
-                switch(modes.charAt(1)) {
-                    case 'b':
-                    channelList.get(target).delBanList(parameters);
-                    break;
-
-                    case 'e':
-                    channelList.get(target).delExceptList(parameters);
-                    break;
-
-                    case 'I':
-                    channelList.get(target).delInviteList(parameters);
-                    break;
-
-                    default: throw new Exception("Unknown list.");
-                }
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
         client.write(str);
     }
 
@@ -525,7 +482,7 @@ public class Protocol extends Exception {
     public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getUid();
         String target = toTarget.getNick();
-        setMode(client, who, target, modes, parameters);
+        //setMode(client, who, target, modes, parameters);
     }
 
     /**
@@ -540,7 +497,7 @@ public class Protocol extends Exception {
     public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getServerId();
         String target = toTarget.getNick();
-        setMode(client, who, target, modes, parameters);
+        //setMode(client, who, target, modes, parameters);
     }
 
     /**
@@ -554,8 +511,8 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, UserNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getUid();
-        String target = toTarget.getName();
-        setMode(client, who, target, modes, parameters);
+        //String target = toTarget.getName();
+        setMode(client, who, toTarget, modes, parameters);
     }
 
     public void setMlock(Client client, ServerNode fromWho, ChannelNode toTarget, String modes) {
@@ -578,8 +535,7 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getServerId();
-        String target = toTarget.getName();
-        setMode(client, who, target, modes, parameters);
+        setMode(client, who, toTarget, modes, parameters);
     }
 
     /**
@@ -592,8 +548,7 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = config.getServerId();
-        String target = toTarget.getName();
-        setMode(client, who, target, modes, parameters);
+        setMode(client, who, toTarget, modes, parameters);
     }
 
     public void setTopic(Client client, UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
