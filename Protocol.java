@@ -87,18 +87,13 @@ public class Protocol extends Exception {
                                  (Integer) chanHM.get("bantime"),
                                  (Integer) chanHM.get("autolimit")
                                    )
+                //...
             );
 
         });
 
-        //this.channelList = (HashMap<String, ChannelNode>) this.regChannels.clone();
-
         // Copy the hashmap, else regChannels will also be modified
         this.channelList = new HashMap<String, ChannelNode>(this.regChannels);
-
-        //this.regChannels.forEach( (regChannelName, regChannelNode) -> {
-        //    channelList.put(regChannelName, regChannelNode);
-        //});
     }
 
     /**
@@ -288,24 +283,51 @@ public class Protocol extends Exception {
         String str;
 
         str = ":" + who.getUid() + " JOIN " + chan.getName();
-        int chanUserCount=0;
+
+        ChannelNode newChannel = null;
 
         if (channelList.containsKey(chan.getName())) {
-            chanUserCount = chan.getUserCount();
+            log.info(String.format("Protocol/chanJoin: user %s joined existing channel %s", who.getNick(), chan.getName()));
         }
         else {
             unixTime = Instant.now().getEpochSecond();
-            ChannelNode newChannel = new ChannelNode(chan.getName(), unixTime);
-            channelList.put(chan.getName(), newChannel);
+            newChannel = new ChannelNode(chan.getName(), unixTime);
+            channelList.put(newChannel.getName(), newChannel);
+
+            if (this.getRegChanList().containsKey(newChannel.getName()) == true) {
+                try {
+                    newChannel.setAutoLimit(sqliteDb.getChanAutoLimit(newChannel));
+                    newChannel.setFlags(sqliteDb.getChanFlags(newChannel));
+                    newChannel.setId(sqliteDb.getChanId(newChannel));
+                    newChannel.setChanlev(sqliteDb.getChanChanlev(newChannel));
+                    newChannel.setRegistered(true);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            log.info(String.format("Protocol/chanJoin: user %s joined new channel %s (creating it)", who.getNick(), chan.getName()));
         }
 
-        who.addUserToChan(chan.getName(), chan, "");
+        if (newChannel != null) chan = newChannel;
+
         try {
             chan.setChanlev(sqliteDb.getChanChanlev(chan));
         }
-        catch (Exception e) { e.printStackTrace(); return; }
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error(String.format("Protocol/chanJoin: error setting chanlev for channel %s", chan.getName()));
+        }
 
-        chan.setUserCount(chanUserCount+1);
+        try {
+            who.addToChan(chan, "");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        log.info(String.format("Protocol/chanJoin: Updating channel %s usercount to %s", chan.getName(), chan.getUserCount()));
         client.write(str);
 
         /* Set topic when joining the chan (if cflag SAVETOPIC) */
@@ -321,27 +343,31 @@ public class Protocol extends Exception {
             client.write(str);
         }
     }
-   
+
     /**
      * Make the bot leaves the channel
      * @param client client
      * @param who usernode originator
      * @param chan channelnode
      */
-    public void chanPart(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
-        String str = ":" + who.getUid() + " PART " + chan.getName();
+    public void chanPart(Client client, UserNode who, ChannelNode chanUserPart) /*throws Exception*/ {
+        String str = ":" + who.getUid() + " PART " + chanUserPart.getName();
 
-        ChannelNode chanUserPart = chan;
-        who.delUserFromChan(chan.getName());
-
-        int chanUserCount = chanUserPart.getUserCount();
-
-        if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
-            chanUserPart = null;
-            channelList.remove( chan.getName() );
+        try {
+            who.removeFromChan(chanUserPart);
+            log.info(String.format("Protocol/chanPart: user %s left chan %s", who.getNick(), chanUserPart.getName()));
         }
-        else {
-            chanUserPart.setUserCount(chanUserCount - 1);
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error(String.format("Protocol/chanPart: cannot remove the user %s from chan %s because it is not inside it", who.getNick(), chanUserPart.getName()));
+        }
+
+        Integer chanUserCount = chanUserPart.getUserCount();
+
+        if (chanUserCount.equals(0) == true && chanUserPart.getModes().containsKey("P") == false) {
+            channelList.remove( chanUserPart.getName() );
+            log.info(String.format("Protocol/chanPart: deleting channel %s because it is empty and it is not persistent", chanUserPart.getName()));
+            chanUserPart = null;
         }
 
         client.write(str);
@@ -358,19 +384,22 @@ public class Protocol extends Exception {
     public void chanKick(Client client, UserNode who, ChannelNode chan, UserNode target, String reason) /*throws Exception*/ {
         String str = ":" + who.getUid() + " KICK " + chan.getName() + " " + target.getNick() + " :" + reason;
         
-        ChannelNode chanUserPart = chan;
-        who.delUserFromChan(chan.getName());
+        try {
+            who.removeFromChan(chan);
+            log.info(String.format("Protocol/chanKick: user %s kicked from chan %s", who.getNick(), chan.getName()));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error(String.format("Protocol/chanKick: cannot remove the user %s from chan %s because it is not inside it", who.getNick(), chan.getName()));
+        }
 
-        int chanUserCount = chanUserPart.getUserCount();
+        Integer chanUserCount = chan.getUserCount();
 
-        
-        if (chanUserCount == 1 && chanUserPart.getModes().containsKey("P") == false ) {
-            chanUserPart = null;
+        if (chanUserCount.equals(0) == true && chan.getModes().containsKey("P") == false) {
             channelList.remove( chan.getName() );
+            log.info(String.format("Protocol/chanKick: deleting channel %s because it is empty and it is not persistent", chan.getName()));
         }
-        else {
-            chanUserPart.setUserCount(chanUserCount - 1);
-        }
+
         client.write(str);
     }
 
@@ -383,104 +412,61 @@ public class Protocol extends Exception {
      * @param parameters
      * @throws Exception
      */
-    public void setMode(Client client, String who, String target, String modes, String parameters) throws Exception {
-        String networkChanUserModes          = protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", "");
-        /*
-         * CHANMODES=beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ
-         *            |   |    |           `----------------------- group1: no parameter
-         *            |   |     `---------------------------------- group2: parameter for set, no parameter for unset
-         *            |    `--------------------------------------- group3: parameter for set, parameter for unset
-         *             `------------------------------------------- group4: (list) parameter for set, parameter for unset
-         */
-    
-        String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (list) parameter for set, parameter for unset
-        String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
-        String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
-        String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
+    public void setMode(Client client, String who, ChannelNode chan, String modes, String modesParams) throws Exception {
+
+        HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(modes + " " + modesParams);
+
+        HashMap<String, String>      modChanModes   =  modChanModesAll.get("chanModes");
+        HashMap<String, String>      modChanLists   =  modChanModesAll.get("chanLists");
+        HashMap<String, String>  modChanUserModes   =  modChanModesAll.get("chanUserModes");
+
+        /* Sets the chan user modes */
+        var wrapperUMode = new Object() { String[] nicks; UserNode userNode; };
+        modChanUserModes.forEach( (mode, nicks) -> {
+            wrapperUMode.nicks = nicks.split(" ");
+            for (String nick: wrapperUMode.nicks) {
+                if (nick.isEmpty() == false) {
+                    wrapperUMode.userNode = this.getUserNodeByNick(nick);
+                    log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change usermode: %s %s", chan.getName(), mode, nick));
+                    try {
+                        if (mode.startsWith("+")) wrapperUMode.userNode.addUserModeChan(chan, String.valueOf(mode.charAt(1)));
+                        else wrapperUMode.userNode.removeUserModeChan(chan, String.valueOf(mode.charAt(1)));
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        /* Sets the chan modes */
+        modChanModes.forEach( (mode, parameter) -> {
+            log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
+            if (mode.startsWith("+")) chan.addMode(mode, parameter);
+            else chan.delMode(mode, parameter);
+        });
+
+        /* Sets the chan lists */
+        var wrapperCList = new Object() { String[] parameters; };
+        modChanLists.forEach( (list, parameters) -> {
+            wrapperCList.parameters = parameters.split(" ");
+            for (String parameter: wrapperCList.parameters) {
+                if (parameter.isEmpty() == false) {
+                    log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change list: %s %s", chan.getName(), list, parameter));
+                    if (list.equals("+b")) chan.addBanList(parameter);
+                    else if (list.equals("-b")) chan.delBanList(parameter);
+                    else if (list.equals("+e")) chan.addExceptList(parameter);
+                    else if (list.equals("-e")) chan.delExceptList(parameter);
+                    else if (list.equals("+I")) chan.addInviteList(parameter);
+                    else if (list.equals("-I")) chan.delInviteList(parameter);
+                }
+            }
+        });
 
         String str;
-        if (who.isEmpty() == true) str = ":" + config.getServerId() + " MODE " + target + " " + modes + " " + parameters;
-        else str = ":" + who + " MODE " + target + " " + modes + " " + parameters;
+        if (who.isEmpty() == true) str = String.format(":%s MODE %s %s %s",  config.getServerId(), chan.getName(), modes, modesParams);
+        else str = String.format(":%s MODE %s %s %s", who, chan.getName(), modes, modesParams);
 
-        
-        userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getNick(), userSid); });
-
-        if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanUserModes + "]")) {
-            if(modes.startsWith("+")) {
-                userList.get(userNickSidLookup.get(parameters)).addUserChanMode(target, modes.replaceFirst("[^A-za-z0-9]", ""));
-            }
-            else if(modes.startsWith("-")) {
-                userList.get(userNickSidLookup.get(parameters)).delUserChanMode(target, modes.replaceFirst("[^A-za-z0-9]", ""));
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }
-
-        }
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup4 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup3 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), "");
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup2 + "]")) {
-            if(modes.startsWith("+")) {
-                channelList.get(target).setMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
-            }
-            else if(modes.startsWith("-")) {
-                channelList.get(target).delMode(modes.replaceFirst("[^A-za-z0-9]", ""), parameters);
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
-        else if (modes.replaceFirst("[^A-za-z0-9]", "").matches("[" + networkChanModesGroup1 + "]")) {
-            if(modes.startsWith("+")) {
-                switch(modes.charAt(1)) {
-                    case 'b':
-                    channelList.get(target).addBanList(parameters);
-                    break;
-
-                    case 'e':
-                    channelList.get(target).addExceptList(parameters);
-                    break;
-
-                    case 'I':
-                    channelList.get(target).addInviteList(parameters);
-                    break;
-
-                    default: throw new Exception("Unknown list.");
-                }
-            }
-            else if(modes.startsWith("-")) {
-                switch(modes.charAt(1)) {
-                    case 'b':
-                    channelList.get(target).delBanList(parameters);
-                    break;
-
-                    case 'e':
-                    channelList.get(target).delExceptList(parameters);
-                    break;
-
-                    case 'I':
-                    channelList.get(target).delInviteList(parameters);
-                    break;
-
-                    default: throw new Exception("Unknown list.");
-                }
-            }
-            else { throw new Exception("Set(+)/Unset(-) mode must be defined."); }            
-        }
         client.write(str);
     }
 
@@ -496,7 +482,7 @@ public class Protocol extends Exception {
     public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getUid();
         String target = toTarget.getNick();
-        setMode(client, who, target, modes, parameters);
+        //setMode(client, who, target, modes, parameters);
     }
 
     /**
@@ -511,7 +497,7 @@ public class Protocol extends Exception {
     public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getServerId();
         String target = toTarget.getNick();
-        setMode(client, who, target, modes, parameters);
+        //setMode(client, who, target, modes, parameters);
     }
 
     /**
@@ -525,8 +511,8 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, UserNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getUid();
-        String target = toTarget.getName();
-        setMode(client, who, target, modes, parameters);
+        //String target = toTarget.getName();
+        setMode(client, who, toTarget, modes, parameters);
     }
 
     public void setMlock(Client client, ServerNode fromWho, ChannelNode toTarget, String modes) {
@@ -549,8 +535,7 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getServerId();
-        String target = toTarget.getName();
-        setMode(client, who, target, modes, parameters);
+        setMode(client, who, toTarget, modes, parameters);
     }
 
     /**
@@ -563,8 +548,7 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = config.getServerId();
-        String target = toTarget.getName();
-        setMode(client, who, target, modes, parameters);
+        setMode(client, who, toTarget, modes, parameters);
     }
 
     public void setTopic(Client client, UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
@@ -656,20 +640,134 @@ public class Protocol extends Exception {
         sendSvsLogin(user, account, true);
     }
 
+    /**
+     * ...
+     * @param str Modes string, e.g "+abc-de+g... param1 param2 param3 param4 param5..."
+     * @param chanNode Channel Node (to use only with MODE command, use null for SJOIN)
+     * @return ...
+     */
+    public HashMap<String, HashMap<String, String>> parseChanModes(String str) {
+
+        /*
+         * CHANMODES=beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ
+         *           --- --- --- ------------------------
+         *            |   |    |           `----------------------- group4: no parameter
+         *            |   |     `---------------------------------- group3: parameter for set, no parameter for unset
+         *            |    `--------------------------------------- group2: parameter for set, parameter for unset
+         *             `------------------------------------------- group1: (list) parameter for set, parameter for unset
+         */
+
+        HashMap<String, String>     chanModes = new HashMap<>();
+        HashMap<String, String> chanUserModes = new HashMap<>();
+        HashMap<String, String>     chanLists = new HashMap<>();
+
+        HashMap<String, HashMap<String, String>> result = new HashMap<>();
+        result.put("chanModes",     chanModes);
+        result.put("chanLists",     chanLists);
+        result.put("chanUserModes", chanUserModes);
+
+        String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (lists) parameter for set, parameter for unset
+        String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
+        String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
+        String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
+        String   networkChanUserModes        =   protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", ""); // Channel modes for users
+
+
+        /*
+         *       Modes = strSplit[0]
+         *  Parameters = strSplit[1+]
+         */
+        String[] strSplit = str.split(" ");
+
+        String modes = strSplit[0];
+        String curMode;
+        String strUserModes = "";
+        String strLists = "";
+
+        char modeAction = '+';
+
+        Integer modeIndex  = 0;
+        Integer paramIndex = 1;
+
+        UserNode userNode;
+
+        for(int i=0; i < networkChanUserModes.length(); i++) {
+            chanUserModes.put("+" + networkChanUserModes.charAt(i), "");
+            chanUserModes.put("-" + networkChanUserModes.charAt(i), "");
+        }
+
+        for(int i=0; i < networkChanModesGroup1.length(); i++) {
+            chanLists.put("+" + networkChanModesGroup1.charAt(i), "");
+            chanLists.put("-" + networkChanModesGroup1.charAt(i), "");
+        }
+
+        while(modeIndex < modes.length()) {
+            curMode = String.valueOf(modes.charAt(modeIndex));
+
+            switch(curMode) {
+                case "+": modeAction = '+'; break;
+                case "-": modeAction = '-'; break;
+            }
+
+            if (curMode.matches("[A-Za-z]") == true) {
+
+                if (curMode.matches("[" + networkChanModesGroup1 + "]")) {
+                    strLists = "";
+                    strLists = String.join(" ", chanLists.get(modeAction + curMode), strSplit[paramIndex]);
+                    chanLists.replace(modeAction + curMode, strLists);
+                    paramIndex++;
+                }
+
+                else if (curMode.matches("[" + networkChanModesGroup2 + "]")) {
+                    chanModes.put(modeAction + curMode, strSplit[paramIndex]);
+                    paramIndex++;
+                }
+
+                else if (curMode.matches("[" + networkChanModesGroup3 + "]")) {
+                    if (modeAction == '+') {
+                        chanModes.put(modeAction + curMode, strSplit[paramIndex]);
+                        paramIndex++;
+                    }
+                    else {
+                        chanModes.put(modeAction + curMode, "");
+                    }
+                }
+
+                else if (curMode.matches("[" + networkChanModesGroup4 + "]")) {
+                    chanModes.put(modeAction + curMode, "");
+                }
+
+                else if (curMode.matches("[" + networkChanUserModes + "]")) {
+
+                    strUserModes = "";
+                    userNode = this.getUserNodeByNick(strSplit[paramIndex]);
+
+                    strUserModes = String.join(" ", chanUserModes.get(modeAction + curMode), userNode.getNick());
+                    chanUserModes.replace(modeAction + curMode, strUserModes);
+                    paramIndex++;
+                }
+            }
+
+            modeIndex++;
+        }
+
+        return result;
+    }
 
 
     public void getResponse(String raw) throws Exception {
         String response = "";
-        String[] command;
         String fromEnt;
-        
-        Integer chanUserCount;
+        String v3Tag = "";
+
+        String[] command;
         
         command = raw.split(" ", 3); // Begin to split raw message to fetch the command (part0 part1 part2part3part4...)
 
         // Check for IRCv3 string presence, if yes we cut if off to part1 part2 part3part4...
         // @blaablaa ...
         if (command[0].startsWith("@")) {
+            v3Tag = command[0];
             command = (command[1] + " " + command[2]).split(" ", 3); // This cuts the IRCv3 prelude
         }
         if (command[1].equals("PRIVMSG")) {
@@ -714,7 +812,6 @@ public class Protocol extends Exception {
             fromEnt = (command[0].split(":"))[1];
 
             ServerNode server = serverList.get(fromEnt);
-            //System.out.println("@@@ " + fromEnt + " " + server.getServerName() + " reached EOS ");
             server.setEOS(true);
 
             String str = ":" + config.getServerId() + " EOS";
@@ -751,11 +848,6 @@ public class Protocol extends Exception {
                         if (chanModes.contains("v") == true) featureList.put("chanVoice", true);
                         else featureList.put("chanVoice", false);
                     }
-                    //featureList.forEach( (property, value) -> {
-                    //    System.out.println("BGC Features " + property + " -> " + value);
-                    //});
-                    //System.out.println("BGB Chanmodes " + chanModes);
-
                 }
             }
         }
@@ -823,7 +915,6 @@ public class Protocol extends Exception {
             String propertyValue;
             
             for (int i=1; i < propsCount; i++) {
-                //System.out.println("PPP " + prop[i]);
                 if (prop[i].contains("=")) {
                     propertyName = (prop[i].split("=", 2))[0];
                     propertyValue = (prop[i].split("=", 2))[1];
@@ -843,10 +934,6 @@ public class Protocol extends Exception {
 
             }
             serverList.get(config.getServerId()).setServerPeerResponded(true);
-            //protocolProps.forEach( (property, value) -> {
-            //    System.out.println("BGA Protocol property " + property + " -> " + value);
-            //});
-
         }
         else if (command[0].equals("SERVER")) {
             //<<< SERVER ocelot. 1 :U6000-Fhn6OoEmM-5P0 Mjav Network IRC server
@@ -947,10 +1034,6 @@ public class Protocol extends Exception {
                 //@s2s-md/creationtime=1685464827 :5PK UID plop 0 1685464824 plop desktop-lpvlp15 5PKE08M08 0 +iwx cloak/-F9228E5A cloak/-F9228E5A wKgKGA== :...
                 if (user.getAuthBySasl() == true) {
                     sqliteDb.updateUserAuth(user);
-
-                    //if (Flags.isUserAutoVhost(user.getUserAccount().getUserAccountFlags()) == true && config.getFeature("chghost") == true) {
-                     //   this.chgHost(client, user, user.getUserAccount().getUserAccountName());
-                    //}
                 }
 
             }
@@ -958,9 +1041,7 @@ public class Protocol extends Exception {
             if (this.networkInsideNetBurst == true) {
                 /* Trying to authenticate the user if it was already authed (netjoin), only during sync */
                 UserAccount accountToReauth = null;
-                //System.out.println("BFA Looking up user in token list.");
                 try {
-                    //System.out.println("BFC try: " + user.getUserNick() + " / " + user.getUserTS());
                     accountToReauth = sqliteDb.getUserLoginToken(user);
                 }
                 catch (Exception e) {
@@ -968,7 +1049,6 @@ public class Protocol extends Exception {
                 }
 
                 if (accountToReauth != null) {
-                    //System.out.println("BFB account found: " + accountToReauth.getUserAccountName());
                     user.setUserAuthed(true);
                     user.setAccount(accountToReauth);
 
@@ -982,7 +1062,6 @@ public class Protocol extends Exception {
 
                     sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
                 }
-                //System.out.println("UUU new user " + command[0] + " " + command[5] + " " + command[8] + " " + command[4] + " " + command[7]);
             }
         }
         else if (command[1].equals("SASL") && config.getFeature("sasl") == true) {
@@ -1263,336 +1342,228 @@ public class Protocol extends Exception {
             // :5PX SJOIN 1679224907 #test                                                       :5PX8ZA302
             // :5PX SJOIN 1683480448 #newChan                                                    :@5PX8ZA302
 
-            //System.out.println("DDD SJOIN " + command[2]);
+            /*
+             * SJOIN prefixes
+             *   + -> +v
+             *   % -> +h
+             *   @ -> +o
+             *   ~ -> +a
+             *   * -> +q
+             *   & -> +b
+             *   " -> +e
+             *   ' -> +I
+             */
 
             fromEnt = (command[0].split(":"))[1];
 
             String[] sjoinParam      = command[2].split(" ", 64);
             int      sjoinParamCount = command[2].split(" ", 64).length;
 
-            int indexFirstUser=0;
-            int indexMode = 0;
+            String sJoinChan = (command[2].split(":", 2) [0]).split(" ", 3) [1];
+            String sJoinModes = "";
+            String sJoinList  = "";
+            String chanListItem = "";
 
-            long channelTS = Integer.parseInt(sjoinParam[0]);
+            ChannelNode chan;
+            UserNode user = null;
 
-            String networkChanmodesWithOutParams = ((protocolProps.get("CHANMODES")).split(",", 4))[3];
-            String networkChanmodesWithParams    = ((protocolProps.get("CHANMODES")).split(",", 4))[0] + ((protocolProps.get("CHANMODES")).split(",", 4))[1] + ((protocolProps.get("CHANMODES")).split(",", 4))[2];
-            
-            String channelName = sjoinParam[1];
-            
-            ChannelNode sJoinChannel;
+            // command[2]               = 1678637814 #thibland +fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
+            // command[2].split(, 3)    = 1678637814/#thibland/+fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
+            // command[2].split(, 3)[2] = +fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
+            // command[2].split(, 3)[2].split() = +fmnrstzCPST/[5j#R1,7m#M1,3n#N1,5t#b1]:6/:@5P0PWVF03
+            String[] sJoinParameters = command[2].split(" ", 3)[2].split(" ");
 
-            String chanModeRaw = "";              // Contains the modes of the channel (without the params)
+            Long channelTS = Long.parseLong(sjoinParam[0]);
 
-            char[] chanModeWithParams;            // Contains the list of channel modes that allows params (arrayed)
-            String chanModeRawWithParams = "";    // Contains the list of channel modes that allows params
+            Boolean modeSection = true;
+            for (String param: sJoinParameters) {
+                if (param.startsWith(":") == true) modeSection = false;
 
-            char[] chanModeWithOutParams;         // Contains the list of channel modes that don't allow params (arrayed)
-            String chanModeRawWithOutParams = ""; // Contains the list of channel modes that don't allow params
-
-            if (sjoinParam[2].startsWith("+")) { // Case when SJOIN contains modes (syncing from network)
-                chanModeRaw              = (sjoinParam[2].split("\\+", 2))[1];                                     // Contains all the channel modes
+                if (modeSection == true) sJoinModes = String.join(" ", sJoinModes, param);
+                else sJoinList = String.join(" ", sJoinList, param.replaceFirst(":", ""));
             }
 
-            chanModeRawWithParams    = chanModeRaw.replaceAll("["+ networkChanmodesWithOutParams + "]", "");   // Contains only channel modes used with parameter
-            chanModeRawWithOutParams = chanModeRaw.replaceAll("["+ networkChanmodesWithParams + "]", "");      // Contains only channel modes used withOut parameter
+            log.debug(String.format("Protocol/SJOIN: SJOIN (raw) for %s received modes: %s", sJoinChan, sJoinModes));
+            log.debug(String.format("Protocol/SJOIN: SJOIN (raw) for %s received list: %s", sJoinChan, sJoinList));
 
-            chanModeWithParams       = chanModeRawWithParams.toCharArray();                                    // Contains only channel ['m','o','d','e','s'] used with parameter
-            chanModeWithOutParams    = chanModeRawWithOutParams.toCharArray();                                 // Contains only channel ['m','o','d','e','s'] used withOut parameter
+            HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(sJoinModes);
 
+            HashMap<String, String>      modChanModes   =  modChanModesAll.get("chanModes");
 
-            ArrayList<String> chanBanList = new ArrayList<String>();
-            ArrayList<String> chanExceptList = new ArrayList<String>();
-            ArrayList<String> chanInviteList = new ArrayList<String>();
-            
-            Map<String, String> chanUserMode = new HashMap<String, String>();
-            Map<String, String> chanModeList = new HashMap<String, String>();
+            if (this.channelList.containsKey(sJoinChan) == false) { /* channel does not exist => creating it */
+                chan = new ChannelNode( sJoinChan, channelTS );
 
-            // Now we need to determine index of modes and index of users in the string
-            for (int i=1; i < sjoinParamCount; i++) {
-                
-                // detect first user
-                if (sjoinParam[i].startsWith(":")) { indexFirstUser=i; }
-                
-                if (indexFirstUser == 0) { // first user not detected => we are still before the users list
-                    if (sjoinParam[2].startsWith("+") && i >= 3) {
-                        // Populate the hashmap with modes with parameters
-                        chanModeList.put( String.valueOf(chanModeWithParams[indexMode]) , sjoinParam[i]);
-                        indexMode++;
-                    }
-                }
-                else {  // user section detected
+                channelList.put(sJoinChan, chan);
+                channelList.get(sJoinChan).setChanlev(sqliteDb.getChanChanlev(chan));
 
-                    if (sjoinParam[i].equals("")) {
-                        // Do nothing because this is not an user
-                        break;
-                    }
-                    else {
-
-                        // Handle the ban/except/invite lists
-                        if ( sjoinParam[i].replaceFirst(":", "").startsWith("&") || sjoinParam[i].replaceFirst(":", "").startsWith("\"") || sjoinParam[i].replaceFirst(":", "").startsWith("'") ) {
-
-                            if ( sjoinParam[i].replaceFirst(":", "").startsWith("&") ) { // bans
-                                chanBanList.add(sjoinParam[i].replaceFirst(":", "").substring(1));
-                            }
-                            else if ( sjoinParam[i].replaceFirst(":", "").startsWith("\"") )  { // excepts
-                                chanExceptList.add(sjoinParam[i].replaceFirst(":", "").substring(1));
-                            }
-                            else if ( sjoinParam[i].replaceFirst(":", "").startsWith("'") ) { // invites    
-                                chanInviteList.add(sjoinParam[i].replaceFirst(":", "").substring(1));                           
-                            }
-                            else {
-                                
-                            }
-                        }
-
-                        // Handle the user modes for 1 user
-                        else {
-
-                            chanUserMode.put( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , "");
-                            //System.out.println("initial put for " + channelName + " (" + sjoinParam[i].replaceAll("[^A-Za-z0-9]","") + ") -> null");
-                            for( int pos=0; pos < sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").length() ; pos++ ) {
-                                //System.out.println("before chan=" + channelName + " mode=" + sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos) + " user=" + sjoinParam[i].replaceFirst(":", "").replaceAll("[^A-Za-z0-9]",""));
-
-                                if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("+") ) {
-                                    chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "v");
-                                }
-                                else if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("%") )  {
-                                    chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "h");
-                                }
-                                else if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("@") ) {
-                                    chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "o");                           
-                                }
-                                else if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("~") ) {
-                                    chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "a");
-                                }
-                                else if ( sjoinParam[i].replaceFirst(":", "").replaceAll("[A-Za-z0-9]","").substring(pos).startsWith("*") ) {
-                                    chanUserMode.replace( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") , chanUserMode.get( sjoinParam[i].replaceAll("[^A-Za-z0-9]","") ) + "q");
-                                }
-                                else { // when the user joins without any mode => send to CServe
-                                    
-                                }
-                            }
-                        }
-                    }
-                }
+                log.info(String.format("Protocol/SJOIN: creating channel %s (TS %s)", chan.getName(), chan.getChanTS()));
             }
-            if (sjoinParam[2].startsWith("+")) { // Case when SJOIN contains modes (syncing from network)
-                // Populate the hashmap with remaining modes
-                for(char m : chanModeWithOutParams) {
-                    chanModeList.put( String.valueOf(m) , "");
-                }
-            }
-        
-            chanUserMode.remove("");
-
-            if (chanUserMode.size() == 0) { chanUserCount = 0; }
-            else { chanUserCount = chanUserMode.size(); }
-
-            //System.out.println("BBO chanUserCount chan="+ channelName + " count=" + chanUserCount);
-
-            if (channelList.containsKey(channelName) == false) {
-            
-                ChannelNode chan = new ChannelNode( channelName, channelTS, chanModeList, chanBanList, chanExceptList, chanInviteList );
-
-                channelList.put(channelName, chan);
-                channelList.get(channelName).setUserCount(chanUserCount);
-                channelList.get(channelName).setChanlev(sqliteDb.getChanChanlev(chan));
-                //System.out.println("BBP chanUserCount newchan="+ channelName + " count=" + chanUserCount);
-            }
-            else {
-                sJoinChannel = channelList.get(channelName); 
-                sJoinChannel.setChanTS(channelTS);
-                sJoinChannel.setModes(chanModeList);
-                sJoinChannel.setBanList(chanBanList);
-                sJoinChannel.setExceptList(chanExceptList);
-                sJoinChannel.setInviteList(chanInviteList);
-
-                if(sJoinChannel.getUserCount() > 0) { 
-                    //System.out.println("BBZ here");
-                    sJoinChannel.setUserCount(sJoinChannel.getUserCount()+1); 
-                }
-                else { sJoinChannel.setUserCount(chanUserCount); }
+            else { /* channel already exists because either it was registered or it is just a regular join after EOS */
+                chan = this.getChannelNodeByName(sJoinChan);
             }
 
-            chanUserMode.forEach( (user, modes) -> {
-                //System.out.println("chanUserMode " + channelName + " = " + user + " -> " + modes);
-                if (! user.equals("")) {
-                    userList.get(user).addUserToChan(channelName, channelList.get(channelName), modes);
-                }
-                if (modes.isEmpty()) {
-                    try {
-                        cservice.handleJoin(userList.get(user), channelList.get(channelName));
-                    }
-                    catch (Exception e) { /* System.out.println("* Ignoring CServe JOIN command as CServe not connected yet."); */ }
-                }
+            /* 
+             * Sets the chan modes
+             */ 
+
+            modChanModes.forEach( (mode, parameter) -> {
+                log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
+                if (mode.startsWith("+")) chan.addMode(mode, parameter);
+                else chan.delMode(mode, parameter);
             });
-            
+
+            /* Parsing the SJOIN list */
+            for ( String listItem : sJoinList.split(" ") ) {
+
+                chanListItem = ""; 
+
+                if (listItem.startsWith("&") == false && listItem.startsWith("\"") == false && listItem.startsWith("'") == false && listItem.isEmpty() == false) {
+                    user = this.getUserNodeBySid(listItem.replaceAll("^[^A-Za-z0-9]{1}", ""));
+                    log.info(String.format("Protocol/SJOIN: Channel %s: user %s (%s) joined channel", chan.getName(), user.getNick(), user.getUid()));
+                }
+                else { 
+                    chanListItem =  listItem.replaceAll("^.", ""); 
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: list %s", chan.getName(), listItem));
+                }
+
+
+                
+                if (listItem.startsWith("+")) { // +v
+                    user.addToChan(chan, "v");
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +v %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                }
+
+                else if (listItem.startsWith("%")) { // +h
+                    user.addToChan(chan, "h");
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +h %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                }
+
+                else if (listItem.startsWith("@")) { // +o
+                    user.addToChan(chan, "o");
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +o %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                }
+
+                else if (listItem.startsWith("~")) { // +h
+                    user.addToChan(chan, "a");
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +a %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                }
+
+                else if (listItem.startsWith("*")) { // +q
+                    user.addToChan(chan, "q");
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +q %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                }
+
+                else if (listItem.startsWith("&")) { // +b
+                    chan.addBanList(chanListItem);
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));
+
+                }
+
+                else if (listItem.startsWith("\"")) { // +e
+                    chan.addExceptList(chanListItem);
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));
+
+                }
+
+                else if (listItem.startsWith("'")) { // +I
+                    chan.addInviteList(chanListItem);
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));
+
+                }
+
+                else { // no mode
+                    if (user != null) {
+                        user.addToChan(chan, "");
+                        log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+no usermode: %s (%s) - usercount = %s", chan.getName(), user.getNick(), user.getUid(), chan.getUserCount()));
+                    }
+                }
+
+
+                Boolean cServeReady = false;
+                try {
+                    cServeReady = cservice.isReady();
+                }
+                catch (Exception e) {
+                    log.debug("Protocol/SJOIN: user joined the chan but CService not ready yet");
+                }
+
+                if (cServeReady == true && user != null && chan.isRegistered() == true) {
+                    log.info(String.format("Protocol/SJOIN: CService ready, sending the join to CService"));
+                    cservice.handleJoin(user, chan);
+                }
+
+            }
+            log.info(String.format("Protocol/SJOIN: setting channel %s (usercount %s)", chan.getName(), chan.getUserCount()));
+
         }
         else if (command[1].equals("MODE")) {
             // :5PX     MODE  #newChan      +ntCT         1683480448
             // :AAAAAAA MODE  #Civilization +o AnhTay
 
-            String[] modeList      = command[2].split(" ", 128);
+            String[] modeList      = command[2].split(" ", 2);
 
             String channelName = modeList[0];
+            String modeChange  = modeList[1];
             
             ChannelNode chan = channelList.get(channelName);
 
-            String networkChanUserModes          = protocolProps.get("PREFIX").replaceAll("[^A-Za-z0-9]", "");
+            log.debug(String.format("Protocol/MODE: Channel %s: (raw) received mode change: %s", chan.getName(), modeChange));
 
-            /*
-             * CHANMODES=beI,fkL,lFH,cdimnprstzCDGKMNOPQRSTVZ
-             *            |   |    |           `----------------------- group4: no parameter
-             *            |   |     `---------------------------------- group3: parameter for set, no parameter for unset
-             *            |    `--------------------------------------- group2: parameter for set, parameter for unset
-             *             `------------------------------------------- group1: (list) parameter for set, parameter for unset
-             */
-        
-            String networkChanModesGroup1        = ((protocolProps.get("CHANMODES")).split(",", 4))[0]; // (list) parameter for set, parameter for unset
-            String networkChanModesGroup2        = ((protocolProps.get("CHANMODES")).split(",", 4))[1]; // parameter for set, parameter for unset
-            String networkChanModesGroup3        = ((protocolProps.get("CHANMODES")).split(",", 4))[2]; // parameter for set, no parameter for unset
-            String networkChanModesGroup4        = ((protocolProps.get("CHANMODES")).split(",", 4))[3]; // no parameter
+            HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(modeChange);
 
-            
+            HashMap<String, String>      modChanModes   =  modChanModesAll.get("chanModes");
+            HashMap<String, String>      modChanLists   =  modChanModesAll.get("chanLists");
+            HashMap<String, String>  modChanUserModes   =  modChanModesAll.get("chanUserModes");
 
-            String chanModeRaw;              // Contains the modes of the channel (without the params)
-            chanModeRaw              = modeList[1];                                     // Contains all the channel modes
-
-
-
-
-            int indexMode;
-            int indexParam;
-            boolean plusMode = false;
-            indexParam = 2; // indexParam begins at '2' because 1st param == modeList[2]
-
-            Map<String, String> userNickSidLookup = new HashMap<String, String>(); // Lookup map for Nick -> Sid
-            userList.forEach( (userSid, user) -> { userNickSidLookup.put(user.getNick(), userSid); });
-            
-            for (indexMode = 0; indexMode < chanModeRaw.length() ; indexMode++) {
-                //System.out.println("MMM " + chanModeRaw.charAt(indexMode) );
-                if (chanModeRaw.charAt(indexMode) == '+') {
-                    plusMode = true;
+            /* Sets the chan user modes */
+            var wrapperUMode = new Object() { String[] nicks; UserNode userNode; };
+            modChanUserModes.forEach( (mode, nicks) -> {
+                wrapperUMode.nicks = nicks.split(" ");
+                for (String nick: wrapperUMode.nicks) {
+                    if (nick.isEmpty() == false) {
+                        wrapperUMode.userNode = this.getUserNodeByNick(nick);
+                        log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change usermode: %s %s", chan.getName(), mode, nick));
+                        try {
+                            if (mode.startsWith("+")) wrapperUMode.userNode.addUserModeChan(chan, String.valueOf(mode.charAt(1)));
+                            else wrapperUMode.userNode.removeUserModeChan(chan, String.valueOf(mode.charAt(1)));
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                else if (chanModeRaw.charAt(indexMode) == '-') {
-                    plusMode = false;
+            });
+
+            /* Sets the chan modes */
+            modChanModes.forEach( (mode, parameter) -> {
+                log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
+                if (mode.startsWith("+")) chan.addMode(mode, parameter);
+                else chan.delMode(mode, parameter);
+            });
+
+            /* Sets the chan lists */
+            var wrapperCList = new Object() { String[] parameters; };
+            modChanLists.forEach( (list, parameters) -> {
+                wrapperCList.parameters = parameters.split(" ");
+                for (String parameter: wrapperCList.parameters) {
+                    if (parameter.isEmpty() == false) {
+                        log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change list: %s %s", chan.getName(), list, parameter));
+                        if (list.equals("+b")) chan.addBanList(parameter); 
+                        else if (list.equals("-b")) chan.delBanList(parameter); 
+                        else if (list.equals("+e")) chan.addExceptList(parameter); 
+                        else if (list.equals("-e")) chan.delExceptList(parameter); 
+                        else if (list.equals("+I")) chan.addInviteList(parameter); 
+                        else if (list.equals("-I")) chan.delInviteList(parameter);
+                    }
                 }
-                else {
+            });
 
-                    if (  String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanModesGroup1 + "]") == true) { // matches all the modes with params
-                        
-                        switch ( chanModeRaw.charAt(indexMode) ) {  // matches lists (b/e/I)
-                            case 'b':
-                                if (plusMode == true) {
-                                    chan.addBanList( modeList[indexParam] ); 
-                                    //System.out.println("MMO channel " + channelName + " mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                                }
-                                else { 
-                                    chan.delBanList( modeList[indexParam] ); 
-                                    //System.out.println("MMP channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                                }
-                                break;
-
-                            case 'e':
-                                if (plusMode == true) { 
-                                    chan.addExceptList( modeList[indexParam] ); 
-                                    //System.out.println("MMQ channel " + channelName + " mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                                }
-                                else { 
-                                    chan.delInviteList( modeList[indexParam] );
-                                    //System.out.println("MMR channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                                 }
-                                break;
-
-                            case 'I':
-                                if (plusMode == true) { 
-                                    chan.addInviteList( modeList[indexParam] );
-                                    //System.out.println("MMS channel " + channelName + " mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                                 }
-                                else { 
-                                    chan.delInviteList( modeList[indexParam] );
-                                    //System.out.println("MMT channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                                 }
-                                break;
-                            
-                            default:
-                                 throw new Exception("Error: should not happen!!");
-                        }
-                        indexParam++;
-                    }
-                        
-                    else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanModesGroup2 + "]") == true) { // matches modes (f/k/L) -> need parameter for both set and unset
-                        
-                        if (plusMode == true) {
-                            chan.addMode(String.valueOf(chanModeRaw.charAt(indexMode)), modeList[indexParam]);
-                            //System.out.println("MMA channel " + channelName + " mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                         }
-                        else { 
-                            chan.delMode(String.valueOf(chanModeRaw.charAt(indexMode))); 
-                            //System.out.println("MMB channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                        }
-                        indexParam++;
-                    }
-
-                    else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanModesGroup3 + "]") == true) { // matches modes (l/F/H) -> need parameter ONLY for set
-                        
-                        if (plusMode == true) { 
-                            chan.addMode(String.valueOf(chanModeRaw.charAt(indexMode)), modeList[indexParam]);
-                            //System.out.println("MMC channel " + channelName + " mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                            indexParam++;
-                        }
-                        else { 
-                            chan.delMode(String.valueOf(chanModeRaw.charAt(indexMode))); 
-                            //System.out.println("MMD channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode))); 
-                        }
-                    }
-
-                    else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanModesGroup4 + "]") == true) { // matches modes with no params (C/T/n/t/s/...)
-                        
-                        if (plusMode == true) { 
-                            chan.addMode(String.valueOf(chanModeRaw.charAt(indexMode)), "");
-                            //System.out.println("MME channel " + channelName + " mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) ); 
-                         }
-                        else { 
-                            chan.delMode(String.valueOf(chanModeRaw.charAt(indexMode)));
-                            //System.out.println("MMF channel " + channelName + " mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) ); 
-                         }
-                    }
-
-                    else if (String.valueOf(chanModeRaw.charAt(indexMode)).matches("["+ networkChanUserModes + "]") == true) { // matches user modes (q/a/o/h/v)
-                        // It is necessary to lookup the user nick because mode is applied on a nick and not a SID
-
-                        if (plusMode == true) {
-                            userList.get(userNickSidLookup.get(modeList[indexParam])).addUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
-                            //System.out.println("MMG channel " + channelName + " user mode +" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]); 
-                        }
-                        else {
-                            userList.get(userNickSidLookup.get(modeList[indexParam])).delUserChanMode(channelName, String.valueOf(chanModeRaw.charAt(indexMode))); 
-                            //System.out.println("MMH channel " + channelName + " user mode -" + String.valueOf(chanModeRaw.charAt(indexMode)) + " " + modeList[indexParam]);
-                            if (userList.get(userNickSidLookup.get(modeList[indexParam])).getNick().equals(config.getCServeNick()) && chanModeRaw.charAt(indexMode) == CService.getChanJoinModes().toCharArray()[0]) {
-                                this.setMode(client, chan, "+" + CService.getChanJoinModes(), config.getCServeNick());
-                            }
-                        }
-                        indexParam++;
-                        
-                    }
-                    else {
-                        throw new Exception("Mode not defined in PROTOCTL.");
-                    }
-
-
-                }
-                
-                
-            }
-
+            log.debug("Protocol/MODE: Sending to CService");
+            cservice.handleChanMode(chan, modChanModesAll);
 
         }
         else if (command[1].equals("PART")) {
             // :XXXXXXXXX PART #1 :message
-
-            //System.out.println("DDD PART " + command[2]);
 
             fromEnt = (command[0].split(":"))[1];
             UserNode fromUser = userList.get(fromEnt);
@@ -1600,23 +1571,30 @@ public class Protocol extends Exception {
             String fromChannel = (command[2].split(" "))[0];
 
             ChannelNode chanUserPart = channelList.get(fromChannel);
+
+            Integer chanUserCount = 0;
             
-            fromUser.delUserFromChan( chanUserPart.getName() );
+            try {
+            fromUser.removeFromChan( chanUserPart );
+            log.info(String.format("Protocol/chanPart: user %s left chan %s", fromUser.getNick(), chanUserPart.getName()));
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                log.error(String.format("Protocol/chanPart: cannot remove the user %s from chan %s because it is not inside it", fromUser.getNick(), chanUserPart.getName()));
+            }
             chanUserCount = chanUserPart.getUserCount();
-            //System.out.println("DDE chan=" + chanUserPart.getChanName() + " mode=" + chanUserPart.getModes().containsKey("P"));
             
-            if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
+            if (chanUserCount.equals(0) == true && ! chanUserPart.getModes().containsKey("P") ) {
+                log.info(String.format("Protocol/PART: deleting channel %s because it is empty and it is not persistent", chanUserPart.getName()));
                 channelList.remove( chanUserPart.getName() );
                 chanUserPart = null;
             }
             else {
-                chanUserPart.setUserCount(chanUserCount - 1);
+                log.info(String.format("Protocol/chanPart: setting channel %s usercount to %s", chanUserPart.getName(), chanUserPart.getUserCount()));
             }
         }
         else if (command[1].equals("KICK")) {
             // :XXXXXXXXX KICK CHAN SID :message
-
-            //System.out.println("DDD KICK " + command[2]);
 
             fromEnt = (command[0].split(":"))[1];
             UserNode kickedUSer = userList.get((command[2].split(" "))[1]);
@@ -1624,39 +1602,65 @@ public class Protocol extends Exception {
             String kickChannelName = (command[2].split(" "))[0];
 
             ChannelNode chanUserPart = channelList.get(kickChannelName);
+
+            Integer chanUserCount = 0;
             
-            kickedUSer.delUserFromChan( kickChannelName );
+            kickedUSer.removeFromChan( this.getChannelNodeByName(kickChannelName) );
             chanUserCount = chanUserPart.getUserCount();
-            //System.out.println("DDE chan=" + chanUserPart.getChanName() + " mode=" + chanUserPart.getModes().containsKey("P"));
             
-            if (chanUserCount == 1 && ! chanUserPart.getModes().containsKey("P") ) {
+            if (chanUserCount.equals(0) == true && ! chanUserPart.getModes().containsKey("P") ) {
                 channelList.remove( chanUserPart.getName() );
                 chanUserPart = null;
-            }
-            else {
-                chanUserPart.setUserCount(chanUserCount - 1);
             }
         }
         else if (command[1].equals("QUIT")) {
             // :XXXXXXXXX QUIT :message
-
-            //System.out.println("DDD QUIT " + command[2]);
-            
             fromEnt = (command[0].split(":"))[1];
             
             UserNode userToRemove = userList.get(fromEnt);
+            HashMap<ChannelNode, String> curUserChanList = new HashMap<>(userToRemove.getChanList());
+
+            curUserChanList.forEach( (chan, mode) -> {
+                try {
+                    userToRemove.removeFromChan(chan);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
 
             if (userToRemove.isAuthed() == true) sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             userToRemove.setAccount(null);
 
             userNickSidLookup.remove(userToRemove.getNick());
-            userToRemove = null;
+            //userToRemove = null;
             userList.remove(fromEnt);
+        }
+        else if (command[1].equals("KILL")) {
+            // :AAAAAAA KILL AAAAAAA :message
+            fromEnt = (command[0].split(":"))[1];
+            UserNode killedUser = this.getUserNodeBySid(command[2].split(" ")[0]);
+
+            HashMap<ChannelNode, String> curUserChanList = new HashMap<>(killedUser.getChanList());
+
+            curUserChanList.forEach( (chan, mode) -> {
+                try {
+                    killedUser.removeFromChan(chan);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (killedUser.isAuthed() == true) sqliteDb.delUserAuth(killedUser, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
+            killedUser.setAccount(null);
+
+            userNickSidLookup.remove(killedUser.getNick());
+            //userToRemove = null;
+            userList.remove(killedUser.getUid());
         }
         else if (command[1].equals("NICK")) {
             // :XXXXXXXXX NICK ...
-
-            //System.out.println("DDD NICK " + command[2]);
 
             fromEnt = (command[0].split(":"))[1];
             
@@ -1698,8 +1702,6 @@ public class Protocol extends Exception {
             }
             catch (Exception e) { /* CServe not yet connected */ }
         }
-
-
         else {
             if (command[0].equals("PING")) {
                 response = "PONG " + command[1];

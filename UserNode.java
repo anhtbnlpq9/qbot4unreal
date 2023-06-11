@@ -45,8 +45,13 @@ public class UserNode {
     private Long userTS;
     private Long authTS;
 
-    private Map<String, ChannelNode>  userChanList   = new HashMap<String, ChannelNode>();
-    private Map<String, String>       userChanModes  = new HashMap<String, String>();
+    /**
+     * HashMap contains:
+     *  - channel where the is inside
+     *  - mode the user has inside the channel
+     */
+    private HashMap<ChannelNode, String>     userChanList  = new HashMap<>();
+
 
     private UUID authSessUUID;
 
@@ -176,11 +181,17 @@ public class UserNode {
             if (account != null) {
                 this.userAccount = account;
                 try { this.userAccount.addUserAuth(this); }
-                catch (Exception e) { e.printStackTrace(); log.error("(EE) Could not auth user."); }
+                catch (Exception e) { 
+                    e.printStackTrace(); 
+                    log.error("UserNode/setAccount: Could not auth user."); 
+                }
             }
             else {
                 try { this.userAccount.delUserAuth(this); }
-                catch (Exception e) { e.printStackTrace(); log.error("(EE) Could not de-auth user."); }   
+                catch (Exception e) { 
+                    e.printStackTrace(); 
+                    log.error("UserNode/setAccount: Could not de-auth user."); 
+                }   
                 this.userAccount = null;
             }
         }
@@ -192,18 +203,55 @@ public class UserNode {
      * @param chanObj Channel object
      * @param mode User mode on the channel
      */
-    public void addUserToChan(String channel, ChannelNode chanObj, String mode) /*throws Exception*/ {
-        userChanList.put(channel, chanObj);
-        userChanModes.put(channel, mode);
+    public void addToChan(ChannelNode chanObj, String mode) throws Exception {
+        if (userChanList.containsKey(chanObj) == true) {
+            log.error("UserNode/addUserToChan: user " + this.getNick() + " is already in the chan");
+            throw new Exception("UserNode/addUserToChan: user " + this.getNick() + " is already in the chan");
+        }
+
+        chanObj.addUser(this);
+        userChanList.put(chanObj, mode);
     }
 
-    /**
-     * Removes the user from the channel
-     * @param channel Channel name
-     */
-    public void delUserFromChan(String channel) /*throws Exception*/ {
-        userChanList.remove(channel);
-        userChanModes.remove(channel);
+    public void removeFromChan(ChannelNode chanObj) throws Exception {
+        if (userChanList.containsKey(chanObj) == false) {
+            log.error("UserNode/removeUserFromChan: user " + this.getNick() + " is not in the chan");
+            throw new Exception("UserNode/removeUserFromChan: user " + this.getNick() + " is not in the chan");
+        }
+
+        chanObj.removeUser(this);
+        userChanList.remove(chanObj);
+    }
+
+    public void addUserModeChan(ChannelNode chanObj, String mode) throws Exception {
+        if (userChanList.containsKey(chanObj) == false) {
+            log.error("UserNode/addUserModeChan: user " + this.getNick() + " is not in the chan");
+            throw new Exception("UserNode/addUserModeChan: user " + this.getNick() + " is not in the chan");
+        }
+
+        String curUserChanMode = "";
+        String newUserChanMode = "";
+
+        curUserChanMode = userChanList.get(chanObj);
+        newUserChanMode = curUserChanMode + mode;
+        newUserChanMode = removeDuplicate(newUserChanMode);
+
+        userChanList.replace(chanObj, newUserChanMode);
+    }
+
+    public void removeUserModeChan(ChannelNode chanObj, String mode) throws Exception {
+        if (userChanList.containsKey(chanObj) == false) {
+            log.error("UserNode/addUserModeChan: user is not in the chan");
+            throw new Exception("UserNode/addUserModeChan: user is not in the chan");
+        }
+
+        String curUserChanMode = "";
+        String newUserChanMode = "";
+        
+        curUserChanMode = userChanList.get(chanObj);
+        newUserChanMode = curUserChanMode.replaceAll("[" + mode + "]", "");
+
+        userChanList.replace(chanObj, newUserChanMode);
     }
 
     /**
@@ -211,26 +259,16 @@ public class UserNode {
      * @param chan Channel name
      * @return User channel modes
      */
-    public String getUserChanMode(String chan) {
-        return this.userChanModes.get(chan);
+    public String getChanList(ChannelNode chan) {
+        return this.userChanList.get(chan);
     }
 
     /**
-     * Adds the user channel mode to the channel
-     * @param chan Channel name
-     * @param modes User channel modes
+     * Fetches the list of channels the user is in
+     * @return List of the user channels
      */
-    public void addUserChanMode(String chan, String modes) {
-        this.userChanModes.replace(chan, sortString(removeDuplicate(this.userChanModes.get(chan) + modes)));
-    }
-
-    /**
-     * Removes the user channel mode to the channel
-     * @param chan Channel name
-     * @param modes User channel modes
-     */
-    public void delUserChanMode(String chan, String modes) {
-        this.userChanModes.replace(chan, this.userChanModes.get(chan).replaceAll("[" + modes + "]", ""));
+    public HashMap<ChannelNode, String> getChanList() {
+        return this.userChanList;
     }
 
     /**
@@ -358,22 +396,6 @@ public class UserNode {
     }
 
     /**
-     * Fetches the list of channels the user is in
-     * @return List of the user channels
-     */
-    public Map<String, ChannelNode> getUserChanList() {
-        return this.userChanList;
-    }
-
-    /**
-     * Fetches the list of the user's modes on the channels they are in
-     * @return Modes of user in their channels
-     */
-    public Map<String, String> getUserChanModes() {
-        return this.userChanModes;
-    }
-
-    /**
      * Fetches whether the user is authed
      * @return User auth status
      */
@@ -481,7 +503,7 @@ public class UserNode {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("(EE) Could not set the IP of client: " + this.getNick());
+            log.error("UserNode/setIpAddress: Could not set the IP of client: " + this.getNick());
         }
     }
 

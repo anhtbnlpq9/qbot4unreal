@@ -28,7 +28,7 @@ public class SqliteDb {
         this.config = config;
 
         try {
-           Class.forName("org.sqlite.JDBC");
+           //Class.forName("org.sqlite.JDBC");
            connection = DriverManager.getConnection("jdbc:sqlite:" + config.getDatabasePath());
         } catch ( Exception e ) {
            e.printStackTrace();
@@ -79,7 +79,6 @@ public class SqliteDb {
         String sql = null;
         ResultSet resultSet = null;
 
-        //HashMap<String,UserAccount> regUsers = new HashMap<String,UserAccount>();
         HashMap<String, HashMap<String, Object>> regUsers = new HashMap<String, HashMap<String, Object>>();
 
         try { 
@@ -178,7 +177,6 @@ public class SqliteDb {
         try {
             statement = connection.createStatement();
             sql = "DELETE FROM channels WHERE lower(name)='" + channel .toLowerCase()+ "';";
-            //System.out.println("drop sql="+sql);
             statement.executeUpdate(sql);
         }
         catch (Exception e) { 
@@ -292,7 +290,6 @@ public class SqliteDb {
             sql = "SELECT name, chanlev FROM channels LEFT JOIN chanlev ON (chanlev.channelId = channels.cid) WHERE chanlev.userId = " + userId + ";";
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
-                //System.out.println("BFP chan=" + resultSet.getString("name") + " -> chanlev=" + resultSet.getInt("chanlev"));
                 userChanlev.put(resultSet.getString("name"), resultSet.getInt("chanlev"));
             }
         }
@@ -326,16 +323,13 @@ public class SqliteDb {
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             userId = resultSet.getInt("uid");
-            //System.out.println("BBB db userId=" + userId);
 
             sql = "SELECT cid FROM channels WHERE lower(name)='" + channel.getName().toLowerCase() + "'";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
             chanId = resultSet.getInt("cid");
-            //System.out.println("BBC db chanId=" + chanId);
 
             sql = "SELECT chanlev FROM chanlev WHERE userId = '" + userId + "' AND channelId = '" + chanId + "';";
-            //System.out.println("BBD db chanlev=" + sql);
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
                 userChanlev = resultSet.getInt("chanlev");
@@ -346,7 +340,6 @@ public class SqliteDb {
             throw new Exception("Could not get user " + userAccount.getName() + " chanlev."); /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
         } 
         statement.close();
-        //System.out.println("BBE db chanlev=" + userChanlev);
         return userChanlev;
     }
 
@@ -374,7 +367,6 @@ public class SqliteDb {
             chanId = resultSet.getInt("cid");
 
             sql = "SELECT name, chanlev FROM users LEFT JOIN chanlev ON (chanlev.userId = users.uid) WHERE chanlev.channelId = " + chanId + ";";
-            //System.out.println("BCD sql=" + sql);
             resultSet = statement.executeQuery(sql);
             while(resultSet.next()) {
                 username = resultSet.getString("name");
@@ -420,24 +412,20 @@ public class SqliteDb {
 
             if(resultSet.next() == false) {
                 if (chanlev != 0) {
-                    //System.out.println("BAD user chanlev does not exist => creating it");
                     sql = "INSERT INTO chanlev (channelId, userId, chanlev) VALUES ('" + channelId + "', '" + userId + "', '" + chanlev + "');";
                     statement.executeUpdate(sql);
                 }
                 else {
-                    //System.out.println("BAG user chanlev does not exist => doing nothing");
                     return;
                 }
             }
             else {
                 
                 if (chanlev != 0) {
-                    //System.out.println("BAE user chanlev exists => updating it");
                     sql = "UPDATE chanlev SET chanlev='" + chanlev + "' WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                     statement.executeUpdate(sql);
                 }
                 else {
-                    //System.out.println("BAF user chanlev exists => deleting it");
                     sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                     statement.executeUpdate(sql);
                 }
@@ -479,11 +467,9 @@ public class SqliteDb {
 
 
             if(resultSet.next() == false) {
-                //System.out.println("BAH user chanlev does not exist => doing nothing");
                 return;
             }
             else {
-                //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "' AND userId='" + userId +"';";
                 statement.executeUpdate(sql);
             }
@@ -544,11 +530,9 @@ public class SqliteDb {
 
 
             if(resultSet.next() == false) {
-                //System.out.println("BAH user chanlev does not exist => doing nothing");
                 return;
             }
             else {
-                //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM chanlev WHERE channelId='" + channelId + "';";
                 statement.executeUpdate(sql);
             }
@@ -583,6 +567,34 @@ public class SqliteDb {
         } 
         statement.close();
         return userFlags;
+    }
+
+    /**
+     * Returns the user flags
+     * @param username user name
+     * @return user flags
+     * @throws Exception
+     */
+    public Integer getChanFlags(ChannelNode channel) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Integer chanFlags        = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT chanflags FROM channels WHERE lower(name)='" + channel.getName().toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            chanFlags = resultSet.getInt("chanflags");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + channel.getName() + " flags.");
+        } 
+        statement.close();
+        return chanFlags;
     }
 
     /**
@@ -854,7 +866,7 @@ public class SqliteDb {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.warn("* Could not readd certfp to user " + userAccount.getName() + " because already in the list");
+            log.warn("SqliteDb/addCertfp: Could not readd certfp to user " + userAccount.getName() + " because already in the list");
         }
 
         certfpForDb = hashSetToString(userCertfp);
@@ -870,7 +882,6 @@ public class SqliteDb {
             throw new Exception("Could not get user " + userAccount.getName() + " certfp.");
         } 
         statement.close();
-        //return stringToArrayList(certfp);
     }
 
     public void removeCertfp(UserAccount userAccount, String certfp) throws Exception {
@@ -885,7 +896,7 @@ public class SqliteDb {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.warn("* Could not remove certfp to user " + userAccount.getName() + " because not in the list");
+            log.warn("SqliteDb/removeCertfp: Could not remove certfp to user " + userAccount.getName() + " because not in the list");
         }
 
         certfpForDb = hashSetToString(userCertfp);
@@ -901,7 +912,6 @@ public class SqliteDb {
             throw new Exception("Could not get user " + userAccount.getName() + " certfp.");
         } 
         statement.close();
-        //return stringToArrayList(certfp);
     }
 
     public String getWelcomeMsg(ChannelNode channelNode) throws Exception {
@@ -920,8 +930,6 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            //throw new Exception("Could not get user " + channelNode.getChanName() + " welcome.");
-            //welcomeMsg = "";
         } 
         statement.close();
         return welcomeMsg;
@@ -943,7 +951,6 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            //throw new Exception("Could not get user " + channelNode.getChanName() + " welcome.");
             topic = "";
         } 
         statement.close();
@@ -966,8 +973,8 @@ public class SqliteDb {
             catch (Exception e) { e.printStackTrace(); }
 
             if (resultSet.next() == true) {
-                log.warn("Error: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
-                throw new Exception("Error: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
+                log.warn("SqliteDb/addUserAuth: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
+                throw new Exception("SqliteDb/addUserAuth: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
             }
             statement.close();
 
@@ -979,8 +986,8 @@ public class SqliteDb {
             }
             catch (Exception e) { 
                 e.printStackTrace(); 
-                log.error("Error: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'.");
-                throw new Exception("Error: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'."); 
+                log.error("SqliteDb/addUserAuth: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'.");
+                throw new Exception("SqliteDb/addUserAuth: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'."); 
             }
         }
 
@@ -1010,7 +1017,6 @@ public class SqliteDb {
             resultSet = statement.executeQuery(sql);
 
             if(resultSet.next() == true) {
-                //System.out.println("BAI user chanlev exists => deleting it");
                 sql = "DELETE FROM logins WHERE userSid='" + userSid + "';";
                 statement.executeUpdate(sql);
             }
@@ -1119,14 +1125,12 @@ public class SqliteDb {
             sql = "SELECT userId FROM logins WHERE userSid='" + user.getUid() + "' AND userTS='" + user.getUserTS()  + "';";
             resultSet = statement.executeQuery(sql);
             resultSet.next();
-            //System.out.println("BFG userId=" + resultSet.getInt("userId"));
             account = protocol.getUserAccount(resultSet.getInt("userId"));
         }
         catch (Exception e) { 
             e.printStackTrace(); 
         } 
         statement.close();
-        //System.out.println("BFG accountFound=" + account.getUserAccountName());
         return account;
     }
 
@@ -1294,7 +1298,7 @@ public class SqliteDb {
             sql = "INSERT INTO suspendhistory (itemId, itemType, suspendTS, reason) VALUES ('" + theNode.getId() + "', '" + nodeType + "', '" + unixTime + "', '" + reason + "');";
         }
         else {
-            log.error("Suspend add history: unknown node type: " + node.getClass());
+            log.error("SqliteDb/addSuspendHistory: unknown node type: " + node.getClass());
             throw new Exception("Suspend add history: unknown entity");
         }
 
@@ -1328,7 +1332,7 @@ public class SqliteDb {
             sql = "UPDATE suspendhistory SET unsuspendTS='" + unixTime + "' WHERE itemId='"+ theNode.getId() +"' AND itemType='" + nodeType + "' AND unsuspendTS IS NULL;";
         }
         else {
-            log.error("UnSuspend add history: unknown node type: " + node.getClass());
+            log.error("SqliteDb/addUnSuspendHistory: unknown node type: " + node.getClass());
             throw new Exception("UnSuspend add history: unknown entity");
         }
 

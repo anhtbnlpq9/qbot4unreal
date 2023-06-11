@@ -119,7 +119,7 @@ public class CService {
                         return;
                     }
                     useraccount.getUserLogins().forEach( (usernode) -> {
-                        if (usernode.getUserChanList().containsKey(regChannelNode.getName())) {
+                        if (usernode.getChanList().containsKey(regChannelNode)) {
                             this.handleJoin(usernode, regChannelNode);
                         }
                     });
@@ -285,7 +285,7 @@ public class CService {
             if (user.getAccount().getChanlev().containsKey(channel.getName())) {
                 if (  Flags.isChanLBanned( user.getAccount().getChanlev(channel)) == true ) {
                     try {
-                        protocol.setMode(client, myUniq, channel.getName(), "+b", String.format(autoBanMask, user.getIdent(), user.getHost()));
+                        protocol.setMode(client, myUniq, channel, "+b", String.format(autoBanMask, user.getIdent(), user.getHost()));
                         protocol.chanKick(client, myUserNode, channel, user, autoBanReason);
                     }
                     catch (Exception e) { e.printStackTrace(); }
@@ -295,31 +295,31 @@ public class CService {
 
                     if (  Flags.isChanLOwner( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanOwner") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel.getName(), "+q", user.getNick());
+                            protocol.setMode(client, myUniq, channel, "+q", user.getNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
                     else if (  Flags.isChanLMaster( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanAdmin") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel.getName(), "+a", user.getNick());
+                            protocol.setMode(client, myUniq, channel, "+a", user.getNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
                     else if (  Flags.isChanLOp( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanOp") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel.getName(), "+o", user.getNick());
+                            protocol.setMode(client, myUniq, channel, "+o", user.getNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
                     else if (  Flags.isChanLHalfOp( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanHalfop") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel.getName(), "+h", user.getNick());
+                            protocol.setMode(client, myUniq, channel, "+h", user.getNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
                     else if (  Flags.isChanLVoice( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanVoice") == true ) {
                         try {
-                            protocol.setMode(client, myUniq, channel.getName(), "+v", user.getNick());
+                            protocol.setMode(client, myUniq, channel, "+v", user.getNick());
                         }
                         catch (Exception e) { e.printStackTrace(); }
                     }
@@ -430,9 +430,6 @@ public class CService {
                 var wrapperCL = new Object() { Integer chanlev;};
                 whoisUserAccount.getChanlev().forEach( (chan, chanlev) -> {
                     wrapperCL.chanlev = chanlev;
-                    //if (Flags.hasUserStaffPriv(fromNick.getUserAccount().getUserAccountFlags()) == false) {
-                    //    wrapperCL.chanlev = Flags.stripChanlevPunishFlags(wrapperCL.chanlev);
-                    //}
                     if (wrapperCL.chanlev != 0) {
                         protocol.sendNotice(client, myUserNode, fromNick, " " + chan + spaceFill.repeat(30-chan.length()) +"+" + Flags.flagsIntToChars("chanlev", wrapperCL.chanlev));
                     }
@@ -513,12 +510,12 @@ public class CService {
 
 
 
-                    user.getValue().getUserChanModes().forEach( (key, value) -> {
+                    user.getValue().getChanList().forEach( (chan, mode) -> {
                         wrappercServeWhois2.bufferMode = "";
 
-                        if (value.isEmpty() == false) { wrappercServeWhois2.bufferMode = "(+" + value + ")"; }
+                        if (mode.isEmpty() == false) { wrappercServeWhois2.bufferMode = "(+" + mode + ")"; }
 
-                        protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + " " + wrappercServeWhois2.bufferMode);
+                        protocol.sendNotice(client, myUserNode, fromNick, "| |- " + chan + " " + wrappercServeWhois2.bufferMode);
 
                     });
                 }
@@ -798,7 +795,7 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, String.format(chanlevStrSuccessSummary, userAccount.getName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
 
             userAccount.getUserLogins().forEach( (usernode) -> {
-                if (usernode.getUserChanList().containsKey(chanNode.getName())) {
+                if (usernode.getChanList().containsKey(chanNode)) {
                     this.handleJoin(usernode, chanNode);
                 }
             });
@@ -1111,7 +1108,6 @@ public class CService {
             else deAuthResult = jdf.format(dateDeAuthTS);
 
             String quitResult = (authLine.get("deAuthReason")) == null ? "(none)" : (String)authLine.get("deAuthReason");
-           //deAuthType = Const.getDeAuthTypeString(authLine.get("authType"));
 
             protocol.sendNotice(client, myUserNode, fromNick, 
               "#" + String.valueOf(i) + strFiller.repeat(3 - String.valueOf(i).length()) 
@@ -1309,7 +1305,7 @@ public class CService {
                 }
                 catch (Exception e) {
                     e.printStackTrace();
-                    log.error("User drop: could not deauthenticate: " + loggedUserNode.getNick() + ".");
+                    log.error("CService/DropAccount: could not deauthenticate nick " + loggedUserNode.getNick() + " from account " + targetUserAccount.getName() + ".");
                 }
             }
 
@@ -1326,6 +1322,7 @@ public class CService {
 
             /* Delete account data from db */
             sqliteDb.delUserAccount(targetUserAccount);
+            log.info(String.format("CService/DropAccount: %s has been dropped", targetUserAccount.getName()));
 
             /* Delete the reference */
             targetUserAccount = null;
@@ -1401,7 +1398,7 @@ public class CService {
         }
 
         // First check that the user is on the channel and opped
-        if (user.getUserChanMode(channel).matches("(.*)o(.*)") == true || operMode == true) {
+        if (user.getChanList(chanNode).matches("(.*)o(.*)") == true || operMode == true) {
             try {
                 sqliteDb.addRegChan(chanNode);
                 
@@ -1565,7 +1562,7 @@ public class CService {
         }
 
         usernode.getAccount().getChanlev().forEach( (channel, chanlev) -> {
-            if (Flags.isChanLAutoInvite(chanlev) == true && usernode.getUserChanList().containsKey(channel) == false) {
+            if (Flags.isChanLAutoInvite(chanlev) == true && usernode.getChanList().containsKey(protocol.getChannelNodeByName(channel)) == false) {
                 protocol.sendInvite(client, usernode, protocol.getChannelNodeByName(channel));
             }
         });
@@ -1574,7 +1571,7 @@ public class CService {
 
         // Now we apply the modes of the user's chanlev as it was joining the channels
         // But no welcome message
-        usernode.getUserChanList().forEach( (chanName, chanObj) -> {
+        usernode.getChanList().forEach( (chanObj, mode) -> {
             this.handleJoin(usernode, chanObj, false);
         });
     }
@@ -1813,7 +1810,7 @@ public class CService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Error while logging out.");
+            log.error("CService/logoutUser: error while logging out nick " + usernode.getNick());
             return;
         }
 
@@ -2112,7 +2109,6 @@ public class CService {
      */
     public void cServeSetAutolimit() {
 
-        //ChannelNode chanNode;
         protocol.getRegChanList().forEach( (chanName, chanNode) -> {
 
             Integer curChanUserCount = chanNode.getUserCount();
@@ -2275,7 +2271,7 @@ public class CService {
             return;
         }
         
-        if (chanNode.getRegistered() == false) {
+        if (chanNode.isRegistered() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
             return;
         }
@@ -2296,7 +2292,7 @@ public class CService {
             sqliteDb.setChanFlags(chanNode, newChanFlags);
         }
         catch (Exception e) {
-            log.error("Cannot suspend channel" + chanNode.getName());
+            log.error("CService/cServeSuspendChan: Cannot suspend channel" + chanNode.getName());
             return;
         }
         chanNode.setFlags(newChanFlags);
@@ -2359,7 +2355,7 @@ public class CService {
             return;
         }
         
-        if (chanNode.getRegistered() == false) {
+        if (chanNode.isRegistered() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
             return;
         }
@@ -2380,7 +2376,7 @@ public class CService {
             sqliteDb.setChanFlags(chanNode, newChanFlags);
         }
         catch (Exception e) {
-            log.error("Cannot unsuspend channel" + chanNode.getName());
+            log.error("CService/cServeUnSuspendChan: Cannot unsuspend channel" + chanNode.getName());
             return;
         }
         chanNode.setFlags(newChanFlags);
@@ -2504,7 +2500,7 @@ public class CService {
             sqliteDb.setUserFlags(userAccount, newFlags);
         }
         catch (Exception e) {
-            log.error("Cannot suspend user" + userAccount.getName());
+            log.error("CService/cServeSuspendUser: Cannot suspend user" + userAccount.getName());
             return;
         }
         userAccount.setFlags(newFlags);
@@ -2531,13 +2527,13 @@ public class CService {
                 }
                 catch (Exception e) {
                     e.printStackTrace();
-                    log.error("Suspenduser: could not deauthenticate: " + loggedUserNode.getNick() + ".");
+                    log.error("CService/cServeSuspendChan/Suspenduser: could not deauthenticate: " + loggedUserNode.getNick() + " from account " + userAccount.getName());
                 }
             }
         }
         catch (Exception e) { 
             protocol.sendNotice(client, myUserNode, fromNick, strErrGeneric);
-            log.error("Suspenduser: could not deauth user: " + userAccount.getName() + ".");
+            log.error("CService/cServeSuspendUser: Suspenduser: could not deauth user: " + userAccount.getName() + ".");
             e.printStackTrace();
             return;
         }
@@ -2603,7 +2599,7 @@ public class CService {
             sqliteDb.setUserFlags(userAccount, newFlags);
         }
         catch (Exception e) {
-            log.error("Cannot unsuspend user" + userAccount.getName());
+            log.error("CService/cServeUnSuspendUser: Cannot unsuspend user" + userAccount.getName());
             return;
         }
         userAccount.setFlags(newFlags);

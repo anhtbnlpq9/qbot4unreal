@@ -8,6 +8,7 @@
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
  
@@ -33,7 +34,7 @@ public class ChannelNode {
     private Long topicTS;
     private Long channelTS; /* If channel is registered, channel TS = registration TS */
 
-    private Boolean channelRegistered;
+    private Boolean channelRegistered = false;
 
     private UserNode channelOwner;
 
@@ -41,9 +42,9 @@ public class ChannelNode {
 
     
     /* Contains the UserNodes inside the chan */
-    private HashMap<String, UserNode> chanUserList = new HashMap<String, UserNode>();
+    private HashSet<UserNode> chanUserList = new HashSet<>();
    
-    private Map<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
+    private HashMap<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
     
     private ArrayList<String> banList = new ArrayList<String>();
     private ArrayList<String> exceptList = new ArrayList<String>();
@@ -101,7 +102,7 @@ public class ChannelNode {
      */
     public ChannelNode( String channelName, 
                         long channelTS,
-                        Map<String, String> channelModes,
+                        HashMap<String, String> channelModes,
                         ArrayList<String> banList,
                         ArrayList<String> exceptList,
                         ArrayList<String> inviteList)
@@ -223,7 +224,7 @@ public class ChannelNode {
         return this.inviteList;
     }
 
-    public Map<String, String> getModes() {
+    public HashMap<String, String> getModes() {
         return this.channelModes;
     }
 
@@ -231,16 +232,15 @@ public class ChannelNode {
         return this.channelModes.get(mode);
     }
 
-    public void setModes(Map<String, String> channelModes) {
+    public void setModes(HashMap<String, String> channelModes) {
         this.channelModes = channelModes;
     }
 
     public String getTopic() {
-        //if (this.topic == null) { return ""; }
         return this.topic;
     }
 
-    public Boolean getRegistered() {
+    public Boolean isRegistered() {
         return this.channelRegistered;
     }
 
@@ -300,9 +300,34 @@ public class ChannelNode {
         return this.flags;
     }
 
-    public HashMap<String, UserNode> getUsers() {
+    public HashSet<UserNode> getUsers() {
         return this.chanUserList;
     }
+
+    public void addUser(UserNode user) {
+        this.chanUserList.add(user);
+        this.userCount++;
+    }
+    public void removeUser(UserNode user) {
+        this.chanUserList.remove(user);
+        this.userCount--;
+    }
+    
+    public UserNode getUser(UserNode user) {
+        if (this.chanUserList.contains(user)) return user;
+        else return null;
+    }
+
+    public UserNode getUser(String nick) {
+        var wrapper = new Object() { UserNode userNode = null; };
+        this.chanUserList.forEach( (user) -> {
+            if (user.getNick().equals(nick) == true) { wrapper.userNode = user; }
+        });
+
+        return wrapper.userNode;
+    }
+
+
 
     public Integer getAutoLimit() {
         return this.autoLimit;
