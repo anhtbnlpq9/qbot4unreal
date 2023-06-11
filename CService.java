@@ -2616,4 +2616,28 @@ public class CService {
 
         protocol.sendNotice(client, myUserNode, fromNick, strSuccess);
     }
+
+    /**
+     * SUSPENDHISTORY command
+     * Syntax: SUSPENDHISTORY <user|#chan>
+     * 
+     * Lists the suspension history of an user or a channel
+     * @param fromNick
+     * @param str
+     */
+    private void cServeSuspendHistory(UserNode fromNick, String str) {
+
+    }
+
+    /**
+     * MODELOCK command
+     * Syntax: MODELOCK <#chan> [modes]
+     * 
+     * Defines modes to lock on the channel
+     * @param fromNick
+     * @param str
+     */
+    private void cServeModeLock(UserNode fromNick, String str) {
+
+    }
 }
