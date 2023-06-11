@@ -34,7 +34,7 @@ public class ChannelNode {
     private Long topicTS;
     private Long channelTS; /* If channel is registered, channel TS = registration TS */
 
-    private Boolean channelRegistered;
+    private Boolean channelRegistered = false;
 
     private UserNode channelOwner;
 
