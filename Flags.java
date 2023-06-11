@@ -460,8 +460,6 @@ abstract class Flags {
         return (chanlev & ~CLFLAGS_PUNISH);
     }
 
-
-
     /**
      * Returns whether the user is channel owner
      * @param chanlev Chanlev
