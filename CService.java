@@ -2275,7 +2275,7 @@ public class CService {
             return;
         }
         
-        if (chanNode.getRegistered() == false) {
+        if (chanNode.isRegistered() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
             return;
         }
@@ -2359,7 +2359,7 @@ public class CService {
             return;
         }
         
-        if (chanNode.getRegistered() == false) {
+        if (chanNode.isRegistered() == false) {
             protocol.sendNotice(client, myUserNode, fromNick, strErrChanNoReg);
             return;
         }

@@ -240,7 +240,7 @@ public class ChannelNode {
         return this.topic;
     }
 
-    public Boolean getRegistered() {
+    public Boolean isRegistered() {
         return this.channelRegistered;
     }
 
