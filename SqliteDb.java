@@ -586,6 +586,34 @@ public class SqliteDb {
     }
 
     /**
+     * Returns the user flags
+     * @param username user name
+     * @return user flags
+     * @throws Exception
+     */
+    public Integer getChanFlags(ChannelNode channel) throws Exception {
+        Statement statement      = null;
+        String sql               = null;
+        ResultSet resultSet      = null;
+        Integer chanFlags        = 0;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT chanflags FROM channels WHERE lower(name)='" + channel.getName().toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+            chanFlags = resultSet.getInt("chanflags");
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+            throw new Exception("Could not get user " + channel.getName() + " flags.");
+        } 
+        statement.close();
+        return chanFlags;
+    }
+
+    /**
      * Sets the userflags for an user
      * @param username user name
      * @param channel channel name
