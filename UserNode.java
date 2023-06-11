@@ -45,9 +45,6 @@ public class UserNode {
     private Long userTS;
     private Long authTS;
 
-    //private HashMap<String, ChannelNode>  userChanList   = new HashMap<String, ChannelNode>();
-    //private HashMap<String, String>       userChanModes  = new HashMap<String, String>();
-
     /**
      * HashMap contains:
      *  - channel where the is inside
@@ -184,11 +181,17 @@ public class UserNode {
             if (account != null) {
                 this.userAccount = account;
                 try { this.userAccount.addUserAuth(this); }
-                catch (Exception e) { e.printStackTrace(); log.error("(EE) Could not auth user."); }
+                catch (Exception e) { 
+                    e.printStackTrace(); 
+                    log.error("UserNode/setAccount: Could not auth user."); 
+                }
             }
             else {
                 try { this.userAccount.delUserAuth(this); }
-                catch (Exception e) { e.printStackTrace(); log.error("(EE) Could not de-auth user."); }   
+                catch (Exception e) { 
+                    e.printStackTrace(); 
+                    log.error("UserNode/setAccount: Could not de-auth user."); 
+                }   
                 this.userAccount = null;
             }
         }
@@ -500,7 +503,7 @@ public class UserNode {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("(EE) Could not set the IP of client: " + this.getNick());
+            log.error("UserNode/setIpAddress: Could not set the IP of client: " + this.getNick());
         }
     }
 

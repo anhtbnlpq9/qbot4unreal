@@ -237,7 +237,6 @@ public class ChannelNode {
     }
 
     public String getTopic() {
-        //if (this.topic == null) { return ""; }
         return this.topic;
     }
 

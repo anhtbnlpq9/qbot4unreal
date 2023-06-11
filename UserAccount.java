@@ -41,12 +41,6 @@ public class UserAccount {
      */
     private HashSet<UserNode> attachedUserNodes = new HashSet<UserNode>();
 
-    /**
-     * HM of the previously authed SIDs to the UserAccount, from the db
-     * Table used to restore auth after Chanserv disconnect
-     */
-    //private HashMap<String, Integer> attachedLoginTokens;
-
     private HashMap<String, Integer> userChanlev = null;// = new HashMap<String, Integer>();
 
 
@@ -82,14 +76,8 @@ public class UserAccount {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Error: could not retrieve chanlev");
+            log.error("UserAccount: could not retrieve chanlev");
         }
-
-        //try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
-        //catch (Exception e) {
-        //    e.printStackTrace();
-        //    System.out.println("Error: could not retrieve tokens");
-        //}
     }
 
     /**
@@ -112,20 +100,14 @@ public class UserAccount {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Error: could not retrieve chanlev");
+            log.error("UserAccount: could not retrieve chanlev");
         }
 
         try { this.userAccountId = sqliteDb.getAccountId(userAccountName); }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Error: could not retrieve user id");
+            log.error("UserAccount: could not retrieve user id");
         }
-
-        //try { this.attachedLoginTokens = sqliteDb.getUserLoginTokens(userAccountId); }
-        //catch (Exception e) {
-        //    e.printStackTrace();
-        //    System.out.println("Error: could not retrieve tokens");
-        //}
     }
 
     /**
@@ -366,7 +348,6 @@ public class UserAccount {
         catch (Exception e) {
             log.error("Command AUTH: Error finalizing the auth: nick = " + usernode.getMask1() + ", account = " + this.getName());
             throw new Exception("Command AUTH: Error finalizing the auth: nick = " + usernode.getMask1() + ", account = " + this.getName());
-            //protocol.sendNotice(client, myUserNode, fromNick, "Error finalizing the auth.");
         }
     }
 
