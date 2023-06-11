@@ -66,6 +66,8 @@ public class CService {
         this.config = config;
         this.myUniq = config.getServerId()+config.getCServeUniq();
 
+        this.chanJoinModes = config.getCserveChanDefaultModes();
+
         unixTime = Instant.now().getEpochSecond();
 
         String str;
