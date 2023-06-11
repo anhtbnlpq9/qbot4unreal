@@ -259,6 +259,17 @@ public class CService {
         else if (str.toUpperCase().startsWith("CLEARTOPIC")) {
             cServeClearTopic(fromNick, str);
         }
+        else if (str.toUpperCase().startsWith("DIE")) {
+            if (fromNick.isAuthed() == true && Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
+                log.fatal(String.format("Received DIE command from %s (account %s), exiting.", fromNick.getNick(), fromNick.getAccount().getName()));
+                System.exit(0);
+            }
+
+            else {
+                protocol.sendNotice(client, myUserNode, fromNick, "Unknown command. Type SHOWCOMMANDS for a list of available commands."); 
+                return;
+            }
+        }
         else { // Unknown command
             protocol.sendNotice(client, myUserNode, fromNick, String.format(returnStrUnknownCommand, str.split(" ",2)[0]));
         }
