@@ -47,14 +47,16 @@ abstract class Flags {
      *                     - it is not possible to perform USERFLAGS/CHANLEV modifications,
      *                     - the user does not appear inside the CHANLEV of any channel,
      *                     - the user WHOIS and CHANLEV will return an account-not-found error (except if performed by a staff member).
-     * 
+     * +D DELETED       :: Marks the user account as deleted (necessary to keep history consistent). All the data not relevant to history still
+     *                     are deleted when the account is dropped, hence making the account void and non-restorable. Also normally the username
+     *                     associated with that account is freed and should be available for registration (operations should ignore +D accounts)
      * Note: some flags cannot be set through USERFLAGS but with specific commands: +g, +z.
      */
 
     //private static final Integer   UFLAG_SPARE_A       = 0x80000000; // +A
     //private static final Integer   UFLAG_SPARE_B       = 0x40000000; // +B
     //private static final Integer   UFLAG_SPARE_C       = 0x20000000; // +C
-    //private static final Integer   UFLAG_SPARE_D       = 0x10000000; // +D
+    private static final Integer   UFLAG_DELETED       = 0x10000000; // +D
     //private static final Integer   UFLAG_SPARE_E       = 0x08000000; // +E
     //private static final Integer   UFLAG_SPARE_F       = 0x04000000; // +F
     private static final Integer   UFLAG_ADMIN         = 0x02000000; // +a
@@ -105,7 +107,7 @@ abstract class Flags {
 
     private static final Integer   UFLAGS_NEW_ACCOUNT  = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
 
-    private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE ); /* flags non-settable through USERFLAGS */
+    private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE | UFLAG_DELETED ); /* flags non-settable through USERFLAGS */
 
 
 
@@ -121,7 +123,8 @@ abstract class Flags {
         entry("q",   UFLAG_STAFF),
         entry("v",   UFLAG_AUTOVHOST),
         entry("w",   UFLAG_WELCOME),
-        entry("z",   UFLAG_SUSPENDED)
+        entry("z",   UFLAG_SUSPENDED),
+        entry("D",   UFLAG_DELETED)
     );
 
 
@@ -137,7 +140,8 @@ abstract class Flags {
         entry(UFLAG_STAFF,          "q"),
         entry(UFLAG_AUTOVHOST,      "v"),
         entry(UFLAG_WELCOME,        "w"),
-        entry(UFLAG_SUSPENDED,      "z")
+        entry(UFLAG_SUSPENDED,      "z"),
+        entry(UFLAG_DELETED,        "D")
     );
 
     /* 
@@ -162,6 +166,9 @@ abstract class Flags {
      * +v VOICEALL      :: Automatically voices all the users that join the channel whether they are in the channel CHANLEV or not.
      *                     Users with chanlev flag +u are not voiced.
      * +w WELCOME       :: Send the welcome notice to the users joining the channel.
+     * +y GLINED        :: Marks the channel as 'glined', meaning that the bot will stay on the channel, will kick/ban anyone trying
+     *                     to enter the channel/or keep a mode to prevent people to come (such as +Pi or +OP). The channel does not need
+     *                     to be registered to be glined (but a registered and glined channel will remain registered).
      * +z SUSPENDED     :: Marks the channel as suspended and frozen. Also the +j flag will be cleared. Once set,
      *                     - the bot will leave the channel,
      *                     - it is not possible to perform modifications inside the channel parameters (CHANLEV/CHANFLAGS/SETTOPIC...),
@@ -1739,6 +1746,16 @@ abstract class Flags {
     }
 
     /**
+     * Returns if the user has DELETED flag
+     * @param userFlags user flag
+     * @return true or false
+     */
+    public static Boolean isUserDeleted(Integer userFlags) {
+        if ( (userFlags & UFLAG_DELETED) == 0) return false;
+        else return true;
+    }
+
+    /**
      * Returns if the user has NOAUTOVHOST flag
      * @param userFlags use flags
      * @return true or false
@@ -1850,6 +1867,15 @@ abstract class Flags {
     }
 
     /**
+     * Sets the user flag DELETED
+     * @param userFlags User flags
+     * @return Resulting user flags
+     */
+    public static Integer setUserDeleted(Integer userFlags) {
+        return (userFlags | UFLAG_DELETED);
+    }
+
+    /**
      * Clears the user flag GLINE
      * @param userFlags User flags
      * @return Resulting user flags
@@ -1912,6 +1938,15 @@ abstract class Flags {
         return (userFlags & ~UFLAG_AUTOVHOST); 
     }
 
+    /**
+     * Clears the user flag DELETED
+     * @param userFlags User flags
+     * @return Cleared user flags
+     */
+    public static Integer clearUserDeleted(Integer userFlags) {
+        return (userFlags & ~UFLAG_DELETED);
+    }
+ 
     /**
      * Clears the user flags
      * @param userFlags User flags
