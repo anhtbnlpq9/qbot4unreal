@@ -1279,11 +1279,11 @@ public class CService {
             }
         }
 
-        if (targetUserAccount.getConfirmCode() == null) { /* This is the first time the user requests the dropping of the channel */
+        if (targetUserAccount.getConfirmationCode() == null) { /* This is the first time the user requests the dropping of the channel */
 
-            targetUserAccount.setConfirmCode(UUID.randomUUID());
+            targetUserAccount.setConfirmationCode(UUID.randomUUID());
             protocol.sendNotice(client, myUserNode, fromNick, "Destructive operation: dropping of account " + targetUserAccount.getName() + " requested. Please note that all the data, history... will be deleted. This action cannot be undone, even by the staff."); 
-            protocol.sendNotice(client, myUserNode, fromNick, "To confirm, please send the command: DROPUSER #" + targetUserAccount.getName() + " " + targetUserAccount.getConfirmCode());
+            protocol.sendNotice(client, myUserNode, fromNick, "To confirm, please send the command: DROPUSER #" + targetUserAccount.getName() + " " + targetUserAccount.getConfirmationCode());
             return;
 
         }
@@ -1293,12 +1293,12 @@ public class CService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            protocol.sendNotice(client, myUserNode, fromNick, "Please enter the confirmation code as: DROPUSER #" + targetUserAccount.getName() + " " + targetUserAccount.getConfirmCode()); 
+            protocol.sendNotice(client, myUserNode, fromNick, "Please enter the confirmation code as: DROPUSER #" + targetUserAccount.getName() + " " + targetUserAccount.getConfirmationCode()); 
             return;
         }
 
-        if (confirmCode.equals(targetUserAccount.getConfirmCode().toString()) == false) {
-            targetUserAccount.setConfirmCode(null);
+        if (confirmCode.equals(targetUserAccount.getConfirmationCode().toString()) == false) {
+            targetUserAccount.setConfirmationCode(null);
             protocol.sendNotice(client, myUserNode, fromNick, "Incorrect confirmation code. Confirmation code reset."); 
             return;
         }
@@ -1423,7 +1423,7 @@ public class CService {
                 ownerAccount.setChanlev(chanNode, Flags.getChanLFlagOwnerDefault());
 
                 // updating channel chanlev as well
-                Map<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(chanNode);
+                HashMap<String, Integer> chanNewChanlev = sqliteDb.getChanChanlev(chanNode);
                 chanNode.setChanlev(chanNewChanlev);
                 chanNode.setFlags(Flags.getDefaultChanFlags());
                 
@@ -1590,7 +1590,7 @@ public class CService {
     }
    
     private void cServeCertfpAdd(UserNode userNode, String str) { // CERTFPADD <certfp>
-        String[] command = str.split(" ",5);
+
         String certfp;
 
         UserAccount userAccount;

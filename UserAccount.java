@@ -22,18 +22,18 @@ public class UserAccount {
 
     private Config config;
 
-    private Integer userAccountId;
-    private Integer userAccountFlags;
+    private Integer id;
+    private Integer flags;
 
-    private String userAccountEmail;    
-    private String userAccountName;
+    private String email;    
+    private String name;
 
-    private HashSet<String> userAccountCertFP;
+    private HashSet<String> certFp;
 
-    private Long userAccountRegTS  = 0L;
-    private Long lastAuthTS        = 0L;
+    private Long registeredTS  = 0L;
+    private Long lastAuthTS    = 0L;
 
-    private UUID confirmCode = null;
+    private UUID confirmationCode = null;
 
     /**
      * HS of the UserNodes loggued with the UserAccount
@@ -64,12 +64,12 @@ public class UserAccount {
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userAccountId, Integer userFlags, String userAccountEmail, HashSet<String> userAccountCertFP, Long userAccountRegTS) {
         this.sqliteDb           = sqliteDb;
-        this.userAccountName    = userAccountName;
-        this.userAccountId      = userAccountId;
-        this.userAccountFlags   = userFlags;
-        this.userAccountEmail   = userAccountEmail;
-        this.userAccountCertFP  = userAccountCertFP;
-        this.userAccountRegTS   = userAccountRegTS;
+        this.name    = userAccountName;
+        this.id      = userAccountId;
+        this.flags   = userFlags;
+        this.email   = userAccountEmail;
+        this.certFp  = userAccountCertFP;
+        this.registeredTS   = userAccountRegTS;
 
         try {
             this.userChanlev = sqliteDb.getUserChanlev(this); 
@@ -90,10 +90,10 @@ public class UserAccount {
      */
     public UserAccount(SqliteDb sqliteDb, String userAccountName, Integer userFlags, String userAccountEmail, Long userAccountRegTS) {
         this.sqliteDb          = sqliteDb;
-        this.userAccountName   = userAccountName;
-        this.userAccountFlags  = userFlags;
-        this.userAccountEmail  = userAccountEmail;
-        this.userAccountRegTS  = userAccountRegTS;
+        this.name   = userAccountName;
+        this.flags  = userFlags;
+        this.email  = userAccountEmail;
+        this.registeredTS  = userAccountRegTS;
 
         try {
             this.userChanlev = sqliteDb.getUserChanlev(this); 
@@ -103,7 +103,7 @@ public class UserAccount {
             log.error("UserAccount: could not retrieve chanlev");
         }
 
-        try { this.userAccountId = sqliteDb.getAccountId(userAccountName); }
+        try { this.id = sqliteDb.getAccountId(userAccountName); }
         catch (Exception e) {
             e.printStackTrace();
             log.error("UserAccount: could not retrieve user id");
@@ -201,7 +201,7 @@ public class UserAccount {
      * @return user account id
      */
     public Integer getId() {
-        return this.userAccountId;
+        return this.id;
     }
 
     /**
@@ -209,11 +209,11 @@ public class UserAccount {
      * @return registration timestamp
      */
     public Long getRegTS() {
-        return this.userAccountRegTS;
+        return this.registeredTS;
     }
 
     public void setRegTS(Long ts) {
-        this.userAccountRegTS = ts;
+        this.registeredTS = ts;
     }
 
     public Long getLastAuthTS() {
@@ -229,7 +229,7 @@ public class UserAccount {
      * @return user account name
      */
     public String getName() {
-        return this.userAccountName;
+        return this.name;
     }
 
     /**
@@ -237,11 +237,11 @@ public class UserAccount {
      * @return user certfp
      */
     public HashSet<String> getCertFP() {
-        return this.userAccountCertFP;
+        return this.certFp;
     }
 
     public void setCertFP(HashSet<String> certfpList) {
-        this.userAccountCertFP = certfpList;
+        this.certFp = certfpList;
     }
 
     /**
@@ -249,7 +249,7 @@ public class UserAccount {
      * @return user email
      */
     public String getEmail() {
-        return this.userAccountEmail;
+        return this.email;
     }
 
     /**
@@ -257,7 +257,7 @@ public class UserAccount {
      * @return user flags
      */
     public Integer getFlags() {
-        return this.userAccountFlags;
+        return this.flags;
     }
 
     /**
@@ -273,7 +273,7 @@ public class UserAccount {
      * @param userflags user flags
      */
     public void setFlags(Integer userflags) {
-        this.userAccountFlags = userflags;
+        this.flags = userflags;
     }
 
     private Boolean auth(UserNode usernode, String inputValue, Integer authType) throws Exception {
@@ -367,11 +367,11 @@ public class UserAccount {
         this.config = config;
     }
 
-    public void setConfirmCode(UUID uuid) {
-        this.confirmCode = uuid;
+    public void setConfirmationCode(UUID uuid) {
+        this.confirmationCode = uuid;
     }
 
-    public UUID getConfirmCode() {
-        return this.confirmCode;
+    public UUID getConfirmationCode() {
+        return this.confirmationCode;
     }
 }

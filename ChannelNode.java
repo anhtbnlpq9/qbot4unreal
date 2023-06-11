@@ -6,7 +6,6 @@
  * @author me
  */ 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,7 +25,6 @@ public class ChannelNode {
     private String chanRegisteredTopic = "";
     private String chanWelcomeMsg      = "";
     private String topicBy;
-    private String mLocked             = "";
 
     private UUID confirmCode = null;
 
@@ -38,17 +36,20 @@ public class ChannelNode {
 
     private UserNode channelOwner;
 
-    private Map<String, Integer> chanChanlev; // Map username -> chanlev
+    private HashMap<String, Integer> chanChanlev  = new HashMap<>(); // Map username -> chanlev
+
+    /* HM maps mode -> parameter */
+    private HashMap<String, String> mLockModes = new HashMap<>(); 
+    private HashMap<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
 
     
     /* Contains the UserNodes inside the chan */
     private HashSet<UserNode> chanUserList = new HashSet<>();
    
-    private HashMap<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
     
-    private ArrayList<String> banList = new ArrayList<String>();
-    private ArrayList<String> exceptList = new ArrayList<String>();
-    private ArrayList<String> inviteList = new ArrayList<String>();
+    private HashSet<String> banList = new HashSet<>();
+    private HashSet<String> exceptList = new HashSet<>();
+    private HashSet<String> inviteList = new HashSet<>();
     
     /**
      * Constructor used when a local user joins an empty channel => creates the new channel
@@ -103,9 +104,9 @@ public class ChannelNode {
     public ChannelNode( String channelName, 
                         long channelTS,
                         HashMap<String, String> channelModes,
-                        ArrayList<String> banList,
-                        ArrayList<String> exceptList,
-                        ArrayList<String> inviteList)
+                        HashSet<String> banList,
+                        HashSet<String> exceptList,
+                        HashSet<String> inviteList)
     {
         this.name = channelName;
         this.channelTS = channelTS;
@@ -152,7 +153,7 @@ public class ChannelNode {
         this.channelOwner = user;
     }
 
-    public void setChanlev(Map<String, Integer> chanChanlev) {
+    public void setChanlev(HashMap<String, Integer> chanChanlev) {
         this.chanChanlev = chanChanlev;
     }
 
@@ -200,27 +201,27 @@ public class ChannelNode {
         this.inviteList.remove(str);
     }
 
-    public void setBanList(ArrayList<String> banList) {
+    public void setBanList(HashSet<String> banList) {
         this.banList = banList;
     }
 
-    public void setExceptList(ArrayList<String> exceptList) {
+    public void setExceptList(HashSet<String> exceptList) {
         this.exceptList = exceptList;
     }
 
-    public void setInviteList(ArrayList<String> inviteList) {
+    public void setInviteList(HashSet<String> inviteList) {
         this.inviteList = inviteList;
     }
 
-    public ArrayList<String> getBanList() {
+    public HashSet<String> getBanList() {
         return this.banList;
     }
 
-    public ArrayList<String> getExceptList() {
+    public HashSet<String> getExceptList() {
         return this.exceptList;
     }
 
-    public ArrayList<String> getInviteList() {
+    public HashSet<String> getInviteList() {
         return this.inviteList;
     }
 

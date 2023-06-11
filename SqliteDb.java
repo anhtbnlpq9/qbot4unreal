@@ -3,7 +3,6 @@ import java.util.ArrayList;
 //import org.sqlite.JDBC;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -349,11 +348,11 @@ public class SqliteDb {
      * @return user:chanlev map
      * @throws Exception
      */
-    public Map<String, Integer> getChanChanlev(ChannelNode channel) throws Exception {
+    public HashMap<String, Integer> getChanChanlev(ChannelNode channel) throws Exception {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
-        Map<String, Integer> chanChanlev = new HashMap<String, Integer>();
+        HashMap<String, Integer> chanChanlev = new HashMap<String, Integer>();
         Integer chanlev;
         String username;
         Integer chanId           = 0;
