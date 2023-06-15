@@ -1448,70 +1448,99 @@ public class Protocol extends Exception {
             /* Parsing the SJOIN list */
             for ( String listItem : sJoinList.split(" ") ) {
 
-                chanListItem = ""; 
+                chanListItem = "";
 
-                if (listItem.startsWith("&") == false && listItem.startsWith("\"") == false && listItem.startsWith("'") == false && listItem.isEmpty() == false) {
-                    user = this.getUserNodeBySid(listItem.replaceAll("^[^A-Za-z0-9]{1}", ""));
-                    log.info(String.format("Protocol/SJOIN: Channel %s: user %s (%s) joined channel", chan.getName(), user.getNick(), user.getUid()));
+                if (listItem.isEmpty() == true) {
+                    /* There is nothing to treat => go to next iteration */
+                    continue;
                 }
-                else { 
+
+                if (listItem.startsWith("&") == true || listItem.startsWith("\"") == true || listItem.startsWith("'") == true) {
+                    /* Special cases: we have a channel list */
+
                     chanListItem =  listItem.replaceAll("^.", ""); 
                     log.debug(String.format("Protocol/SJOIN: Channel %s: list %s", chan.getName(), listItem));
-                }
 
+                    if (listItem.startsWith("&")) { // +b
+                        chan.addBanList(chanListItem);
+                        log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));
+
+                    }
+
+                    else if (listItem.startsWith("\"")) { // +e
+                        chan.addExceptList(chanListItem);
+                        log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));
+
+                    }
+
+                    else if (listItem.startsWith("'")) { // +I
+                        chan.addInviteList(chanListItem);
+                        log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));
+
+                    }
+
+                    /* No need to go further because list does not contains user modes */
+                    continue;
+                }
 
                 
-                if (listItem.startsWith("+")) { // +v
-                    user.addToChan(chan, "v");
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +v %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                /* At this point we have only items with modes */
+                /* 1/ get the modes associated with UID (if in the format of @123456789, +123456789, ~%123456789, *@+123456789 ...) */
+                String[] listItemSplitted = new String[0];
+                try {
+                    listItemSplitted = listItem.split("[A-Za-z0-9]", 0);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-                else if (listItem.startsWith("%")) { // +h
-                    user.addToChan(chan, "h");
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +h %s (%s)", chan.getName(), user.getNick(), user.getUid()));
-                }
+                user = this.getUserNodeBySid(listItem.replaceAll("^[^A-Za-z0-9]*", ""));
+                log.info(String.format("Protocol/SJOIN: Channel %s: user %s (%s) joined channel", chan.getName(), user.getNick(), user.getUid()));
+                
+                for (String mode: listItemSplitted) {
 
-                else if (listItem.startsWith("@")) { // +o
-                    user.addToChan(chan, "o");
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +o %s (%s)", chan.getName(), user.getNick(), user.getUid()));
-                }
+                    for (int i=0; i < mode.length(); i++) {
 
-                else if (listItem.startsWith("~")) { // +h
-                    user.addToChan(chan, "a");
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +a %s (%s)", chan.getName(), user.getNick(), user.getUid()));
-                }
+                        if (String.valueOf(mode.charAt(i)).startsWith("+")) { // +v
+                            if (user.isUserOnChan(chan) == false) user.addToChan(chan, "v");
+                            else user.addUserModeChan(chan, "v");
+                            log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +v %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                        }
 
-                else if (listItem.startsWith("*")) { // +q
-                    user.addToChan(chan, "q");
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +q %s (%s)", chan.getName(), user.getNick(), user.getUid()));
-                }
+                        else if (String.valueOf(mode.charAt(i)).startsWith("%")) { // +h
+                            if (user.isUserOnChan(chan) == false) user.addToChan(chan, "h");
+                            else user.addUserModeChan(chan, "h");
+                            log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +h %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                        }
 
-                else if (listItem.startsWith("&")) { // +b
-                    chan.addBanList(chanListItem);
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));
+                        else if (String.valueOf(mode.charAt(i)).startsWith("@")) { // +o
+                            if (user.isUserOnChan(chan) == false) user.addToChan(chan, "o");
+                            else user.addUserModeChan(chan, "o");
+                            log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +o %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                        }
 
-                }
+                        else if (String.valueOf(mode.charAt(i)).startsWith("~")) { // +h
+                            if (user.isUserOnChan(chan) == false) user.addToChan(chan, "a");
+                            else user.addUserModeChan(chan, "a");
+                            log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +a %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                        }
 
-                else if (listItem.startsWith("\"")) { // +e
-                    chan.addExceptList(chanListItem);
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));
-
-                }
-
-                else if (listItem.startsWith("'")) { // +I
-                    chan.addInviteList(chanListItem);
-                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));
-
-                }
-
-                else { // no mode
-                    if (user != null) {
-                        user.addToChan(chan, "");
-                        log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+no usermode: %s (%s) - usercount = %s", chan.getName(), user.getNick(), user.getUid(), chan.getUserCount()));
+                        else if (String.valueOf(mode.charAt(i)).startsWith("*")) { // +q
+                            if (user.isUserOnChan(chan) == false) user.addToChan(chan, "q");
+                            else user.addUserModeChan(chan, "q");
+                            log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+set usermode: +q %s (%s)", chan.getName(), user.getNick(), user.getUid()));
+                        }
                     }
+
                 }
 
 
+                /* User has no modes */
+                if (user != null && listItem.matches("^[A-Za-z0-9]*")) {
+                    user.addToChan(chan, "");
+                    log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) join+no usermode: %s (%s) - usercount = %s", chan.getName(), user.getNick(), user.getUid(), chan.getUserCount()));
+                }
+         
                 Boolean cServeReady = false;
                 try {
                     cServeReady = cservice.isReady();
