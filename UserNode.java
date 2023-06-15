@@ -212,6 +212,13 @@ public class UserNode {
         userChanList.put(chanObj, mode);
     }
 
+    public Boolean isUserOnChan(ChannelNode chan) {
+        if (this.userChanList.containsKey(chan)) {
+            return true;
+        }
+        else return false;
+    }
+
     public void removeFromChan(ChannelNode chanObj) throws Exception {
         if (userChanList.containsKey(chanObj) == false) {
             log.error("UserNode/removeUserFromChan: user " + this.getNick() + " is not in the chan");
