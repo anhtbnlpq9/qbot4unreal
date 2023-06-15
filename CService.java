@@ -33,8 +33,7 @@ public class CService {
 
     private String myUniq;
 
-    private static String chanJoinModes = "";
-
+    private String chanJoinModes = "";
 
     interface Whois {
         /**
@@ -46,6 +45,10 @@ public class CService {
 
     interface ChanlevList {
         void displayCL(UserNode fromNick, ChannelNode chanNode, UserAccount userAccount);
+    }
+
+    interface SuspendHistory {
+        void displaySH(UserNode fromNick, ChannelNode chanNode, UserAccount userAccount);
     }
 
     /**
@@ -97,7 +100,7 @@ public class CService {
         else if (protocol.getFeature("chanOp") == true) chanJoinModes += "o";
         else if (protocol.getFeature("chanHalfop") == true) chanJoinModes += "h";
         else if (protocol.getFeature("chanVoice") == true) chanJoinModes += "v";
-        CService.chanJoinModes = chanJoinModes;
+        this.chanJoinModes = chanJoinModes;
 
  
         var wrapper = new Object(){ String chanJoinModes; };
@@ -148,8 +151,8 @@ public class CService {
         return this.cServiceReady;
     }
 
-    public static String getChanJoinModes() {
-        return chanJoinModes;
+    public String getChanJoinModes() {
+        return this.chanJoinModes;
     }
 
     public void handleMessage(UserNode fromNickRaw, String str) {
