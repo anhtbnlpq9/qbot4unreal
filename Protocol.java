@@ -751,9 +751,9 @@ public class Protocol extends Exception {
             modeIndex++;
         }
 
+        
         return result;
     }
-
 
     public void getResponse(String raw) throws Exception {
         String response = "";
@@ -761,7 +761,7 @@ public class Protocol extends Exception {
         String v3Tag = "";
 
         String[] command;
-        
+
         command = raw.split(" ", 3); // Begin to split raw message to fetch the command (part0 part1 part2part3part4...)
 
         // Check for IRCv3 string presence, if yes we cut if off to part1 part2 part3part4...
@@ -1000,37 +1000,62 @@ public class Protocol extends Exception {
             command = command[2].split(" ", 12);
 
             UserNode user;
+            ServerNode userServer = serverList.get(fromEnt);
+
+            String ident;
+            String nick;
+            String vhost;
+            String realHost;
+            String gecos;
+            String uid;
+            String modes;
+            String cloakedHost;
+            String ipAddress;
+            Long ts;
+
+            ident       = command[3];
+            nick        = command[0];
+            vhost       = command[8];
+            realHost    = command[4];
+            gecos       = (command[11].split(":"))[1];
+            uid         = command[5];
+            modes       = command[7];
+            ts          = Long.parseLong(command[2]);
+            cloakedHost = command[9];
+            ipAddress   = command[10];
+
 
             if (userList.containsKey(command[5]) == false) {
-                user = new UserNode( command[0],                 // nick
-                                            command[3],                   // ident
-                                            command[8],                   // vhost
-                                            command[4],                   // realhost
-                                            (command[11].split(":"))[1],  // gecos
-                                            command[5],                   // unique id
-                                            Integer.parseInt(command[2]), // TS
-                                            command[7]                    // modes
+                user = new UserNode( nick,                 // nick
+                                            ident,                   // ident
+                                            vhost,                   // vhost
+                                            realHost,                   // realhost
+                                            gecos,  // gecos
+                                            uid,                   // unique id
+                                            ts, // TS
+                                            modes                    // modes
                                         );
 
-                userList.put(command[5], user);
-                userNickSidLookup.put(command[0], command[5]);
-                user.setServer(serverList.get(fromEnt));
-                user.setCloakedHost(command[9]);                    // cloaked host
-                user.setIpAddress(command[10]);                            // IP address
+                userList.put(uid, user);
+                userNickSidLookup.put(nick, uid);
+                user.setServer(userServer);
+                user.setCloakedHost(cloakedHost);                    // cloaked host
+                user.setIpAddress(ipAddress);                            // IP address
             }
 
             else {
-                user = userList.get(command[5]);
+                user = userList.get(uid);
 
-                user.setNick(command[0]);                       // nick
-                user.setIdent(command[3]);                      // ident
-                user.setHost(command[8]);                       // vhost
-                user.setRealHost(command[4]);                   // realhost
-                user.setRealName((command[11].split(":"))[1]);  // gecos
-                user.setUserTS(Long.parseLong(command[2]));         // TS
-                user.setUserModes(command[7]);                      // modes
-                user.setCloakedHost(command[9]);                    // cloaked host
-                user.setIpAddress(command[10]);                     // IP address
+                user.setNick(nick);                       // nick
+                user.setIdent(ident);                      // ident
+                user.setHost(vhost);                       // vhost
+                user.setRealHost(realHost);                   // realhost
+                user.setRealName(gecos);  // gecos
+                user.setUserTS(ts);         // TS
+                user.setUserModes(modes);                      // modes
+                user.setCloakedHost(cloakedHost);                    // cloaked host
+                user.setIpAddress(ipAddress);                     // IP address
+                user.setServer(userServer);                         // User server
 
                 /* Section to update auth token in the db if the user was authed using SASL, because in this case their TS and ident was unknown */
                 /* Also a good place to set the vhost */
@@ -1068,6 +1093,8 @@ public class Protocol extends Exception {
                     sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
                 }
             }
+
+
         }
         else if (command[1].equals("SASL") && config.getFeature("sasl") == true) {
 
