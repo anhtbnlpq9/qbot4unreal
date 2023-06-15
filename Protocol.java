@@ -789,14 +789,14 @@ public class Protocol extends Exception {
             }
         }
         else if (command[1].equals("SID")) {
-            // SID is used by the peer to introduce the other servers
+            // SID is used to introduce the other servers
             // :peer SID name hop sid :description
             //<<< :5P0 SID sandcat. 2 5PX :Mjav Network IRC server
 
             fromEnt = (command[0].split(":"))[1];
 
             ServerNode fromEntNode = serverList.get(fromEnt);
-            
+
             command = (command[2]).split(" ", 4);
             String name = command[0];
             Integer hop = Integer.valueOf(command[1]);
@@ -804,7 +804,10 @@ public class Protocol extends Exception {
             String desc = (command[3].split(":"))[1];
             server = new ServerNode(name, hop, sid, desc);
             server.setIntroducedBy(fromEntNode);
+            server.setParent(fromEntNode);
+            fromEntNode.addChildNode(server);
             serverList.put(sid, server);
+
         }
         else if (command[1].equals("EOS")) {
             //<<< :5PX EOS
@@ -945,7 +948,7 @@ public class Protocol extends Exception {
             
             serverList.get(config.getServerId()).setServerPeerResponded(true);
         }
-        else if (command[0].equals("SQUIT")) { // XXX: to be (largely) improved
+        else if (command[0].equals("SQUIT")) {
             //<<< SQUIT ocelot. :squit message
             String serverName = command[1];
             var wrapper = new Object(){ ServerNode sQuittedServer; };
@@ -955,18 +958,18 @@ public class Protocol extends Exception {
             });
             sQuittedServer = wrapper.sQuittedServer;
 
-            ArrayList<ServerNode> affectedServers = new ArrayList<>();
-            ArrayList<UserNode>   affectedUsers = new ArrayList<>();
+            HashSet<ServerNode> affectedServers = new HashSet<>();
+            HashSet<UserNode>     affectedUsers = new HashSet<>();
 
             // SQUITted server is first affected
             affectedServers.add(sQuittedServer);
 
             // Then we need to find all the servers introduced by the SQUITted server
-            serverList.forEach( (sid, servernode) -> {
-                if (servernode.getIntroducedBy().equals(sQuittedServer)) {
-                    affectedServers.add(servernode);
-                }
-            });
+            traverseTree(affectedServers, sQuittedServer);
+            for(ServerNode affectedNode: affectedServers) affectedUsers.addAll(affectedNode.getLocalUsers());
+
+            log.info(String.format("SQUIT received. Impacted server = %s // Impacted users = %s", affectedServers.toString(), affectedUsers.toString()));
+            
 
             // List usernodes on those servers
             userList.forEach( (uniq, usernode) -> {
@@ -1037,6 +1040,8 @@ public class Protocol extends Exception {
                 }
 
             }
+
+            userServer.addLocalUser(user);
 
             if (this.networkInsideNetBurst == true) {
                 /* Trying to authenticate the user if it was already authed (netjoin), only during sync */
@@ -1621,6 +1626,8 @@ public class Protocol extends Exception {
             UserNode userToRemove = userList.get(fromEnt);
             HashMap<ChannelNode, String> curUserChanList = new HashMap<>(userToRemove.getChanList());
 
+            ServerNode userServer = userToRemove.getServer();
+
             curUserChanList.forEach( (chan, mode) -> {
                 try {
                     userToRemove.removeFromChan(chan);
@@ -1635,12 +1642,14 @@ public class Protocol extends Exception {
 
             userNickSidLookup.remove(userToRemove.getNick());
             //userToRemove = null;
+            userServer.removeLocalUser(userToRemove);
             userList.remove(fromEnt);
         }
         else if (command[1].equals("KILL")) {
             // :AAAAAAA KILL AAAAAAA :message
             fromEnt = (command[0].split(":"))[1];
             UserNode killedUser = this.getUserNodeBySid(command[2].split(" ")[0]);
+            ServerNode userServer = killedUser.getServer();
 
             HashMap<ChannelNode, String> curUserChanList = new HashMap<>(killedUser.getChanList());
 
@@ -1658,6 +1667,7 @@ public class Protocol extends Exception {
 
             userNickSidLookup.remove(killedUser.getNick());
             //userToRemove = null;
+            userServer.removeLocalUser(killedUser);
             userList.remove(killedUser.getUid());
         }
         else if (command[1].equals("NICK")) {
@@ -1710,4 +1720,15 @@ public class Protocol extends Exception {
             }
         }
     }
+
+    private void traverseTree(HashSet nodes, ServerNode node) {
+        for (ServerNode child: node.getChildNodes()) {
+            nodes.add(child);
+            //System.out.println("Server Node found = " + child.getServerName());
+            traverseTree(nodes, child);
+
+        }
+    } 
+
+    
 }

@@ -1,3 +1,5 @@
+import java.util.HashSet;
+
 /**
  * ServerNode class
  *
@@ -29,6 +31,10 @@ public class ServerNode {
     private Boolean serverPeerResponded = null;
     private Boolean serverIsPeer = false;
     private Boolean serverIsEOS  = false;
+
+    private HashSet<UserNode> localUsers = new HashSet<>();
+    private HashSet<ServerNode> childNodes = new HashSet<>();
+    private ServerNode parentNode = null;
 
 
     /**
@@ -111,12 +117,49 @@ public class ServerNode {
         return this.serverName;
     }
 
+    public UserNode getLocalUser(UserNode node) {
+        if (this.localUsers.contains(node) == true) return node;
+        else return null;
+    }
+
+    public HashSet<UserNode> getLocalUsers() {
+        return this.localUsers;
+    }
+
+    public void addLocalUser(UserNode node) {
+        this.localUsers.add(node);
+    }
+
+    public void removeLocalUser(UserNode node) {
+        this.localUsers.remove(node);
+    }
+
     /**
      * Returns the server network SID
      * @return server SID
      */
     public String getServerId() {
         return this.serverId;
+    }
+
+    public void setParent(ServerNode server) {
+        this.parentNode = server;
+    }
+
+    public ServerNode getParent() {
+        return this.parentNode;
+    }
+
+    public void addChildNode(ServerNode server) {
+        this.childNodes.add(server);
+    }
+
+    public void delChildNode(ServerNode server) {
+        this.childNodes.remove(server);
+    }
+
+    public HashSet<ServerNode> getChildNodes() {
+        return this.childNodes;
     }
 
     /**
