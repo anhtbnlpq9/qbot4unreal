@@ -428,8 +428,8 @@ public class CService {
                 protocol.sendNotice(client, myUserNode, fromNick, "Email address  : " + whoisUserAccount.getEmail() );
                 //protocol.sendNotice(client, myUserNode, fromNick, "Email last set : ");
                 //protocol.sendNotice(client, myUserNode, fromNick, "Pass last set  : ");
-                protocol.sendNotice(client, myUserNode, fromNick, String.format("Account suspensions: %s, suspended: %s (Since/Last: %s)"));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format("Account suspended: %s (Since: %s)"));
+                protocol.sendNotice(client, myUserNode, fromNick, String.format("Account suspensions: %s, suspended: %s (Since/Last: %s)", "", "", ""));
+                protocol.sendNotice(client, myUserNode, fromNick, String.format("Account suspended: %s (Since: %s)", "", ""));
 
                 protocol.sendNotice(client, myUserNode, fromNick, "List of registered certificate fingerprints:");
                 var wrapperCertfp = new Object(){ Integer lineCounter=1;};
