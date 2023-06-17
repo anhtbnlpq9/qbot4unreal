@@ -40,12 +40,12 @@ public class Config {
     private String  linkPassword = "";    
 
     /* Chanservice parameters */
-    private String    cserviceNick                   = "";
-    private String    cserviceUid                    = "";
-    private String    cserviceIdent                  = "";
-    private String    cserviceHost                   = "";
-    private String    cserviceReal                   = "";
-    private String    cserviceModes                  = "";
+    private String    cserviceBotNick                = "";
+    private String    cserviceBotUid                 = "";
+    private String    cserviceBotIdent               = "";
+    private String    cserviceBotHost                = "";
+    private String    cserviceBotReal                = "";
+    private String    cserviceBotModes               = "";
     private String    cserviceAccountHostPrefix      = "configureme";
     private String    cserviceAccountHostSuffix      = "please";
     private String    cserviceChanDefaultModes       = "";
@@ -111,13 +111,14 @@ public class Config {
         linkPassword                        = (String)  conflink.get("password");
         linkPort                            = (Integer) conflink.get("port"); 
         
-        HashMap<String, Object> confcservice   = (HashMap<String, Object>) data.get("cservice");
-        cserviceNick                           = (String) confcservice.get("nick");
-        cserviceUid                            = (String) confcservice.get("uid");
-        cserviceIdent                          = (String) confcservice.get("ident");
-        cserviceHost                           = (String) confcservice.get("host");
-        cserviceReal                           = (String) confcservice.get("realname");
-        cserviceModes                          = (String) confcservice.get("modes");
+        HashMap<String, Object> confcservice    = (HashMap<String, Object>) data.get("cservice");
+        HashMap<String, Object> confcserviceBot = (HashMap<String, Object>) confcservice.get("bot");
+        cserviceBotNick                           = (String) confcserviceBot.get("nick");
+        cserviceBotUid                            = (String) confcserviceBot.get("uid");
+        cserviceBotIdent                          = (String) confcserviceBot.get("ident");
+        cserviceBotHost                           = (String) confcserviceBot.get("host");
+        cserviceBotReal                           = (String) confcserviceBot.get("realname");
+        cserviceBotModes                          = (String) confcserviceBot.get("modes");
         HashMap<String, Object> cserviceaccount   = (HashMap<String, Object>) confcservice.get("accountsettings");
         cserviceAccountHostPrefix                 = (String)   cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix                 = (String)   cserviceaccount.get("authvhostsuffix");
@@ -172,7 +173,6 @@ public class Config {
         log.info(" -> My versionString    = " + serverVersionString);
 
         log.info("Peer ");
-        //log.info(" -> Peer name      = " + linkPeer);
         log.info(" -> Peer hostname  = " + linkHost);
         log.info(" -> Peer port      = " + linkPort);
 
@@ -184,6 +184,8 @@ public class Config {
         log.info(" -> Traffic debug input  = " + logDebugIn);
         log.info(" -> Traffic debug output = " + logDebugOut);
 
+        log.info(String.format("CService configured as as %s!%s@%s / %s (%s) , modes %s", cserviceBotNick, cserviceBotIdent, cserviceBotHost, cserviceBotUid, cserviceBotReal, cserviceBotModes));
+
 
 
     }
@@ -194,59 +196,59 @@ public class Config {
         Integer configErrors = 0;
 
         /* Server parameters */
-        if (serverName.isEmpty() == true) {
+        if (this.serverName == null) {
             log.fatal("Configuration: me::name is not defined!");
             configErrors++;
         }
-        if (serverId.isEmpty() == true) {
+        if (this.serverId.isEmpty() == true) {
             log.fatal("Configuration: me::sid is not defined!");
             configErrors++;
         }
-        if (serverDescription.isEmpty() == true) {
+        if (this.serverDescription.isEmpty() == true) {
             log.fatal("Configuration: me::description is not defined!");
             configErrors++;
         }
 
         /* Link parameters */
-        if (linkPeer.isEmpty() == true) {
+        if (this.linkPeer.isEmpty() == true) {
             log.fatal("Configuration: link::peer is not defined!");
             configErrors++;
         }
-        if (linkHost.isEmpty() == true) {
+        if (this.linkHost.isEmpty() == true) {
             log.fatal("Configuration: link::host is not defined!");
             configErrors++;
         }
-        if (linkPort.equals(0) == true) {
+        if (this.linkPort.equals(0) == true) {
             log.fatal("Configuration: link::port is not defined!");
             configErrors++;
         }
-        if (linkPassword.isEmpty() == true) {
+        if (this.linkPassword.isEmpty() == true) {
             log.warn("Configuration: link::password is not defined. Unless you are using certificate authentication (in whoch case you should put * as password), the link may not work.");
             configErrors++;
         }
 
         /* Chanservice parameters */
-        if (cserviceNick.isEmpty() == true) {
+        if (this.cserviceBotNick == null) {
             log.fatal("Configuration: cservice::nick is not defined!");
             configErrors++;
         }
-        if (cserviceUid.isEmpty() == true) {
+        if (this.cserviceBotUid.isEmpty() == true) {
             log.fatal("Configuration: cservice::uid is not defined!");
             configErrors++;
         }
-        if (cserviceReal.isEmpty() == true) {
+        if (this.cserviceBotReal.isEmpty() == true) {
             log.fatal("Configuration: cservice::realname is not defined!");
             configErrors++;
         }
-        if (cserviceIdent.isEmpty() == true) {
+        if (this.cserviceBotIdent.isEmpty() == true) {
             log.fatal("Configuration: cservice::ident is not defined!");
             configErrors++;
         }
-        if (cserviceHost.isEmpty() == true) {
+        if (this.cserviceBotHost.isEmpty() == true) {
             log.fatal("Configuration: cservice::host is not defined!");
             configErrors++;
         }
-        if (cserviceModes.isEmpty() == true) {
+        if (cserviceBotModes.isEmpty() == true) {
             log.fatal("Configuration: cservice::modes is not defined!");
             configErrors++;
         }
@@ -380,7 +382,7 @@ public class Config {
      * @return
      */
     public String getCServeUniq() {
-        return this.cserviceUid;
+        return this.cserviceBotUid;
     }
 
     /**
@@ -388,7 +390,7 @@ public class Config {
      * @return nickname
      */
     public String getCServeNick() {
-        return this.cserviceNick;
+        return this.cserviceBotNick;
     }
 
     /**
@@ -396,7 +398,7 @@ public class Config {
      * @return ident
      */
     public String getCServeIdent() {
-        return this.cserviceIdent;
+        return this.cserviceBotIdent;
     }
 
     /**
@@ -404,7 +406,7 @@ public class Config {
      * @return host
      */
     public String getCServeHost() {
-        return this.cserviceHost;
+        return this.cserviceBotHost;
     }
 
     /**
@@ -412,7 +414,7 @@ public class Config {
      * @return gecos
      */
     public String getCServeRealName() {
-        return this.cserviceReal;
+        return this.cserviceBotReal;
     }
 
     /**
@@ -420,7 +422,7 @@ public class Config {
      * @return modes for cserve bot
      */
     public String getCServeModes() {
-        return this.cserviceModes;
+        return this.cserviceBotModes;
     }
 
     /**

@@ -92,41 +92,51 @@ ssl:
         password: "123456"
 
 cservice:
-
     # Enables or disables the CService
     enable: yes
 
-    # Defines the nick used by the CService
-    nick: Q
-
-    # Defines the user ID used by the CService
-    # The format is 6 alphanumeric characters
-    # Must be unique within a server
-    uid: AAAAAA
-
-    # Defines the ident of the bot
-    ident: qb4u
-
-    # Defines the realhost of the bot (but that host can be not real)
-    host: network/service/test
-
-    # Defines the real name / gecos of the bot
-    realname: qbot4u
-
-    # Defines the modes that the bot will be set when it connects
-    # It is advised that the bot is at least protected (+q) and a bot (+B)
-    # +o - ircop (necessary for KILL and GLINE features)
-    # +i - invisible, not shown in /WHO
-    # +q - protected, cannot be kicked by non-ulined resource
-    # +B - bot, cannot be deopped/deownered/deadmined
-    # +S - service protection
-    modes: +ioqBS
-
     # Defines the global features of the CService
     global:
+        # Maximum channels that can be registered by CService
         maxchans: 10
+        # Maximum user accounts that CService can handle
         maxusers: 10
+        # Maximum glines that can be set on the CService
         maxglines: 10
+        # ...
+
+    # Section to configure the user (bot) associated with CService
+    bot:
+        # Defines the user ID used by the CService
+        # The format is 6 alphanumeric characters
+        # Must be unique within a server
+        uid: AAAAAA
+
+        # Defines the nick used by the CService
+        nick: Q
+
+        # Defines the ident of the bot
+        ident: qb4u
+
+        # Defines the realhost of the bot (but that host can be not real)
+        host: network/service/test
+
+        # Defines the real name / gecos of the bot
+        realname: qbot4u
+
+        # Defines the modes that the bot will be set when it connects
+        # It is advised that the bot is at least protected (+q) and a bot (+B)
+        # +o - ircop (necessary for KILL and GLINE features)
+        # +i - invisible, not shown in /WHO
+        # +q - protected, cannot be kicked by non-ulined resource
+        # +B - bot, cannot be deopped/deownered/deadmined
+        # +S - service protection
+        modes: +ioqBS
+
+    # TODO: To be deleted because not used by log4j2
+    logging:
+        logfile: "logs/cservice.log"
+        loglevel: "INFO"
 
 
     # Defines the settings around the user accounts
@@ -141,18 +151,27 @@ cservice:
         minpasslen: 8
         maxpasslen: 64
 
-        # Not implemented
+        # Not yet implemented
+        # Defines the maximum length of the email address associated to an user account
         maxemaillen: 60
-        # Not implemented
+
+        # Not yet implemented
+        # Defines how many nicks, at most, can be authed using the same account
         maxconcurauth: 5
-        # Not implemented
+
+        # Not yet implemented
+        # Defines The maximum of entries in the channel op history to be displayed to the user
         chanophistory: 10
 
         # The maximum amount of records (lines) to show in the output of the AUTHHISTORY command
         maxauthhistory: 10
-        # Not implemented
+
+        # Not yet implemented
+        # Defines the maximum entries a user can have in its chanlev (entries containing only punishment flags does not count)
         maxchannels: 50
-        # Not implemented
+
+        # Not yet implemented
+        #
         lastreg: 100
 
         # The maximum amount of certificate fingerprints the user can associate to his account
@@ -167,18 +186,24 @@ cservice:
     chansettings:
         # Not implemented
         maxwelcomelen: 250
+
         # Not implemented
         maxtopiclen: 250
+
         # Not implemented
         infolen: 100
+
         # Not implemented
         maxchanlevs: 100
+
         # Not implemented
         maxbans: 100
 
         # The time in seconds between each changes (if necessary) of +l channel mode when AUTOLIMIT is active on the channel
         autolimitfreq: 30
 
+        # Modes to be set by default when the bot joins the channel. This does not takes in account the registered mode (+r)
+        # XXX: good idea?
         defaultmodes: "CTnt"
 
 
@@ -193,7 +218,7 @@ operservice:
     # Defines the user ID used by the OperService
     # The format is 6 alphanumeric characters
     # Must be unique within a server
-    uniq: AAAAAB
+    uid: AAAAAB
 
     # Defines the ident of the bot
     ident: oper

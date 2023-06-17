@@ -74,7 +74,8 @@ public class CService {
         unixTime = Instant.now().getEpochSecond();
 
         String str;
-        str = ":" + config.getServerId() + " " + "UID " + config.getCServeNick() + " 1 " + unixTime + " " + config.getCServeIdent() + " " + config.getCServeHost() + " " + config.getServerId() + config.getCServeUniq() + " * " + config.getCServeModes() + " * * * :" + config.getCServeRealName();
+        str = String.format(":%s UID %s 1 %s %s %s %s * %s * * * :%s", config.getServerId(), config.getCServeNick(), unixTime, config.getCServeIdent(), config.getCServeHost(), 
+                                                                          config.getServerId() + config.getCServeUniq(), config.getCServeModes(), config.getCServeRealName());
         client.write(str);
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
         UserNode user = new UserNode(config.getCServeNick(), 
@@ -94,14 +95,11 @@ public class CService {
 
         unixTime = Instant.now().getEpochSecond();
 
-        String chanJoinModes = "";
         if (protocol.getFeature("chanOwner") == true) chanJoinModes += "q";
         else if (protocol.getFeature("chanAdmin") == true) chanJoinModes += "a";
         else if (protocol.getFeature("chanOp") == true) chanJoinModes += "o";
         else if (protocol.getFeature("chanHalfop") == true) chanJoinModes += "h";
         else if (protocol.getFeature("chanVoice") == true) chanJoinModes += "v";
-        this.chanJoinModes = chanJoinModes;
-
  
         var wrapper = new Object(){ String chanJoinModes; };
         wrapper.chanJoinModes = chanJoinModes;
@@ -1724,10 +1722,11 @@ public class CService {
                     wrapperChanList.bufferMode   = wrapperChanList.bufferMode + mode;
                     wrapperChanList.bufferParam  = wrapperChanList.bufferParam + " " + param;
                 });
-
-                protocol.sendNotice(client, myUserNode, userNode, " + " + chan + " (users: " + node.getUserCount() + ")");
-                protocol.sendNotice(client, myUserNode, userNode, " |- modes: +" + wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam );
-                protocol.sendNotice(client, myUserNode, userNode, " |- created: " + chanTSdate );
+                // FIXME: modes are incorrect
+                protocol.sendNotice(client, myUserNode, userNode, String.format(" + %s [U=%s C=%s] [M=%s] ", chan, node.getUserCount(), chanTSdate, wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam));
+                //protocol.sendNotice(client, myUserNode, userNode, " + " + chan + " (users: " + node.getUserCount() + ")");
+                //protocol.sendNotice(client, myUserNode, userNode, " |- modes: +" + wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam );
+                //protocol.sendNotice(client, myUserNode, userNode, " |- created: " + chanTSdate );
                 protocol.sendNotice(client, myUserNode, userNode, " |- ban list: " + node.getBanList().toString() );
                 protocol.sendNotice(client, myUserNode, userNode, " |- except list: " + node.getExceptList().toString() );
                 protocol.sendNotice(client, myUserNode, userNode, " `- invite list: " + node.getInviteList().toString() );
