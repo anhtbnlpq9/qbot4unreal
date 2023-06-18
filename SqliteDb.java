@@ -830,7 +830,7 @@ public class SqliteDb {
     }
 
 
-    public HashSet<String> getCertfp(UserAccount userAccount) throws Exception {
+    public HashSet<String> getCertfp(UserAccount userAccount) throws Exception, MaxLimitReachedException {
         Statement statement      = null;
         String sql               = null;
         ResultSet resultSet      = null;
@@ -858,7 +858,7 @@ public class SqliteDb {
 
         HashSet<String> userCertfp = this.getCertfp(userAccount);
 
-        if (userCertfp.size() > config.getCServeAccountMaxCertFP()) { throw new Exception("(EX) Client reached max certfp"); }
+        if (userCertfp.size() > config.getCServeAccountMaxCertFP()) { throw new MaxLimitReachedException("Client reached max certfp"); }
 
         try {
             userCertfp.add(certfp);

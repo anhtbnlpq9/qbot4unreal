@@ -1599,6 +1599,10 @@ public class CService {
         try {
             sqliteDb.addCertfp(userAccount, certfp);
         }
+        catch (MaxLimitReachedException e) {
+            protocol.sendNotice(client, myUserNode, userNode, String.format(Messages.strCertFpErrUnknown, config.getCServeAccountMaxCertFP()));
+            return;
+        }
         catch (Exception e) {
             log.warn(String.format("Could not add certfp %s to user %s", certfp, userAccount.getName()), e);
             return;
