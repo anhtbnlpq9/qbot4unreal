@@ -1224,7 +1224,6 @@ public class CService {
                 targetUserAccount = protocol.getUserAccount(user.replaceFirst("#", ""));
             }
             catch (Exception e) {
-                e.printStackTrace();
                 protocol.sendNotice(client, myUserNode, fromNick, "No such account.");
             }
         }
@@ -1268,7 +1267,6 @@ public class CService {
             confirmCode = (str.split(" ", 3))[2];
         }
         catch (Exception e) {
-            e.printStackTrace();
             protocol.sendNotice(client, myUserNode, fromNick, "Please enter the confirmation code as: DROPUSER #" + targetUserAccount.getName() + " " + targetUserAccount.getConfirmationCode()); 
             return;
         }
@@ -1361,7 +1359,6 @@ public class CService {
                 }
             }
             catch (Exception e) {
-                e.printStackTrace();
                 protocol.sendNotice(client, myUserNode, user, "This nick is not online or this #account does not exist."); 
                 return;
             }
