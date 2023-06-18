@@ -55,36 +55,9 @@ public class UserNode {
     private UUID authSessUUID;
 
 
-    /**
-     * User object contains information for connected users
-     * @param userNick User nickname
-     * @param userIdent User ident
-     * @param userHost User hostname/vhost
-     * @param userRealHost User real host
-     * @param userRealName User real name (gecos)
-     * @param userUniq User SID
-     * @param userTS User timestamp
-     * @param userModes User modes
-     */
-    public UserNode(String userNick,     String userIdent,    String userHost,
-                    String userRealHost, String userRealName, String userUniq,
-                    long userTS,         String userModes) {
-                        
-        this.userNick = userNick;
-        this.userIdent = userIdent;
-        this.userRealHost = userRealHost;
-        if (userHost == null) {
-            this.userHost = userRealHost;
-        }
-        else {
-            this.userHost = userHost;
-        }
-        this.userRealName = userRealName;
-        this.userUniq = userUniq;
-        this.userTS = userTS;
-        this.userModes = userModes;
-        
-    } 
+    public UserNode(String uid) {
+        this.uid = uid;
+    }
 
     /**
      * Constructor used during SASL handshake

@@ -80,14 +80,15 @@ public class CService {
                                                                           config.getServerId() + config.getCServeUniq(), config.getCServeModes(), config.getCServeRealName());
         client.write(str);
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
-        UserNode user = new UserNode(config.getCServeNick(), 
-                                     config.getCServeIdent(), 
-                                     config.getCServeHost(),
-                                     config.getCServeHost(),
-                                     config.getCServeRealName(),
-                                     myUniq,
-                                     unixTime,
-                                     config.getCServeModes());
+        UserNode user = new UserNode(myUniq);
+
+        user.setNick(config.getCServeModes());
+        user.setIdent(config.getCServeIdent());
+        user.setHost(config.getCServeHost());
+        user.setRealHost(config.getCServeHost());
+        user.setRealName(config.getCServeRealName());
+        user.setUserTS(unixTime);
+        user.setModes(config.getCServeModes());
 
         this.myUserNode = user;
 

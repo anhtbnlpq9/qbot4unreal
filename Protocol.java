@@ -1025,36 +1025,36 @@ public class Protocol extends Exception {
 
 
             if (userList.containsKey(command[5]) == false) {
-                user = new UserNode( nick,                 // nick
-                                            ident,                   // ident
-                                            vhost,                   // vhost
-                                            realHost,                   // realhost
-                                            gecos,  // gecos
-                                            uid,                   // unique id
-                                            ts, // TS
-                                            modes                    // modes
-                                        );
+                user = new UserNode(uid);
+
+                user.setNick(nick);
+                user.setIdent(ident);
+                user.setHost(vhost);
+                user.setRealHost(realHost);
+                user.setRealName(gecos);
+                user.setUserTS(ts);
+                user.setModes(modes);
 
                 userList.put(uid, user);
-                userNickSidLookup.put(nick, uid);
+                userNickSidLookup.put(nick, user);
                 user.setServer(userServer);
-                user.setCloakedHost(cloakedHost);                    // cloaked host
-                user.setIpAddress(ipAddress);                            // IP address
+                user.setCloakedHost(cloakedHost);
+                user.setIpAddress(ipAddress);
             }
 
             else {
                 user = userList.get(uid);
 
-                user.setNick(nick);                       // nick
-                user.setIdent(ident);                      // ident
-                user.setHost(vhost);                       // vhost
-                user.setRealHost(realHost);                   // realhost
-                user.setRealName(gecos);  // gecos
-                user.setUserTS(ts);         // TS
-                user.setUserModes(modes);                      // modes
-                user.setCloakedHost(cloakedHost);                    // cloaked host
-                user.setIpAddress(ipAddress);                     // IP address
-                user.setServer(userServer);                         // User server
+                user.setNick(nick);
+                user.setIdent(ident);
+                user.setHost(vhost);
+                user.setRealHost(realHost);
+                user.setRealName(gecos);
+                user.setUserTS(ts);
+                user.setModes(modes);
+                user.setCloakedHost(cloakedHost);
+                user.setIpAddress(ipAddress);
+                user.setServer(userServer);
 
                 /* Section to update auth token in the db if the user was authed using SASL, because in this case their TS and ident was unknown */
                 /* Also a good place to set the vhost */
