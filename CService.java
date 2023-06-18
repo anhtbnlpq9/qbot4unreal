@@ -16,6 +16,8 @@ import javax.crypto.spec.PBEKeySpec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import Exceptions.*;
+
 public class CService {
 
     private static Logger log = LogManager.getLogger("common-log");
