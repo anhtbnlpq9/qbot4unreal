@@ -41,7 +41,7 @@ public class ChannelNode {
 
     private UserNode channelOwner;
 
-    private HashMap<String, Integer> chanChanlev  = new HashMap<>(); // Map username -> chanlev
+    private HashMap<String, Integer> chanlev  = new HashMap<>(); // Map username -> chanlev
 
     /* HM maps mode -> parameter */
     private HashMap<String, String> mLockModes = new HashMap<>(); 
@@ -157,21 +157,21 @@ public class ChannelNode {
     }
 
     public void setChanlev(HashMap<String, Integer> chanChanlev) {
-        this.chanChanlev = chanChanlev;
+        this.chanlev = chanChanlev;
     }
 
     public void setChanlev(UserNode user, Integer chanlev) {
         if (chanlev != 0) {
-            if (this.chanChanlev.containsKey(user.getAccount().getName()) == true) {
-                this.chanChanlev.replace(user.getAccount().getName(), chanlev);
+            if (this.chanlev.containsKey(user.getAccount().getName()) == true) {
+                this.chanlev.replace(user.getAccount().getName(), chanlev);
             }
             else {
-                this.chanChanlev.put(user.getAccount().getName(), chanlev);
+                this.chanlev.put(user.getAccount().getName(), chanlev);
             }
         }
         else {
-            if (this.chanChanlev.containsKey(user.getAccount().getName()) == true) {
-                this.chanChanlev.remove(user.getAccount().getName());
+            if (this.chanlev.containsKey(user.getAccount().getName()) == true) {
+                this.chanlev.remove(user.getAccount().getName());
             }
         }
     }
@@ -253,13 +253,13 @@ public class ChannelNode {
     }
 
     public Map<String, Integer> getChanlev() {
-        return this.chanChanlev;
+        return this.chanlev;
     }
 
     public Map<String, Integer> getChanlevWoutPersonalFlags() {
         HashMap<String, Integer> chanlevMap = new HashMap<>();
 
-        chanChanlev.forEach( (user, chanlev) -> {
+        chanlev.forEach( (user, chanlev) -> {
             if (Flags.stripChanlevPersonalFlags(chanlev) != 0) {
                 chanlevMap.put(user, chanlev);
             }

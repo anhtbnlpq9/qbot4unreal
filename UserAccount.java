@@ -25,13 +25,15 @@ public class UserAccount {
     private Integer id;
     private Integer flags;
 
-    private String email;    
+    private String email;
     private String name;
 
-    private HashSet<String> certFp;
+    private HashSet<String> certFp; /* Set of the certfp associated with the account */
 
     private Long registeredTS  = 0L;
     private Long lastAuthTS    = 0L;
+    private Long lastEmailTS   = 0L;
+    private Long lastPassTS    = 0L;
 
     private UUID confirmationCode = null;
 
@@ -234,6 +236,10 @@ public class UserAccount {
 
     public void setCertFP(HashSet<String> certfpList) {
         this.certFp = certfpList;
+    }
+
+    public void addCertFP(String certfp) {
+        this.certFp.add(certfp);
     }
 
     /**

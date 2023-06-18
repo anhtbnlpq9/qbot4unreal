@@ -1,6 +1,6 @@
 package Exceptions;
 
-public class MaxLimitReachedException extends Exception {
+public class MaxLimitReachedException extends RuntimeException {
     
     public MaxLimitReachedException() {
 

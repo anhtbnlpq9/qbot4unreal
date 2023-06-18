@@ -7,22 +7,22 @@ import java.util.HashSet;
  */ 
 public class ServerNode {
 
-    private String name;
-    private String sid;
-    private String description;
+    private String name; /* This server name */
+    private String sid;  /* This server id (SID) */
+    private String description; /* This erver description */
 
-    private Long ts;
+    private Long ts; /* This server joining timestamp */
 
-    private Integer distance;
+    private Integer distance; /* This server distance in hops from here */
 
-    private Boolean serverPeerResponded = null;  // Only used for me (detect that server peer has responded => it exists in serverList)
-    private Boolean isThePeer           = false;
-    private Boolean hasEOS              = false;
+    private Boolean serverPeerResponded = false; /* is set true once the peer server has responded to our SERVER */
+    private Boolean isThePeer           = false; /* Is the server the peer from here */
+    private Boolean hasEOS              = false; /* Has the server reached EOS */
 
-    private HashSet<UserNode> localUsers = new HashSet<>();
-    private HashSet<ServerNode> childNodes = new HashSet<>();
+    private HashSet<UserNode>   localUsers = new HashSet<>(); /* Set of the server local users */
+    private HashSet<ServerNode> childNodes = new HashSet<>(); /* Set of the servers connected to this one */
 
-    private ServerNode parentNode = null;
+    private ServerNode parentNode = null; /* Server that has introduced this server, from our point of view */
 
     /**
      * Constructor called tp declare new servers on the network usually following SINFO or SERVER
@@ -32,11 +32,11 @@ public class ServerNode {
      * @param serverDescription
      */
     public ServerNode(String serverName, Integer serverDistance, String serverId, String serverDescription) {
-        this.name = serverName;
-        this.distance = serverDistance;
-        this.sid = serverId;
+        this.name        = serverName;
+        this.distance    = serverDistance;
+        this.sid         = serverId;
         this.description = serverDescription;
-        this.isThePeer = false;
+        this.isThePeer   = false;
     } 
 
     /**
@@ -44,7 +44,7 @@ public class ServerNode {
      * @param serverId network server id
      */
     public ServerNode(String serverId) {
-        this.sid = serverId;
+        this.sid       = serverId;
         this.isThePeer = false;
     } 
 
@@ -92,7 +92,7 @@ public class ServerNode {
      * Sets if the server peer has responded (1st message sent fron the peer)
      * @param serverPeerResponded true or false
      */
-    public void setServerPeerResponded(Boolean serverPeerResponded) {
+    public void setPeerResponded(Boolean serverPeerResponded) {
         this.serverPeerResponded = serverPeerResponded;
     }
     
@@ -153,7 +153,7 @@ public class ServerNode {
      * Returns if the server is the one directly connected to CServive (peer)
      * @return true or false
      */
-    public Boolean getServerPeer() {
+    public Boolean isPeer() {
         return this.isThePeer;
     }
 
@@ -161,14 +161,14 @@ public class ServerNode {
      * Returns if the server has done syncing to the network
      * @return true or false
      */
-    public Boolean getServerEOS() {
+    public Boolean hasEOS() {
         return this.hasEOS;
     }
     /**
      * Gets if the peer server has responded (sent 1st message)
      * @return true or false
      */
-    public Boolean getServerPeerResponded() {
+    public Boolean hasPeerResponded() {
         return this.serverPeerResponded;
     }
 

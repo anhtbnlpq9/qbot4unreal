@@ -825,7 +825,7 @@ public class Protocol extends Exception {
             serverList.get(config.getServerId()).setEOS(true);
 
             /* If our peer sends the EOS (so last to send EOS) */
-            if(server.getServerPeer() == true) {
+            if(server.isPeer() == true) {
 
                 /* Not in netburst anymore */
                 this.networkInsideNetBurst = false;
@@ -938,7 +938,7 @@ public class Protocol extends Exception {
                 }
 
             }
-            serverList.get(config.getServerId()).setServerPeerResponded(true);
+            serverList.get(config.getServerId()).setPeerResponded(true);
         }
         else if (command[0].equals("SERVER")) {
             //<<< SERVER ocelot. 1 :U6000-Fhn6OoEmM-5P0 Mjav Network IRC server
@@ -948,7 +948,7 @@ public class Protocol extends Exception {
             server.setDistance(Integer.valueOf(string[2]));
             server.setDescription((string[3].split(":"))[1]);
             
-            serverList.get(config.getServerId()).setServerPeerResponded(true);
+            serverList.get(config.getServerId()).setPeerResponded(true);
         }
         else if (command[0].equals("SQUIT")) {
             //<<< SQUIT ocelot. :squit message

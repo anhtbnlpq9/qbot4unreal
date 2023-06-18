@@ -83,7 +83,7 @@ public class Client implements Runnable {
 
         cservice = new CService(this, protocol, sqliteDb);
 
-        while (serverList.get(config.getServerId()).getServerPeerResponded() != true) {
+        while (serverList.get(config.getServerId()).hasPeerResponded() != true) {
             log.info("Waiting for peer to register");
             try {
                 Thread.sleep(2000);
@@ -91,7 +91,7 @@ public class Client implements Runnable {
             catch (Exception e) { log.error(String.format("Client/launchCService: Error while sleep: "), e); }
         }
 
-        while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
+        while ((serverList.get(protocol.getPeerId())).hasEOS() != true) {
             log.info("Waiting for the final EOS");
             try {
                 Thread.sleep(2000);
@@ -118,7 +118,7 @@ public class Client implements Runnable {
 
         ServerNode server = new ServerNode(config.getServerName(), 0, config.getServerId(), config.getServerDescription());
         server.setEOS(false);
-        server.setServerPeerResponded(false);
+        server.setPeerResponded(false);
         server.setParent(server);
         serverList.put(config.getServerId(), server);
     }
