@@ -1743,6 +1743,14 @@ public class Protocol extends Exception {
             userNickSidLookup.remove(killedUser.getNick());
             userServer.removeLocalUser(killedUser);
             userList.remove(killedUser.getUid());
+
+            if (killedUser.getUid().equals(config.getServerId() + config.getCServeUniq())) {
+                log.error(String.format("Protocol/KILL: CService has been killed! Relaunching it."));
+                try { Thread.sleep(1000); }
+                catch (Exception e) { log.fatal(String.format("Protocol/KILL: Cound not relaunching CService after kill.")); return; }
+                client.launchCService();
+            }
+
         }
         else if (command[1].equals("NICK")) {
             // :XXXXXXXXX NICK ...
