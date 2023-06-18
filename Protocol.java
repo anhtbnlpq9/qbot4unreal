@@ -1413,23 +1413,30 @@ public class Protocol extends Exception {
             fromEnt = (command[0].split(":"))[1];
 
             String[] sjoinParam      = command[2].split(" ", 64);
-            int      sjoinParamCount = command[2].split(" ", 64).length;
+            String[] sJoinParameters = command[2].split(" ", 3)[2].split(" ");
 
-            String sJoinChan = (command[2].split(":", 2) [0]).split(" ", 3) [1];
-            String sJoinModes = "";
-            String sJoinList  = "";
-            String chanListItem = "";
+            String sJoinChan     = (command[2].split(":", 2) [0]).split(" ", 3) [1];
+            String sJoinModes    = "";
+            String sJoinList     = "";
+            String chanListItem  = "";
 
             ChannelNode chan;
             UserNode user = null;
 
-            // command[2]               = 1678637814 #thibland +fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
-            // command[2].split(, 3)    = 1678637814/#thibland/+fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
-            // command[2].split(, 3)[2] = +fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
-            // command[2].split(, 3)[2].split() = +fmnrstzCPST/[5j#R1,7m#M1,3n#N1,5t#b1]:6/:@5P0PWVF03
-            String[] sJoinParameters = command[2].split(" ", 3)[2].split(" ");
-
             Long channelTS = Long.parseLong(sjoinParam[0]);
+
+            HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(sJoinModes);
+
+            HashMap<String, String>      modChanModes   =  modChanModesAll.get("chanModes");
+
+            /*
+             * command[2]                       = 1678637814 #thibland +fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
+             * command[2].split(, 3)            = 1678637814/#thibland/+fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
+             * command[2].split(, 3)[2]         = +fmnrstzCPST [5j#R1,7m#M1,3n#N1,5t#b1]:6 :@5P0PWVF03
+             * command[2].split(, 3)[2].split() = +fmnrstzCPST/[5j#R1,7m#M1,3n#N1,5t#b1]:6/:@5P0PWVF03
+             */
+            
+            
 
             Boolean modeSection = true;
             for (String param: sJoinParameters) {
@@ -1442,10 +1449,7 @@ public class Protocol extends Exception {
             log.debug(String.format("Protocol/SJOIN: SJOIN (raw) for %s received modes: %s", sJoinChan, sJoinModes));
             log.debug(String.format("Protocol/SJOIN: SJOIN (raw) for %s received list: %s", sJoinChan, sJoinList));
 
-            HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(sJoinModes);
-
-            HashMap<String, String>      modChanModes   =  modChanModesAll.get("chanModes");
-
+            
             if (this.channelList.containsKey(sJoinChan) == false) { /* channel does not exist => creating it */
                 chan = new ChannelNode( sJoinChan, channelTS );
 

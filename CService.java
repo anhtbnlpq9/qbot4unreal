@@ -2571,7 +2571,7 @@ public class CService {
      * 
      * Defines modes to lock on the channel
      * @param fromNick
-     * @param str
+     * @param str Contains the string MODELOCK <#chan> [modes]
      */
     private void cServeModeLock(UserNode fromNick, String str) {
 
