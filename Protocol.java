@@ -1254,6 +1254,13 @@ public class Protocol extends Exception {
 
                         String authCertFp = user.getSaslAuthParam("authExt");
 
+                        if (authCertFp.isEmpty() == true) {
+                            /* No certfp provided => auth failure */
+                            log.info("User did not provide certfp => failing the auth.");
+                            this.sendSaslResult(user, false);
+                            return;
+                        }
+
                         /* SASL EXTERNAL => no username provided => need to find in all the accounts to which belongs the certfp */
                         var wrapper = new Object() { UserAccount userAccountToAuth; };
                         this.userAccounts.forEach( (username, useraccount) -> {
@@ -1269,7 +1276,14 @@ public class Protocol extends Exception {
 
                         if (userAccountToAuth != null) { // Certfp found => Auth successful
 
-                            userAccountToAuth.authUserToAccount( user,  authCertFp,  authType);
+                            try {
+                                userAccountToAuth.authUserToAccount( user,  authCertFp,  authType);
+                            }
+                            catch (Exception e) {
+                                this.sendSaslResult(user, false);
+                                return;
+                            }
+
 
                             this.sendSaslResult(user, true);
 
@@ -1328,8 +1342,13 @@ public class Protocol extends Exception {
                             this.sendSaslResult(user, false);
                             return;
                         }
-                        
-                        userAccountToAuth.authUserToAccount(user, password, authType);
+                        try {
+                            userAccountToAuth.authUserToAccount(user, password, authType);
+                        }
+                        catch (Exception e) {
+                            this.sendSaslResult(user, false);
+                            return;
+                        }
 
                         if (user.isAuthed() == false) { /* Auth failed */
                             //Thread.sleep(config.getCServeAccountWrongCredWait() *1000);

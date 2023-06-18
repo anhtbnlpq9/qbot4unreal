@@ -300,8 +300,11 @@ public class UserAccount {
         };
 
         AuthCertfpCheck checkCert = (userparam, inputcert) -> {
-            if (userparam.get("certfp").matches("(.*)" + inputcert + "(.*)")) return true;
-            else return false;
+            try {
+                if (userparam.get("certfp").matches("(.*)" + inputcert + "(.*)")) return true;
+                else return false;
+            }
+            catch (Exception e) { return false; }
         };
 
         if (authType.equals(Const.AUTH_TYPE_PLAIN)) {  /* Plain auth (AUTH login pass) */
