@@ -1,7 +1,7 @@
 The following commands are available to you.
 For more information on a specific command, type HELP <command>:
 //050!ADDUSER            Adds one or more users to a channel.
-150!ADDCHAN            Registers a new channel for another user.
+150!ADDCHAN*           Registers a new channel for another user.
 000!AUTH               Authenticates you on the bot.
 050!AUTHHISTORY        View auth history for an account.
 050!AUTOLIMIT          Shows or changes the autolimit threshold on a channel.
@@ -15,7 +15,7 @@ For more information on a specific command, type HELP <command>:
 //000!CHALLENGEAUTH      Authenticates you on the bot using challenge response. 
 050!CHANFLAGS          Shows or changes the flags on a channel.
 050!CHANLEV            Shows or modifies user access on a channel.
-100!CHANLIST           List of the current created channels on the network.
+100!CHANLIST*          List of the current created channels on the network.
 //050!CHANMODE           Shows which modes are forced or denied on a channel.
 //050!CHANOPHISTORY      Displays a list of who has been opped on a channel recently with account names.
 //050!CHANSTAT           Displays channel activity statistics.
@@ -35,25 +35,26 @@ HELP               Displays help on a specific command.
 //050!PERMBAN            Permanently bans a hostmask on a channel.
 //050!RECOVER            Recovers a channel (same as deopall, unbanall, clearchan).
 //050!REMOVEUSER         Removes one or more users from a channel.
-050!REQUESTBOT         Requests the bot to a channel.
+050!REQUESTBOT         Registers a new channel.
 //050!REQUESTOWNER       Requests ownership of a channel on which there are no owners.
 //000!REQUESTPASSWORD    Requests the current password by email. 
 //000!RESET              Restores the old details on an account after a change. 
 050!SETTOPIC           Changes the topic on a channel.
-100!SERVERLIST         List of the current connected servers on the network.
+100!SERVERLIST*        List of the current connected servers on the network.
 SHOWCOMMANDS       Lists available commands.
-100!SUSPENDCHAN        Suspends a channel.
+150!SUSPENDCHAN*       Suspends a channel.
 //050!TEMPBAN            Bans a hostmask on a channel for a specified time period.
 //050!UNBANALL           Removes all bans from a channel.
 //050!UNBANMASK          Removes bans matching a particular mask from a channel.
 //050!UNBANME            Removes any bans affecting you from a channel.
-100!UNSUSPENDCHAN      Unsuspends a channel.
+150!UNSUSPENDCHAN*     Unsuspends a channel.
 050!USERFLAGS          Shows or changes user flags.
-100!USERLIST           List of the current connected users on the network.
+100!USERLIST*          List of the current connected users on the network.
 //USERS              Displays a list of users on the channel.
 VERSION            Show Version.
 //VOICE              Voices you or other users on channel(s).
 050!WELCOME            Shows or changes the welcome message on a channel.
 050!WHOAMI             Displays information about you.
 050!WHOIS              Displays information about a user.
+100!* denotes a command limited to staff members (staff, oper, admin).
 End of list.
