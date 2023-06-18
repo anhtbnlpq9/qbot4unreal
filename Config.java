@@ -63,9 +63,10 @@ public class Config {
     private String networkName  = "";
 
     /* Features parameters */
-    private Boolean featureSasl      = false;
-    private Boolean featureSvslogin  = false;
-    private Boolean featureChgHost   = false;
+    private Boolean featureSasl                 = false;
+    private Boolean featureSvslogin             = false;
+    private Boolean featureChgHost              = false;
+    private Boolean featureDenyAuthConnPainText = false;
     HashMap<String, Boolean> featuresList = new HashMap<String, Boolean>();
 
     /* Logging parameters */
@@ -143,10 +144,13 @@ public class Config {
         featureSasl                           = (Boolean) confFeatures.get("sasl");
         featureSvslogin                       = (Boolean) confFeatures.get("svslogin");
         featureChgHost                        = (Boolean) confFeatures.get("chghost");
+        featureDenyAuthConnPainText           = (Boolean) confFeatures.get("denyauthplainconn");
 
-        featuresList.put("sasl",        featureSasl);
-        featuresList.put("svslogin",    featureSvslogin);
-        featuresList.put("chghost",     featureChgHost);
+        featuresList.put("sasl",              featureSasl);
+        featuresList.put("svslogin",          featureSvslogin);
+        featuresList.put("chghost",           featureChgHost);
+        featuresList.put("denyauthplainconn", featureDenyAuthConnPainText);
+
 
 
         HashMap<String, Object> confDatabase    = (HashMap<String, Object>) data.get("database");

@@ -1188,6 +1188,7 @@ public class Protocol extends Exception {
             byte[] decodedAuthString;
             String authString;
             Integer authType;
+            Boolean connPlainText = false;
 
             switch(command[2]) {
                 case "H": // first SASL handshake => create the user
@@ -1202,6 +1203,9 @@ public class Protocol extends Exception {
                     */
                     user = new UserNode(command[1], command[3]);
                     user.setServer(serverList.get(fromEnt));
+                    try { if (command[5].equals("P") == true) connPlainText = true; }
+                    catch (Exception e) {  }
+                    user.setConnPlainText(connPlainText);
                     userList.put(command[1], user);
                     break;
 
@@ -1248,6 +1252,14 @@ public class Protocol extends Exception {
                     */
 
                     user = this.getUserNodeBySid(command[1]);
+
+                    if (user.getConnPlainText() == true && config.getFeature("denyauthplainconn") == true) {
+                        /* User is logging from plain text connection */
+                        log.info("User did not provide certfp => failing the auth.");
+                        this.sendNotice(client, cservice.getMyUserNode(), user, "You are using plain text connection. Denying the auth.");
+                        this.sendSaslResult(user, false);
+                        return;
+                    }
 
                     if (user.getSaslAuthParam("authType").equals("EXTERNAL") == true && command[3].equals("+") == true) { // SASL EXTERNAL auth
                         authType = Const.AUTH_TYPE_SASL_EXT;
