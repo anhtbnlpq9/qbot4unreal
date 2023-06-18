@@ -39,7 +39,6 @@ public class Protocol extends Exception {
     private HashMap<String, Boolean>         featureList         = new HashMap<>();
     
     private String myPeerServerId;
-    private String foundNickLookUpCi;
 
     private Long   unixTime;
 
@@ -124,7 +123,7 @@ public class Protocol extends Exception {
      * @param sid user SID
      */
     public void addNickLookupTable(String nick, String sid) {
-        userNickSidLookup.put(nick, sid);
+        userNickSidLookup.put(nick, this.getUserNodeBySid(sid));
     }
 
     /**
@@ -143,7 +142,7 @@ public class Protocol extends Exception {
      */
     public UserNode getUserNodeByNick(String userNick) {
         if (userNickSidLookup.containsKey(userNick)) {
-            return userList.get(getNickLookupTableCi(userNick));
+            return getNickLookupTableCi(userNick);
         }
         else return null;
     }
@@ -205,27 +204,27 @@ public class Protocol extends Exception {
     }
 
     /**
-     * Returns an user SID given his nickname (cs)
+     * Returns an user node given his nickname (cs)
      * @param nick
      * @return
      */
-    public String getNickLookupTable(String nick) {
+    private UserNode getNickLookupTable(String nick) {
         return userNickSidLookup.get(nick);
     }
 
     /**
-     * Returns an user SID given his nickname (ci)
+     * Returns an user node given his nickname (ci)
      * @param nick user nick
-     * @return user SID
+     * @return user node
      */
-    public String getNickLookupTableCi(String nick) {
-        foundNickLookUpCi = "";
-        userNickSidLookup.forEach( (userNick, userSid) -> {
+    private UserNode getNickLookupTableCi(String nick) {
+        var wrapper = new Object(){ UserNode foundNickLookUpCi = null; };
+        userNickSidLookup.forEach( (userNick, userNode) -> {
             if (userNick.toLowerCase().equals(nick.toLowerCase())) { 
-                foundNickLookUpCi = userSid; 
+                wrapper.foundNickLookUpCi = userNode; 
             }
         });
-        return foundNickLookUpCi;
+        return wrapper.foundNickLookUpCi;
     }
 
     public void setClientRef(Client client) {
@@ -1749,9 +1748,11 @@ public class Protocol extends Exception {
             // :XXXXXXXXX NICK ...
 
             fromEnt = (command[0].split(":"))[1];
+
+            UserNode usernode = this.getUserNodeBySid(fromEnt);
             
             userNickSidLookup.remove(userList.get(fromEnt).getNick());
-            userNickSidLookup.put((command[2].split(" "))[0], fromEnt);
+            userNickSidLookup.put((command[2].split(" "))[0], usernode);
 
             userList.get(fromEnt).setNick( (command[2].split(" "))[0] );
         }
