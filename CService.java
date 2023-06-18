@@ -1656,7 +1656,8 @@ public class CService {
             protocol.sendNotice(client, myUserNode, userNode, Messages.strSuccess); 
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("Could not remove certfp %s for account %s", certfp, userAccount.getName()), e);
+            protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrRemove); 
             return;
         }
     }
@@ -2111,7 +2112,7 @@ public class CService {
                     log.info("Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(String.format("CService/cServeSetAutolimit: cannot set autolimit for channel %s", chanNode.getName()), e);
                 }
             }
 
@@ -2177,7 +2178,7 @@ public class CService {
 
             }
             catch (Exception e) {
-                e.printStackTrace(); 
+                log.error(String.format("CService/cServeAutoLimit: cannot set autolimit for channel %s", chanNode.getName()), e);
                 protocol.sendNotice(client, myUserNode, fromNick, Messages.strAutoLimitErrUnknown); 
                 return; 
             }
@@ -2262,16 +2263,15 @@ public class CService {
             protocol.setMode(client, chanNode, "-r", null);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("CService/cServeSuspendChan: cannot set mode for chan %s", chanNode.getName()), e);
         }
 
         try {
             sqliteDb.addSuspendHistory(chanNode, reason);
         }
         catch (Exception e) {
-            e.printStackTrace();
             protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strSuspendChanErrHistory, chanNode.getName())); 
-            log.error(String.format(Messages.strSuspendChanErrHistory, chanNode.getName()));
+            log.error(String.format(Messages.strSuspendChanErrHistory, chanNode.getName()), e);
             return;
         }
         protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
@@ -2335,16 +2335,15 @@ public class CService {
             protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getNick());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("CService/cServeUnsuspendChan: cannot set mode for chan %s", chanNode.getName()), e);
         }
         
         try {
             sqliteDb.addUnSuspendHistory(chanNode);
         }
         catch (Exception e) {
-            e.printStackTrace();
             protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName())); 
-            log.error(String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName()));
+            log.error(String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName()), e);
             return;
         }
         protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
@@ -2451,9 +2450,8 @@ public class CService {
             sqliteDb.addSuspendHistory(userAccount, reason);
         }
         catch (Exception e) {
-            e.printStackTrace();
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrUserHistory, userAccount.getName())); 
-            log.error(String.format(strErrUserHistory, userAccount.getName()));
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strSuspendUserErrHistory, userAccount.getName())); 
+            log.error(String.format(Messages.strSuspendUserErrHistory, userAccount.getName()), e);
             return;
         }
 
@@ -2468,8 +2466,7 @@ public class CService {
                     protocol.sendNotice(client, myUserNode, loggedUserNode, String.format(strSuspendNotice, reason));
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
-                    log.error("CService/cServeSuspendChan/Suspenduser: could not deauthenticate: " + loggedUserNode.getNick() + " from account " + userAccount.getName());
+                    log.error("CService/cServeSuspendChan/Suspenduser: could not deauthenticate: " + loggedUserNode.getNick() + " from account " + userAccount.getName(), e);
                 }
             }
         }
@@ -2546,8 +2543,8 @@ public class CService {
             sqliteDb.addUnSuspendHistory(userAccount);
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrUserHistory, userAccount.getName())); 
-            log.error(String.format(strErrUserHistory, userAccount.getName()), e);
+            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUnSuspendUserErrHistory, userAccount.getName())); 
+            log.error(String.format(Messages.strUnSuspendUserErrHistory, userAccount.getName()), e);
             return;
         }
 
