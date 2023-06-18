@@ -34,6 +34,7 @@ public class UserNode {
     private Boolean usingSaslAuth       = false;
     private Boolean userAuthed          = false;
     private Boolean userNickRegistered  = false;
+    private Boolean connPlainText       = false;
 
     private HashMap<String, String> saslAuthParams = new HashMap<>();
 
@@ -161,6 +162,14 @@ public class UserNode {
                 this.userAccount = null;
             }
         }
+    }
+
+    public void setConnPlainText(Boolean plain) {
+        this.connPlainText = plain;
+    }
+
+    public Boolean getConnPlainText() {
+        return this.connPlainText;
     }
 
     /**
