@@ -600,33 +600,38 @@ public class Protocol extends Exception {
 
     private void sendSaslResult(UserNode user, Boolean success) {
         String str;
+        String fromUid = config.getServerId() + config.getCServeUniq();
+        String userSaslAuthParam = user.getSaslAuthParam("authServer");
         
-        if (success == true) str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUid() + " D S";
-        else                 str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUid() + " D F";
+        str = String.format(":%s SASL %s %s D %s", fromUid, userSaslAuthParam, user.getUid(), success == true ? "S" : "F");
         client.write(str);
     }
 
     private void sendSaslQuery(UserNode user) {
         String str;
+        String fromUid = config.getServerId() + config.getCServeUniq();
+        String userSaslAuthParam = user.getSaslAuthParam("authServer");
 
-        str = ":" + config.getServerId() + config.getCServeUniq() + " SASL " + user.getSaslAuthParam("authServer") + " " + user.getUid() + " C +";
+        str = String.format(":%s SASL %s %s C +", fromUid, userSaslAuthParam, user.getUid());
         client.write(str);
     }
 
     private void sendSvsLogin(UserNode user, UserAccount account, Boolean auth) {
         String str;
         String toServerSid = "";
+        String accountNameToAuth = "0";
 
         if (user.getSaslAuthParam("authServer") != null) {
             toServerSid = user.getSaslAuthParam("authServer");
         }
         else {
-            toServerSid = user.getServer().getServerId();
+            toServerSid = user.getServer().getSid();
         }
 
         // :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay
-        if (auth == true) str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUid() + " " + account.getName();
-        else str = ":" + config.getServerId() + " SVSLOGIN " + toServerSid + " " + user.getUid() + " 0";
+        if (auth == true) accountNameToAuth = account.getName();
+
+        str = String.format(":%s SVSLOGIN %s %s %s", config.getServerId(), toServerSid, user.getUid(), accountNameToAuth);
         client.write(str);
     }
 
