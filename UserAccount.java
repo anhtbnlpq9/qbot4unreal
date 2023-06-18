@@ -324,12 +324,12 @@ public class UserAccount {
     public void authUserToAccount(UserNode usernode, String inputChallenge, Integer authType) throws Exception {
 
         if (auth(usernode, inputChallenge, authType) == false) {
-            log.warn("Command AUTH (" + Const.getAuthTypeString(authType) + ") failed (incorrect credentials) on user account " + this.getName() + " by the nick " + usernode.getMask1());
+            log.warn("Command AUTH (" + Const.getAuthTypeString(authType) + ") failed (incorrect credentials) on user account " + this.getName());
             throw new Exception("(II) Auth failed (invalid credentials): " + this.getName() + " used by nick" + usernode.getMask1());
         }
 
         if (Flags.isUserSuspended(this.getFlags()) == true) {
-            log.warn("Command AUTH (" + Const.getAuthTypeString(authType) + ") failed (suspended account) on user account " + this.getName() + " by the nick " + usernode.getMask1());
+            log.warn("Command AUTH (" + Const.getAuthTypeString(authType) + ") failed (suspended account) on user account " + this.getName());
             throw new Exception("(II) Auth failed (account suspended): " + this.getName() + " used by nick " + usernode.getMask1());
         }
 
@@ -339,7 +339,7 @@ public class UserAccount {
             sqliteDb.addUserAuth(usernode, authType);
         }
         catch (Exception e) {
-            log.error("Command AUTH: Error finalizing the auth: nick = " + usernode.getMask1() + ", account = " + this.getName());
+            log.error(String.format("UserAccount/addAuthUserToAccount: cannot add nick to database authed users for account %s: ", this.getName()), e);
             throw new Exception("Command AUTH: Error finalizing the auth: nick = " + usernode.getMask1() + ", account = " + this.getName());
         }
     }

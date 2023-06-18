@@ -37,10 +37,7 @@ public class Help {
             }
             sc.close();
         }
-        catch(Exception e)  {
-            e.printStackTrace();
-            content.add("Help not available for that command.");
-        }  
+        catch(Exception e)  { content.add(Messages.strHelpErrNoHelp); }
         return content;
     }
 }

@@ -18,16 +18,16 @@ public class UserNode {
     private static Logger log = LogManager.getLogger("common-log");
 
     
-    private String userNick       = "";
-    private String userOldNick    = "";
-    private String userIdent      = "";
-    private String userHost       = "";
-    private String userRealHost   = "";
-    private String cloakedHost    = "";
-    private String userRealName   = "";
-    private String userUniq       = "";
-    private String userModes      = "";
-    private String userCertFP     = "";
+    private String nick          = "";
+    private String previousNick  = "";
+    private String ident         = "";
+    private String host          = "";
+    private String realHost      = "";
+    private String cloakedHost   = "";
+    private String realName      = "";
+    private String uid           = "";
+    private String modes         = "";
+    private String certFp        = "";
 
     private byte[] ipAddress;
 
@@ -92,8 +92,8 @@ public class UserNode {
      * @param hostname
      */
     public UserNode(String uid, String hostname) {
-        this.userUniq = uid;
-        this.userRealHost = hostname;
+        this.uid = uid;
+        this.realHost = hostname;
         this.usingSaslAuth = true;
         this.userTS = 0L;
     }
@@ -103,8 +103,8 @@ public class UserNode {
      * @param nick User nick
      */
     public void setNick(String nick) {
-        this.userOldNick = this.userNick;
-        this.userNick = nick;
+        this.previousNick = this.nick;
+        this.nick = nick;
     }
 
     /**
@@ -112,7 +112,7 @@ public class UserNode {
      * @param ident User ident
      */
     public void setIdent(String ident) {
-        this.userIdent = ident;
+        this.ident = ident;
     }
 
     /**
@@ -120,7 +120,7 @@ public class UserNode {
      * @param host User (v)host
      */
     public void setHost(String host) {
-        this.userHost = host;
+        this.host = host;
     }
 
     /**
@@ -128,7 +128,7 @@ public class UserNode {
      * @param rhost User real host
      */
     public void setRealHost(String rhost) {
-        this.userRealHost = rhost;
+        this.realHost = rhost;
     }
 
     /**
@@ -136,7 +136,7 @@ public class UserNode {
      * @param realName User gecos
      */
     public void setRealName(String realName) {
-        this.userRealName = realName;
+        this.realName = realName;
     }
 
     /**
@@ -144,15 +144,15 @@ public class UserNode {
      * @param uniq User SID
      */
     public void setUid(String uniq) {
-        this.userUniq = uniq;
+        this.uid = uniq;
     }
 
     /**
      * Sets the user usermodes
      * @param modes User usermodes
      */
-    public void setUserModes(String modes) {
-        this.userModes = modes;
+    public void setModes(String modes) {
+        this.modes = modes;
     }
 
     /**
@@ -168,7 +168,7 @@ public class UserNode {
      * @param certfp User certfp
      */
     public void setCertFP(String certfp) {
-        this.userCertFP = certfp.toLowerCase(); // putting lowercased certfp to node
+        this.certFp = certfp.toLowerCase(); // putting lowercased certfp to node
     }
 
     /**
@@ -312,7 +312,7 @@ public class UserNode {
      * @return User nickname
      */
     public String getNick() {
-        return this.userNick;
+        return this.nick;
     }
 
     /**
@@ -320,7 +320,7 @@ public class UserNode {
      * @return Previous user nickname
      */
     public String getOldNick() {
-        return this.userOldNick;
+        return this.previousNick;
     }
 
     /**
@@ -328,7 +328,7 @@ public class UserNode {
      * @return User ident
      */
     public String getIdent() {
-        return this.userIdent;
+        return this.ident;
     }
 
     /**
@@ -336,7 +336,7 @@ public class UserNode {
      * @return User (v)host
      */
     public String getHost() {
-        return this.userHost;
+        return this.host;
     }
 
     /**
@@ -344,7 +344,7 @@ public class UserNode {
      * @return User realhost
      */
     public String getRealHost() {
-        return this.userRealHost;
+        return this.realHost;
     }
 
     /**
@@ -352,7 +352,7 @@ public class UserNode {
      * @return User gecos
      */
     public String getRealName() {
-        return this.userRealName;
+        return this.realName;
     }
 
     /**
@@ -360,7 +360,7 @@ public class UserNode {
      * @return User SID
      */
     public String getUid() {
-        return this.userUniq;
+        return this.uid;
     }
 
     /**
@@ -368,7 +368,7 @@ public class UserNode {
      * @return User usermodes
      */
     public String getModes() {
-        return this.userModes;
+        return this.modes;
     }
 
     /**
@@ -384,7 +384,7 @@ public class UserNode {
      * @return User certfp
      */
     public String getCertFP() {
-        return this.userCertFP;
+        return this.certFp;
     }
 
     /**
@@ -424,7 +424,7 @@ public class UserNode {
      * @return User oper status
      */
     public Boolean isOper() {
-        if (this.userModes.matches("(.*)o(.*)") == true) return true;
+        if (this.modes.matches("(.*)o(.*)") == true) return true;
         else return false;
     }
 

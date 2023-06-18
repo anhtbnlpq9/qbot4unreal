@@ -1,5 +1,3 @@
-
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -9,7 +7,6 @@ import java.util.HashSet;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 public class Protocol extends Exception {
 
@@ -27,21 +24,20 @@ public class Protocol extends Exception {
 
     private Boolean     networkInsideNetBurst = true;
     
-    private HashMap<String, ServerNode>      serverList          = new HashMap<String, ServerNode>();
+    private HashMap<String, ServerNode>      serverList          = new HashMap<>();
 
-    private HashMap<String, UserNode>        userList            = new HashMap<String, UserNode>();
+    private HashMap<String, UserNode>        userList            = new HashMap<>();
+    private HashMap<String, UserNode>        userNickSidLookup   = new HashMap<>(); // Lookup map for Nick -> Sid ; TODO : to transform to <String, UserNode>
 
-    private HashMap<String, UserAccount>     userAccounts        = new HashMap<String, UserAccount>();
+    private HashMap<String, UserAccount>     userAccounts        = new HashMap<>();
 
-    private HashMap<String, ChannelNode>     regChannels         = new HashMap<String, ChannelNode>();
-    private HashMap<String, ChannelNode>     channelList         = new HashMap<String, ChannelNode>();
+    private HashMap<String, ChannelNode>     regChannels         = new HashMap<>();
+    private HashMap<String, ChannelNode>     channelList         = new HashMap<>();
 
-    private HashMap<String, String>          userNickSidLookup   = new HashMap<String, String>(); // Lookup map for Nick -> Sid ; TODO : to transform to <String, UserNode>
-    private HashMap<String, String>          protocolProps       = new HashMap<String, String>();
+    private HashMap<String, String>          protocolProps       = new HashMap<>();
 
     private HashMap<String, Boolean>         featureList         = new HashMap<>();
     
-
     private String myPeerServerId;
     private String foundNickLookUpCi;
 
@@ -252,7 +248,8 @@ public class Protocol extends Exception {
      * @param msg message string
      */
     public void sendPrivmsg(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
-        String str = ":" + from.getUid() + " PRIVMSG " + to.getUid() + " :" + msg;
+        String str;
+        str = String.format(":%s PRIVMSG %s :%s", from.getUid(), to.getUid(), msg);
         client.write(str);
     }
     
@@ -264,12 +261,14 @@ public class Protocol extends Exception {
      * @param msg message string
      */
     public void sendNotice(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
-        String str = ":" + from.getUid() + " NOTICE " + to.getUid() + " :" + msg;
+        String str;
+        str = String.format(":%s NOTICE %s :%s", from.getUid(), to.getUid(), msg);
         client.write(str);
     }
 
     public void sendInvite(Client client, UserNode to, ChannelNode chanNode) /*throws Exception*/ {
-        String str = ":" + config.getServerId() + config.getCServeUniq() + " INVITE " + to.getUid() + " " + chanNode.getName();
+        String str;
+        str = String.format(":%s INVITE %s %s", config.getServerId() + config.getCServeUniq(), to.getUid(), chanNode.getName());
         client.write(str);
     }
 
@@ -282,7 +281,7 @@ public class Protocol extends Exception {
     public void chanJoin(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
         String str;
 
-        str = ":" + who.getUid() + " JOIN " + chan.getName();
+        str = String.format(":%s JOIN %s", who.getUid(), chan.getName());
 
         ChannelNode newChannel = null;
 
@@ -339,7 +338,7 @@ public class Protocol extends Exception {
             }
             catch (Exception e) { return; }
  
-            str = ":" + who.getUid() + " TOPIC " + chan.getName() + " :" + savedTopic;
+            str = String.format(":%s TOPIC %s :%s", who.getUid(), chan.getName(), savedTopic);
             client.write(str);
         }
     }
@@ -351,7 +350,8 @@ public class Protocol extends Exception {
      * @param chan channelnode
      */
     public void chanPart(Client client, UserNode who, ChannelNode chanUserPart) /*throws Exception*/ {
-        String str = ":" + who.getUid() + " PART " + chanUserPart.getName();
+        String str;
+        str = String.format(":%s PART %s", who.getUid(), chanUserPart.getName());
 
         try {
             who.removeFromChan(chanUserPart);
@@ -382,7 +382,8 @@ public class Protocol extends Exception {
      * @param reason reason
      */
     public void chanKick(Client client, UserNode who, ChannelNode chan, UserNode target, String reason) /*throws Exception*/ {
-        String str = ":" + who.getUid() + " KICK " + chan.getName() + " " + target.getNick() + " :" + reason;
+        String str;
+        str = String.format(":%s KICK %s %s :%s", who.getUid(), chan.getName(), target.getNick(), reason);
         
         try {
             who.removeFromChan(chan);
@@ -442,7 +443,7 @@ public class Protocol extends Exception {
         /* Sets the chan modes */
         modChanModes.forEach( (mode, parameter) -> {
             log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change mode: %s %s", chan.getName(), mode, parameter));
-            if (mode.startsWith("+")) chan.addMode(String.valueOf(mode.charAt(1)), parameter);
+            if (mode.startsWith("+") == true) chan.addMode(String.valueOf(mode.charAt(1)), parameter);
             else chan.delMode(String.valueOf(mode.charAt(1)), parameter);
         });
 
@@ -464,9 +465,7 @@ public class Protocol extends Exception {
         });
 
         String str;
-        if (who.isEmpty() == true) str = String.format(":%s MODE %s %s %s",  config.getServerId(), chan.getName(), modes, modesParams);
-        else str = String.format(":%s MODE %s %s %s", who, chan.getName(), modes, modesParams);
-
+        str = String.format(":%s MODE %s %s %s",  who.isEmpty()==true ? config.getServerId() : who, chan.getName(), modes, modesParams);
         client.write(str);
     }
 
@@ -495,7 +494,7 @@ public class Protocol extends Exception {
      * @throws Exception
      */
     public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
-        String who = fromWho.getServerId();
+        String who = fromWho.getSid();
         String target = toTarget.getNick();
         //setMode(client, who, target, modes, parameters);
     }
@@ -511,7 +510,6 @@ public class Protocol extends Exception {
      */
     public void setMode(Client client, UserNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getUid();
-        //String target = toTarget.getName();
         setMode(client, who, toTarget, modes, parameters);
     }
 
@@ -521,7 +519,7 @@ public class Protocol extends Exception {
         Long unixTime;
         unixTime = Instant.now().getEpochSecond();
 
-        str = String.format(":%s MLOCK %s %s %s", fromWho.getServerId(), unixTime, toTarget.getName(), modes);
+        str = String.format(":%s MLOCK %s %s %s", fromWho.getSid(), unixTime, toTarget.getName(), modes);
         client.write(str);
     }
 
@@ -534,7 +532,7 @@ public class Protocol extends Exception {
      * @throws Exception
      */
     public void setMode(Client client, ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
-        String who = fromWho.getServerId();
+        String who = fromWho.getSid();
         setMode(client, who, toTarget, modes, parameters);
     }
 
@@ -552,7 +550,8 @@ public class Protocol extends Exception {
     }
 
     public void setTopic(Client client, UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
-        String str = ":" + from.getUid() + " TOPIC " + to.getName() + " :" + topic;
+        String str;
+        str = String.format(":%s TOPIC %s :%s", from.getUid(), to.getName(), topic);
         client.write(str);
     }
 
@@ -574,7 +573,7 @@ public class Protocol extends Exception {
 
         if (toTarget.getHost().equals(vhostComplete)) return;
         
-        str = ":" + who + " CHGHOST " + toTarget.getUid() + " " + vhostComplete;
+        str = String.format(":%s CHGHOST %s %s", who, toTarget.getUid(), vhostComplete);
         client.write(str);
     }
 
@@ -750,8 +749,6 @@ public class Protocol extends Exception {
 
             modeIndex++;
         }
-
-        
         return result;
     }
 
@@ -778,7 +775,6 @@ public class Protocol extends Exception {
 
             command = (command[2]).split(" ", 2);
             String toEntity   =  command[0];
-
             String message    =  command[1];
 
             /* In here we forward to Chanservice the PRIVMSG if sent to them */
@@ -799,11 +795,12 @@ public class Protocol extends Exception {
 
             command = (command[2]).split(" ", 4);
             String name = command[0];
-            Integer hop = Integer.valueOf(command[1]);
             String sid = command[2];
             String desc = (command[3].split(":"))[1];
+
+            Integer hop = Integer.valueOf(command[1]);
+
             server = new ServerNode(name, hop, sid, desc);
-            server.setIntroducedBy(fromEntNode);
             server.setParent(fromEntNode);
             fromEntNode.addChildNode(server);
             serverList.put(sid, server);
@@ -817,7 +814,9 @@ public class Protocol extends Exception {
             ServerNode server = serverList.get(fromEnt);
             server.setEOS(true);
 
-            String str = ":" + config.getServerId() + " EOS";
+            String str;
+
+            str = String.format(":%s EOS", config.getServerId());
             client.write(str);
             serverList.get(config.getServerId()).setEOS(true);
 
@@ -863,16 +862,17 @@ public class Protocol extends Exception {
 
             unixTime = Instant.now().getEpochSecond();
 
-            String str = ":" + config.getServerId() + " NETINFO " + netinfoParam[1] + " " + unixTime + " " + config.getSrvProtocolVersion() + " * 0 0 0 :" + config.getNetworkName();
+            String str;
+
+            str = String.format(":%s NETINFO %s %s %s * 0 0 0 :%s", config.getServerId(), netinfoParam[1], unixTime, config.getSrvProtocolVersion(), config.getNetworkName());
             client.write(str);
 
 
             /* Sending that we can handle SASL (in enabled in the config) */
             if (config.getFeature("sasl") == true) {
-                str = ":" + config.getServerId() + " MD client " + config.getServerName() + " saslmechlist :EXTERNAL,PLAIN";
+                str = String.format(":%s MD client %s saslmechlist :EXTERNAL,PLAIN", config.getServerId(), config.getServerName());
                 client.write(str);
             }
-
         }
         else if (command[1].equals("MD")) {
             //:ABC MD client lynx.      saslmechlist :EXTERNAL,PLAIN
@@ -882,8 +882,6 @@ public class Protocol extends Exception {
 
             mdParams = mdString.split(" ", 10);
 
-
-            
             switch(mdParams[2]) {
                 case "certfp": //:SID MD client <UID> certfp :<certfp string>
                     String target = mdParams[1];
@@ -931,7 +929,7 @@ public class Protocol extends Exception {
                     myPeerServerId = (prop[i].split("="))[1];
                     server = new ServerNode((prop[i].split("="))[1]);
                     server.setPeer(true);
-                    server.setIntroducedBy(server);
+                    server.setParent(server);
                     serverList.put((prop[i].split("="))[1], server);
                 }
 
@@ -942,9 +940,9 @@ public class Protocol extends Exception {
             //<<< SERVER ocelot. 1 :U6000-Fhn6OoEmM-5P0 Mjav Network IRC server
             String[] string = raw.split(" ", 4);
             ServerNode server = serverList.get(myPeerServerId);
-            server.setServerName(string[1]);
-            server.setServerDistance(Integer.valueOf(string[2]));
-            server.setServerDescription((string[3].split(":"))[1]);
+            server.setName(string[1]);
+            server.setDistance(Integer.valueOf(string[2]));
+            server.setDescription((string[3].split(":"))[1]);
             
             serverList.get(config.getServerId()).setServerPeerResponded(true);
         }
@@ -954,7 +952,7 @@ public class Protocol extends Exception {
             var wrapper = new Object(){ ServerNode sQuittedServer; };
             ServerNode sQuittedServer;
             serverList.forEach( (sid, servernode) -> {
-                if (servernode.getServerName().equals(serverName)) { wrapper.sQuittedServer = servernode; }
+                if (servernode.getName().equals(serverName)) { wrapper.sQuittedServer = servernode; }
             });
             sQuittedServer = wrapper.sQuittedServer;
 
@@ -990,7 +988,7 @@ public class Protocol extends Exception {
 
             // Delete the servers
             for(ServerNode servernode : affectedServers) {
-                serverList.remove(servernode.getServerName());
+                serverList.remove(servernode.getName());
             }
         }
         else if (command[1].equals("UID")) {
@@ -1000,6 +998,7 @@ public class Protocol extends Exception {
             command = command[2].split(" ", 12);
 
             UserNode user;
+
             ServerNode userServer = serverList.get(fromEnt);
 
             String ident;
@@ -1011,6 +1010,7 @@ public class Protocol extends Exception {
             String modes;
             String cloakedHost;
             String ipAddress;
+
             Long ts;
 
             ident       = command[3];
@@ -1100,8 +1100,6 @@ public class Protocol extends Exception {
 
             fromEnt = command[0].replaceFirst(":", "");
             command = command[2].split(" ", 12);
-
-
 
             /*
             * <<< :ocelot. SASL lynx. 5P0QVW5M3 H 2401:d800:7e60:5bb:21e:10ff:fe1f:0 2401:d800:7e60:5bb:21e:10ff:fe1f:0
@@ -1340,7 +1338,6 @@ public class Protocol extends Exception {
                         }
 
                         /* Auth success */
-
                         this.sendSaslResult(user, true);
                         if (config.getFeature("svslogin") == true) {
                             this.sendSvsLogin(user, userAccountToAuth);
@@ -1353,17 +1350,9 @@ public class Protocol extends Exception {
                             if (Flags.isChanLAutoInvite(chanlev) == true) {
                                 this.sendInvite(client, user, this.getChannelNodeByName(channel));
                             }
-
                         });
-                        
-
                     }
-
-
                     break;
-
-
-
             }
 
 
@@ -1553,7 +1542,6 @@ public class Protocol extends Exception {
                     log.info(String.format("Protocol/SJOIN: CService ready, sending the join to CService"));
                     cservice.handleJoin(user, chan);
                 }
-
             }
             log.info(String.format("Protocol/SJOIN: setting channel %s (usercount %s)", chan.getName(), chan.getUserCount()));
 
@@ -1697,14 +1685,15 @@ public class Protocol extends Exception {
             userToRemove.setAccount(null);
 
             userNickSidLookup.remove(userToRemove.getNick());
-            //userToRemove = null;
             userServer.removeLocalUser(userToRemove);
             userList.remove(fromEnt);
         }
         else if (command[1].equals("KILL")) {
             // :AAAAAAA KILL AAAAAAA :message
             fromEnt = (command[0].split(":"))[1];
+            
             UserNode killedUser = this.getUserNodeBySid(command[2].split(" ")[0]);
+
             ServerNode userServer = killedUser.getServer();
 
             HashMap<ChannelNode, String> curUserChanList = new HashMap<>(killedUser.getChanList());
@@ -1722,7 +1711,6 @@ public class Protocol extends Exception {
             killedUser.setAccount(null);
 
             userNickSidLookup.remove(killedUser.getNick());
-            //userToRemove = null;
             userServer.removeLocalUser(killedUser);
             userList.remove(killedUser.getUid());
         }
@@ -1735,8 +1723,6 @@ public class Protocol extends Exception {
             userNickSidLookup.put((command[2].split(" "))[0], fromEnt);
 
             userList.get(fromEnt).setNick( (command[2].split(" "))[0] );
-
-
         }
         else if (command[0].equals("TOPIC")) { /* only at syncing */
             //TOPIC #chan w!h@h ts :topic
@@ -1780,7 +1766,6 @@ public class Protocol extends Exception {
     private void traverseTree(HashSet nodes, ServerNode node) {
         for (ServerNode child: node.getChildNodes()) {
             nodes.add(child);
-            //System.out.println("Server Node found = " + child.getServerName());
             traverseTree(nodes, child);
 
         }

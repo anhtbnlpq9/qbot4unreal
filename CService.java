@@ -1,17 +1,18 @@
+import java.time.Instant;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
-import java.time.Instant;
-import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.Base64;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
-import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +35,6 @@ public class CService {
     private Boolean cServiceReady = false;
 
     private String myUniq;
-
     private String chanJoinModes = "";
 
     interface Whois {
@@ -351,9 +351,8 @@ public class CService {
                 try { welcomeMsg = sqliteDb.getWelcomeMsg(channel); }
                 catch (Exception e) { log.error(String.format("CService/handleJoin: error fetching welcome message for %s: ", channel.getName()), e); }
 
-                if (welcomeMsg.isEmpty() == false) {
-                    protocol.sendNotice(client, myUserNode, user, welcomeMsg);
-                }
+                if (welcomeMsg == null) welcomeMsg = "";
+                if (welcomeMsg.isEmpty() == false) protocol.sendNotice(client, myUserNode, user, welcomeMsg);
             }
         }
     }
@@ -515,7 +514,7 @@ public class CService {
                 if (fromNick.isOper() == true || user.getValue().getNick().equals(fromNick.getNick()) ) {
                     protocol.sendNotice(client, myUserNode, fromNick, "|- is connecting from " + user.getValue().getRealHost());
                     protocol.sendNotice(client, myUserNode, fromNick, "|- is using modes " + user.getValue().getModes());
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- is using server " + (user.getValue().getServer()).getServerName() + " (" + (user.getValue().getServer()).getServerId() + ")");
+                    protocol.sendNotice(client, myUserNode, fromNick, "|- is using server " + (user.getValue().getServer()).getName() + " (" + (user.getValue().getServer()).getSid() + ")");
                     protocol.sendNotice(client, myUserNode, fromNick, "|- signed on " + userTSdate );
                 }
 
@@ -525,8 +524,6 @@ public class CService {
 
                 if (fromNick.isOper() == true || user.getValue().getNick().equals(fromNick.getNick()) ) {
                     protocol.sendNotice(client, myUserNode, fromNick, "|- on channels: ");
-
-
 
                     user.getValue().getChanList().forEach( (chan, mode) -> {
                         wrappercServeWhois2.bufferMode = "";
@@ -1047,7 +1044,6 @@ public class CService {
             return;
         }
 
-        
         try {
             target = command[1];
         }
@@ -1127,26 +1123,24 @@ public class CService {
             chanNode = protocol.getChannelNodeByName(channel);
         }
         catch (IndexOutOfBoundsException e) {
-
             return;
         }
         catch (Exception f) {
-
             return;
         }
 
         if (protocol.getRegChanList().containsKey(channel) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, "The channel " +  channel + " is not registered."); 
+            protocol.sendNotice(client, myUserNode, fromNick, "The channel " +  channel + " is not registered.");
             return;
         }
 
         if ( Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false ) {
-            protocol.sendNotice(client, myUserNode, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it."); 
+            protocol.sendNotice(client, myUserNode, fromNick, "You must have the flag +n in the channel's chanlev to be able to drop it.");
             return;
         }
 
         if ( Flags.isChanSuspended(chanNode.getFlags()) == true ) {
-            protocol.sendNotice(client, myUserNode, fromNick, "You cannot drop a suspended channel."); 
+            protocol.sendNotice(client, myUserNode, fromNick, "You cannot drop a suspended channel.");
             return;
         }
 
@@ -1280,9 +1274,6 @@ public class CService {
             return;
         }
 
-        
-
-        
         try {
             /* Deauth all the nicks associated */
             targetUserAccount.getUserLogins().forEach( (usernode) -> {
@@ -1504,7 +1495,7 @@ public class CService {
         catch (Exception e) {
             /* Delay auth to slow down brute force attack */
             try { Thread.sleep(config.getCServeAccountWrongCredWait() *1000); }
-            catch (Exception f) { f.printStackTrace(); }
+            catch (Exception f) { /* Nothing to do */ }
             protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrAccountCred);
             return;
         }
@@ -1518,7 +1509,7 @@ public class CService {
             }
             catch (Exception e) {
                 try { Thread.sleep(config.getCServeAccountWrongCredWait() *1000); }
-                catch (Exception f) { f.printStackTrace(); }
+                catch (Exception f) { /* Nothing to do */ }
                 protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrAccountCred);
                 return;
             }
@@ -1567,7 +1558,7 @@ public class CService {
         });
     }
    
-    private void cServeCertfpAdd(UserNode userNode, String str) { // CERTFPADD <certfp>
+    private void cServeCertfpAdd(UserNode userNode, String str) { // TODO: dispatch
 
         String certfp;
 
@@ -1598,9 +1589,6 @@ public class CService {
             return; 
         }
 
-
-
-
         if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
             protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrMalformed); 
             return;
@@ -1615,6 +1603,7 @@ public class CService {
             log.warn(String.format("Could not add certfp %s to user %s", certfp, userAccount.getName()), e);
             return;
         }
+
         try {
             userAccountCertfp = sqliteDb.getCertfp(userAccount);
         }
@@ -1626,7 +1615,7 @@ public class CService {
         protocol.sendNotice(client, myUserNode, userNode, Messages.strSuccess); 
     }
 
-    private void cServeCertfpDel(UserNode userNode, String str) { // CERTFPDEL <certfp>
+    private void cServeCertfpDel(UserNode userNode, String str) {
         String[] command = str.split(" ",5);
         String certfp = command[1];
 
@@ -1789,13 +1778,12 @@ public class CService {
         }
 
         protocol.sendNotice(client, myUserNode, usernode, Messages.strSuccess);
-
-
     }
 
     private void logoutUser(UserNode usernode, Integer deAuthType) {
 
         UserAccount userAccount = usernode.getAccount();
+
         try {
             userAccount.deAuthUserFromAccount(usernode, deAuthType);
         }
@@ -2042,7 +2030,6 @@ public class CService {
                 content = line;
             }
 
-
             switch (context) {
                 case "000":
                     if (fromNick.isAuthed() == false) {
@@ -2061,7 +2048,6 @@ public class CService {
                         protocol.sendNotice(client, myUserNode, fromNick, content);
                     }
                     break;
-
 
                 case "150":
                     if (fromNick.isAuthed() == true && Flags.hasUserOperPriv(fromNick.getAccount().getFlags())) {
@@ -2086,9 +2072,7 @@ public class CService {
                 default:
                     protocol.sendNotice(client, myUserNode, fromNick, content);
                     break;
-                
             }
-
         } );
     }
 
@@ -2100,7 +2084,6 @@ public class CService {
      * Sets the channel limit based on the channel autolimit feature
      */
     public void cServeSetAutolimit() {
-
         protocol.getRegChanList().forEach( (chanName, chanNode) -> {
 
             Integer curChanUserCount = chanNode.getUserCount();
@@ -2156,7 +2139,7 @@ public class CService {
         try { 
             chanNode = protocol.getChannelNodeByName(channel);
             if (Flags.isChanSuspended(chanNode.getFlags()) == true) {
-                throw new Exception("* Channel suspended.");
+                throw new Exception("Channel suspended.");
             }
         }
         catch (Exception e) {
@@ -2297,8 +2280,6 @@ public class CService {
         Integer curChanFlags;
         Integer newChanFlags;
 
-
-
         /* Preliminary checks */
         if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
             protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
@@ -2327,7 +2308,6 @@ public class CService {
             return;
         }
 
-
         /* The unsuspend thing */
         curChanFlags = chanNode.getFlags();
         newChanFlags = curChanFlags;
@@ -2351,7 +2331,6 @@ public class CService {
             e.printStackTrace();
         }
         
-
         try {
             sqliteDb.addUnSuspendHistory(chanNode);
         }
@@ -2361,11 +2340,8 @@ public class CService {
             log.error(String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName()));
             return;
         }
-
         protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
     }
-
-
 
     /**
      * SUSPENDUSER command

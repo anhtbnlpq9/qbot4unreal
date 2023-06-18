@@ -3,39 +3,26 @@ import java.util.HashSet;
 /**
  * ServerNode class
  *
- * Class to store network servers:
- * - name
- * - id
- * - description
- * - timestamp
- * - distance
- * - is peer
- * - is EOS
- *
  * @author me
  */ 
-
- 
 public class ServerNode {
 
-    private String serverName;
-    private String serverId;
-    private String serverDescription;
-    private Long serverTS;
+    private String name;
+    private String sid;
+    private String description;
 
-    private Integer serverDistance;
+    private Long ts;
 
-    private ServerNode introducedBy;
-    
-    // Only used for me (detect that server peer has responded => it exists in serverList)
-    private Boolean serverPeerResponded = null;
-    private Boolean serverIsPeer = false;
-    private Boolean serverIsEOS  = false;
+    private Integer distance;
+
+    private Boolean serverPeerResponded = null;  // Only used for me (detect that server peer has responded => it exists in serverList)
+    private Boolean isThePeer           = false;
+    private Boolean hasEOS              = false;
 
     private HashSet<UserNode> localUsers = new HashSet<>();
     private HashSet<ServerNode> childNodes = new HashSet<>();
-    private ServerNode parentNode = null;
 
+    private ServerNode parentNode = null;
 
     /**
      * Constructor called tp declare new servers on the network usually following SINFO or SERVER
@@ -45,11 +32,11 @@ public class ServerNode {
      * @param serverDescription
      */
     public ServerNode(String serverName, Integer serverDistance, String serverId, String serverDescription) {
-        this.serverName = serverName;
-        this.serverDistance = serverDistance;
-        this.serverId = serverId;
-        this.serverDescription = serverDescription;
-        this.serverIsPeer = false;
+        this.name = serverName;
+        this.distance = serverDistance;
+        this.sid = serverId;
+        this.description = serverDescription;
+        this.isThePeer = false;
     } 
 
     /**
@@ -57,8 +44,8 @@ public class ServerNode {
      * @param serverId network server id
      */
     public ServerNode(String serverId) {
-        this.serverId = serverId;
-        this.serverIsPeer = false;
+        this.sid = serverId;
+        this.isThePeer = false;
     } 
 
     /**
@@ -66,7 +53,7 @@ public class ServerNode {
      * @param eos true or false
      */
     public void setEOS(Boolean eos) {
-        this.serverIsEOS = eos;
+        this.hasEOS = eos;
     }
 
     /**
@@ -74,31 +61,31 @@ public class ServerNode {
      * @param peer true or false
      */
     public void setPeer(Boolean peer) {
-        this.serverIsPeer = peer;
+        this.isThePeer = peer;
     }
 
     /**
      * Sets the server name (as appear in /MAP)
      * @param name server name
      */
-    public void setServerName(String name) {
-        this.serverName = name;
+    public void setName(String name) {
+        this.name = name;
     } 
 
     /**
      * Sets the server description (as seen in /LINKS)
      * @param desc
      */
-    public void setServerDescription(String desc) {
-        this.serverDescription = desc;
+    public void setDescription(String desc) {
+        this.description = desc;
     }  
 
     /**
      * Sets the server hop count to CService
      * @param dist distance in hops
      */
-    public void setServerDistance(Integer dist) {
-        this.serverDistance = dist;
+    public void setDistance(Integer dist) {
+        this.distance = dist;
     }  
 
     /**
@@ -113,8 +100,8 @@ public class ServerNode {
      * Returns the server name (as listed in /map)
      * @return server name
      */
-    public String getServerName() {
-        return this.serverName;
+    public String getName() {
+        return this.name;
     }
 
     public UserNode getLocalUser(UserNode node) {
@@ -138,8 +125,8 @@ public class ServerNode {
      * Returns the server network SID
      * @return server SID
      */
-    public String getServerId() {
-        return this.serverId;
+    public String getSid() {
+        return this.sid;
     }
 
     public void setParent(ServerNode server) {
@@ -167,7 +154,7 @@ public class ServerNode {
      * @return true or false
      */
     public Boolean getServerPeer() {
-        return this.serverIsPeer;
+        return this.isThePeer;
     }
 
     /**
@@ -175,7 +162,7 @@ public class ServerNode {
      * @return true or false
      */
     public Boolean getServerEOS() {
-        return this.serverIsEOS;
+        return this.hasEOS;
     }
     /**
      * Gets if the peer server has responded (sent 1st message)
@@ -186,19 +173,11 @@ public class ServerNode {
     }
 
     /**
-     * Returns the server that has introduced the one represented by the object
-     * @return introducer server
-     */
-    public ServerNode getIntroducedBy() {
-        return this.introducedBy;
-    }
-
-    /**
      * Returns the server description as listed in /LINKS
      * @return server description
      */
     public String getDescription() {
-        return this.serverDescription;
+        return this.description;
     }
 
     /**
@@ -206,7 +185,7 @@ public class ServerNode {
      * @return server timestamp
      */
     public Long getTS() {
-        return serverTS;
+        return ts;
     }
 
     /**
@@ -214,16 +193,6 @@ public class ServerNode {
      * @return hop count from the server to CService
      */
     public Integer getDistance() {
-        return serverDistance;
+        return distance;
     }
-
-    /**
-     * Sets the server that has introduced the one represented by the object
-     * @param introducer introducing server (in a SERVER)
-     */
-    public void setIntroducedBy(ServerNode introducer) {
-        this.introducedBy = introducer;
-    }
-
-
 }
