@@ -1752,9 +1752,9 @@ public class CService {
             else { serverPeerStatus = "*"; }
             String serverEOS = "no";
             if (server.getValue().getServerEOS()==true) { serverEOS = "yes";  }
-            String introducedBy = "(none)";
-            if (server.getValue().getIntroducedBy() != null) { introducedBy = server.getValue().getIntroducedBy().getServerName(); }
-            protocol.sendNotice(client, myUserNode, userNode, serverPeerStatus + " " + server.getValue().getServerName() + " (" + server.getValue().getServerId() + ") /  EOS:" + serverEOS + " / introduced by: " + introducedBy);
+            String introducedBy = Messages.strMsgNone;
+            if (server.getValue().getParent() != null) { introducedBy = server.getValue().getParent().getName(); }
+            protocol.sendNotice(client, myUserNode, userNode, serverPeerStatus + " " + server.getValue().getName() + " (" + server.getValue().getSid() + ") /  EOS:" + serverEOS + " / introduced by: " + introducedBy);
         }
         protocol.sendNotice(client, myUserNode, userNode, "There are " + protocol.getServerList().size() + " servers on the network.");
         protocol.sendNotice(client, myUserNode, userNode, Messages.strEndOfList);
