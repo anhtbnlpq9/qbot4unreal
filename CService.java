@@ -893,8 +893,8 @@ public class CService {
             protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUserFlagsList, fromNick.getAccount().getName(), userNewFlagsStr) );
         }
         catch (Exception e) {
-            e.printStackTrace(); 
-            protocol.sendNotice(client, myUserNode, fromNick, "Error setting userflags."); 
+            log.error(String.format("CService/cServeUserFlags: error whith userflags %s for chan %s: ", flagsModStr, fromNick.getAccount().getName()), e);
+            protocol.sendNotice(client, myUserNode, fromNick, Messages.strUserFlagsErrUnknown); 
             return; 
         }
     }
@@ -1026,9 +1026,9 @@ public class CService {
         }
 
         catch (Exception e) {
-            e.printStackTrace(); 
-            protocol.sendNotice(client, myUserNode, fromNick, "Error setting chanflags."); 
-            return; 
+            log.error(String.format("CService/cServeChanFlags: error whith chanflags %s for chan %s: ", chanFlagsModRaw, chanNode.getName()), e);
+            protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanFlagsErrUnknown); 
+            return;
         }
 
     }
@@ -1290,8 +1290,7 @@ public class CService {
                     protocol.sendNotice(client, myUserNode, loggedUserNode, "You have been deauthed because your account is being dropped.");
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
-                    log.error("CService/DropAccount: could not deauthenticate nick " + loggedUserNode.getNick() + " from account " + targetUserAccount.getName() + ".");
+                    log.error("CService/DropAccount: could not deauthenticate nick " + loggedUserNode.getNick() + " from account " + targetUserAccount.getName() + ": ", e);
                 }
             }
 
@@ -2548,9 +2547,8 @@ public class CService {
             sqliteDb.addUnSuspendHistory(userAccount);
         }
         catch (Exception e) {
-            e.printStackTrace();
             protocol.sendNotice(client, myUserNode, fromNick, String.format(strErrUserHistory, userAccount.getName())); 
-            log.error(String.format(strErrUserHistory, userAccount.getName()));
+            log.error(String.format(strErrUserHistory, userAccount.getName()), e);
             return;
         }
 
