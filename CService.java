@@ -158,6 +158,10 @@ public class CService {
         return this.chanJoinModes;
     }
 
+    public UserNode getMyUserNode() {
+        return this.myUserNode;
+    }
+
     public void handleMessage(UserNode fromNickRaw, String str) {
         UserNode fromNick = fromNickRaw;
 
