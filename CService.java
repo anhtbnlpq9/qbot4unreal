@@ -84,7 +84,7 @@ public class CService {
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
         UserNode user = new UserNode(myUniq);
 
-        user.setNick(config.getCServeModes());
+        user.setNick(config.getCServeNick());
         user.setIdent(config.getCServeIdent());
         user.setHost(config.getCServeHost());
         user.setRealHost(config.getCServeHost());
