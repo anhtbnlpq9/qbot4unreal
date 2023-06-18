@@ -26,6 +26,8 @@
 - [ ] bans, excepts, invites
 - [ ] chanlev history
 - [ ] channel auto expiry
+- [ ] handle setting multiple chan modes at the same time
+- [ ] handle setting multiple user chan modes at the same time
 
 ## Advanced stuff
 
