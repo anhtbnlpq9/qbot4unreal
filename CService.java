@@ -29,6 +29,8 @@ public class CService {
 
     private Config config;
 
+    private Dispatcher dispatcher = new Dispatcher(client, config, sqliteDb, protocol);
+
     private Boolean cServiceReady = false;
 
     private String myUniq;
@@ -773,11 +775,7 @@ public class CService {
             userCurChanlevInt = sqliteDb.getUserChanlev(userAccount, chanNode);
             userNewChanlevInt = Flags.applyFlagsFromInt("chanlev", userCurChanlevInt, chanlevModSepInt);
             
-
-            sqliteDb.setUserChanlev(userAccount, chanNode, userNewChanlevInt);
-            userAccount.setChanlev(chanNode, userNewChanlevInt);
-
-            chanNode.setChanlev(sqliteDb.getChanChanlev(chanNode));
+            dispatcher.setChanlev(chanNode, userAccount, userNewChanlevInt);
 
             wrapper.chanlev = userNewChanlevInt;
             /* Stripping personal flags if the line is not the requester account and has not staff privilege */
@@ -806,9 +804,7 @@ public class CService {
 
         if (chanNode.getChanlevWoutPersonalFlags() == null || chanNode.getChanlevWoutPersonalFlags().isEmpty() == true) {
             try {
-                fromNick.getAccount().clearUserChanlev(chanNode);
-                sqliteDb.clearChanChanlev(channel);
-                sqliteDb.delRegChan(channel);
+                dispatcher.dropChan(chanNode, fromNick);
                 protocol.setMode(client, chanNode, "-r", "");
                 protocol.chanPart(client, myUserNode, chanNode);
                 protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanlevDropChanLEmpty);
@@ -885,8 +881,7 @@ public class CService {
             Integer userCurFlags = fromNick.getAccount().getFlags();
             Integer userNewFlags = Flags.applyFlagsFromInt("userflags", userCurFlags, flagsModInt);
 
-            sqliteDb.setUserFlags(fromNick.getAccount(), userNewFlags);
-            fromNick.getAccount().setFlags(userNewFlags);
+            dispatcher.setUserFlags(fromNick, userNewFlags);
 
             String userNewFlagsStr = "";
             if (userNewFlags != 0) { userNewFlagsStr = Flags.flagsIntToChars("userflags", userNewFlags); }
@@ -1018,8 +1013,7 @@ public class CService {
             chanCurFlagsInt = chanNode.getFlags();
             chanNewFlagsInt = Flags.applyFlagsFromInt("chanflags", chanCurFlagsInt, chanFlagsModSepInt);
 
-            sqliteDb.setChanFlags(chanNode, chanNewFlagsInt);
-            chanNode.setFlags(chanNewFlagsInt);
+            dispatcher.setChanFlags(chanNode, chanNewFlagsInt);          
 
             String chanNewFlagsStr = "";
             if (chanNewFlagsInt > 0) { chanNewFlagsStr = "+" + Flags.flagsIntToChars("chanflags", chanNode.getFlags()); }
