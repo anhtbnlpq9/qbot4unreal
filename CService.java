@@ -77,7 +77,7 @@ public class CService {
 
         String str;
         str = String.format(":%s UID %s 1 %s %s %s %s * %s * * * :%s", config.getServerId(), config.getCServeNick(), unixTime, config.getCServeIdent(), config.getCServeHost(), 
-                                                                          config.getServerId() + config.getCServeUniq(), config.getCServeModes(), config.getCServeRealName());
+                                                                          this.myUniq, config.getCServeModes(), config.getCServeRealName());
         client.write(str);
         // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
         UserNode user = new UserNode(myUniq);
