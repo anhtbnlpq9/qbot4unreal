@@ -508,12 +508,23 @@ public class UserNode {
         this.ipAddress = ip;
     }
 
+    public String getMask(String type) {
+        switch (type) {
+            case "nick!ident@realhost (ip)": return String.format("%s!%s@%s (%s)", nick, ident, host, "");
+            case "nick!ident@realhost": return String.format("%s!%s@%s", nick, ident, host);
+            case "ident@realhost (ip)": return String.format("%s@%s (%s)", ident, host, "");
+            case "ident@realhost": return String.format("%s@%s", ident, host);
+            default: return "0!0@0";
+        }
+
+    }
+
     /**
      * Returns the user mask as NICK!IDENT@REALHOST (IP)
      * @return NICK!IDENT@REALHOST (IP)
      */    
     public String getMask1() {
-        return String.format("%s!%s@%s (%s)", userNick, userIdent, userHost, "");
+        return String.format("%s!%s@%s (%s)", nick, ident, host, "");
     }
 
     /**
@@ -521,7 +532,7 @@ public class UserNode {
      * @return IDENT@REALHOST (IP)
      */
     public String getMask2() {
-        return String.format("%s@%s (%s)", userIdent, userHost, "");
+        return String.format("%s@%s (%s)", ident, host, "");
     }
 
     /**
@@ -529,7 +540,7 @@ public class UserNode {
      * @return NICK!IDENT@REALHOST
      */    
     public String getMask3() {
-        return String.format("%s!%s@%s", userNick, userIdent, userHost);
+        return String.format("%s!%s@%s", nick, ident, host);
     }
 
     /**
@@ -537,7 +548,7 @@ public class UserNode {
      * @return IDENT@REALHOST
      */
     public String getMask4() {
-        return String.format("%s@%s", userIdent, userHost);
+        return String.format("%s@%s", ident, host);
     }
 
 }
