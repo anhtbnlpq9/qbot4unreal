@@ -1175,15 +1175,8 @@ public class CService {
             return;
         }
 
-        
-
-        // First check that the user is a the channel's owner (chanlev +n)
         try {
-            fromNick.getAccount().clearUserChanlev(chanNode);
-            chanNode.clearChanChanlev(fromNick);
-            sqliteDb.clearChanChanlev(channel);
-
-            sqliteDb.delRegChan(channel);
+            dispatcher.dropChan(chanNode, fromNick);
 
             protocol.setMode(client, chanNode, "-r", "");
             protocol.chanPart(client, myUserNode, chanNode);
@@ -1649,9 +1642,7 @@ public class CService {
 
         try {
             certfp = certfp.toLowerCase();
-            sqliteDb.removeCertfp(userAccount, certfp);
-            userAccountCertfp = sqliteDb.getCertfp(userAccount);
-            userAccount.setCertFP(userAccountCertfp);
+            dispatcher.removeUserCertFp(userAccount, certfp);
         }
         catch (Exception e) {
             log.error(String.format("Could not remove certfp %s for account %s", certfp, userAccount.getName()), e);
