@@ -180,17 +180,11 @@ public class UserNode {
             if (account != null) {
                 this.userAccount = account;
                 try { this.userAccount.addUserAuth(this); }
-                catch (Exception e) { 
-                    e.printStackTrace(); 
-                    log.error("UserNode/setAccount: Could not auth user."); 
-                }
+                catch (Exception e) { log.error(String.format("UserNode/setAccount: Could not auth nick %s to account %s:", this.getNick(), this.userAccount.getName()), e); }
             }
             else {
                 try { this.userAccount.delUserAuth(this); }
-                catch (Exception e) { 
-                    e.printStackTrace(); 
-                    log.error("UserNode/setAccount: Could not de-auth user."); 
-                }   
+                catch (Exception e) { log.error(String.format("UserNode/setAccount: Could not deauth nick %s from account %s:", this.getNick(), this.userAccount.getName()), e); }   
                 this.userAccount = null;
             }
         }
@@ -482,7 +476,7 @@ public class UserNode {
         try {
             return this.saslAuthParams.get(param);
         }
-        catch (NullPointerException e) { e.printStackTrace(); return null; }
+        catch (NullPointerException e) { log.error(String.format("UserNode/getSaslAuthParam: error fetching the SASL auth parameters") , e); return null; }
     }
 
     public Boolean getAuthBySasl() {
@@ -507,10 +501,7 @@ public class UserNode {
         try {
             this.ipAddress = dec.decode(base64Ip);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("UserNode/setIpAddress: Could not set the IP of client: " + this.getNick());
-        }
+        catch (Exception e) { log.error("UserNode/setIpAddress: Could not set the IP of client: " + this.getNick() + ": ", e); }
     }
 
     public void setIpAddress(byte[] ip) {

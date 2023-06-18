@@ -29,6 +29,6 @@ public class SqliteDbTasks implements Runnable {
                 sqliteDb.cleanInvalidLoginTokens();
             }
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { log.error("SqliteDbTasks/run: error starting database tasks: ", e); }
     }
 }

@@ -30,8 +30,8 @@ public class SqliteDb {
            //Class.forName("org.sqlite.JDBC");
            connection = DriverManager.getConnection("jdbc:sqlite:" + config.getDatabasePath());
         } catch ( Exception e ) {
-           e.printStackTrace();
-           System.exit(0);
+            log.fatal(String.format("SqliteDb/constructor: could not open the database: "), e);
+            System.exit(0);
         }
     }
 
@@ -1230,7 +1230,7 @@ public class SqliteDb {
         try {
             userUidTokens = this.getUserLoginToken();
         }
-        catch (Exception e) { e.printStackTrace();}
+        catch (Exception e) { log.error(String.format("SqliteDb/cleanInvalidLoginTokens: could not fetch the login tokens: "), e);}
         
         /* Getting the list of user UIDs on the network */
         protocol.getUserList().forEach((userUid, userNode) -> {
@@ -1243,7 +1243,7 @@ public class SqliteDb {
             if (userUidNetwork.contains(userUid) == false) {
                 log.info("DB cleanup: deleting expired user UID " + userUid);
                 try { this.delUserAuth(userUid); }
-                catch (Exception e) { e.printStackTrace(); }
+                catch (Exception e) { log.error(String.format("SqliteDb/cleanInvalidLoginTokens: could not remove expired login token for user UID %s: ", userUid), e); }
             }
         }
     }
@@ -1259,7 +1259,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add auth for user " + user.getAccount() + "."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/openUserAuthSessionHistory: could not open auth session for account %s: ", user.getAccount().getName()), e); throw new Exception("Error: could not add auth for user " + user.getAccount().getName() + "."); }
     }
 
     public void closeUserAuthSessionHistory(UserNode user, Integer authType, Integer deAuthType, String quitMsg) throws Exception {
@@ -1275,7 +1275,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + user.getAccount() + "."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/closeUserAuthSessionHistory: could not close auth session for account %s: ", user.getAccount().getName()), e); throw new Exception("Error: could not close auth session for user " + user.getAccount().getName() + "."); }
     }
 
     public void addSuspendHistory(Object node, String reason) throws Exception {
@@ -1307,7 +1307,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add suspend history line for that entity."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/addSuspendHistory: could not add suspend history: "), e); throw new Exception("Error: could not add suspend history line for that entity."); }
     }
 
     public void addUnSuspendHistory(Object node) throws Exception {
@@ -1341,7 +1341,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not update suspend history line for that entity."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/addUnSuspendHistory: could not update suspend history: "), e); throw new Exception("Error: could not update suspend history line for that entity."); }
     }
 
 
@@ -1369,7 +1369,7 @@ public class SqliteDb {
             }
         }
         catch (Exception e) { 
-            e.printStackTrace(); 
+            log.error(String.format("SqliteDb/getAuthHistory: could not fetch auth history for account %s: ", userAccount.getName()), e);
             throw new Exception("Could not get auth history for account " + userAccount.getEmail() + ".");
         }
         statement.close();

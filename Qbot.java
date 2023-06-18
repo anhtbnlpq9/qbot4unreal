@@ -77,7 +77,7 @@ public class Qbot {
 
         while (tlsClient.getReady() == false) {
             try { Thread.sleep(1000); }
-            catch (Exception e) { e.printStackTrace(); }
+            catch (Exception e) { log.error("QBot/main: error while sleeping: ", e); }
         }
 
         log.info("Sending server ident");

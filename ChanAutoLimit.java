@@ -32,7 +32,7 @@ public class ChanAutoLimit implements Runnable {
                 Thread.sleep(this.autoLimitFreq *1000); /* x1000 because sleep() expects ms */
                 cservice.cServeSetAutolimit();
             }
-            catch (InterruptedException e) { e.printStackTrace(); }
+            catch (InterruptedException e) { log.error(String.format("ChanAutoLimit/run: Error while starting autolimit thread: "), e); }
         }
     }
 }

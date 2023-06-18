@@ -10,8 +10,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
  
 public class ChannelNode {
+
+    private static Logger log = LogManager.getLogger("common-log");
     
     private Integer userCount  = 0;
     private Integer flags   = 0;
@@ -87,9 +92,7 @@ public class ChannelNode {
         try {
             this.id = sqliteDb.getChanId(this);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        catch (Exception e) { log.error(String.format("ChannelNode/constuctor: Getting channel ID from database: "), e); }
     }
 
     /**

@@ -1225,8 +1225,8 @@ public class Protocol extends Exception {
                             user.setCertFP(command[4]);
                         }
                         catch (Exception e) {
-                            log.warn("* User is trying SASL EXTERNAL but does not provide certfp");
-                            e.printStackTrace();
+                            log.warn("User is trying SASL EXTERNAL but does not provide certfp", e);
+                            user.setSaslAuthParam("authExt", "");
                         }
                     }
                     user.setSaslAuthParam("authServer", command[1]);

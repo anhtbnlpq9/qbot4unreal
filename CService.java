@@ -110,7 +110,9 @@ public class CService {
                 /* Making the bot join the registered (and +j) channels */
                 protocol.chanJoin(client, myUserNode, regChannelNode);
                 try { protocol.setMode(client, regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getNick()); }
-                catch (Exception e) { e.printStackTrace(); }
+                catch (Exception e) {
+                    log.error(String.format("Cannot set mode on %s: %s", regChannelNode.getName(), "+r" + wrapper.chanJoinModes, myUserNode.getNick()), e);
+                }
 
                 /* Look into every user account belonging to the channel chanlev and applying rights to authed logins of accounts */
                 regChannelNode.getChanlev().forEach( (username, chanlev) -> {
@@ -118,7 +120,7 @@ public class CService {
                     UserAccount useraccount;
                     try { useraccount = protocol.getRegUserAccount(username); }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        log.error(String.format("Inconsistency in channel %s chanlev 0x%08h for account %s", regChannelNode.getName(), chanlev, username), e);
                         return;
                     }
                     useraccount.getUserLogins().forEach( (usernode) -> {
@@ -302,7 +304,7 @@ public class CService {
                         protocol.setMode(client, myUniq, channel, "+b", String.format(autoBanMask, user.getIdent(), user.getHost()));
                         protocol.chanKick(client, myUserNode, channel, user, autoBanReason);
                     }
-                    catch (Exception e) { e.printStackTrace(); }
+                    catch (Exception e) { log.error(String.format("CService/handleJoin: error while +b nick %s on %s: ", user.getNick(), channel.getName()), e); }
                 }
 
                 else if (   Flags.isChanLAuto( user.getAccount().getChanlev(channel))  ) { /* Sets the auto channel modes */
@@ -311,31 +313,31 @@ public class CService {
                         try {
                             protocol.setMode(client, myUniq, channel, "+q", user.getNick());
                         }
-                        catch (Exception e) { e.printStackTrace(); }
+                        catch (Exception e) { log.error(String.format("CService/handleJoin: error while +q nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLMaster( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanAdmin") == true) {
                         try {
                             protocol.setMode(client, myUniq, channel, "+a", user.getNick());
                         }
-                        catch (Exception e) { e.printStackTrace(); }
+                        catch (Exception e) { log.error(String.format("CService/handleJoin: error while +a nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLOp( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanOp") == true) {
                         try {
                             protocol.setMode(client, myUniq, channel, "+o", user.getNick());
                         }
-                        catch (Exception e) { e.printStackTrace(); }
+                        catch (Exception e) { log.error(String.format("CService/handleJoin: error while +o nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLHalfOp( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanHalfop") == true) {
                         try {
                             protocol.setMode(client, myUniq, channel, "+h", user.getNick());
                         }
-                        catch (Exception e) { e.printStackTrace(); }
+                        catch (Exception e) { log.error(String.format("CService/handleJoin: error while +h nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLVoice( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanVoice") == true ) {
                         try {
                             protocol.setMode(client, myUniq, channel, "+v", user.getNick());
                         }
-                        catch (Exception e) { e.printStackTrace(); }
+                        catch (Exception e) { log.error(String.format("CService/handleJoin: error while +v nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                 }
             }
@@ -345,8 +347,7 @@ public class CService {
             if (user.isAuthed() == false || ( user.isAuthed() == true && Flags.isUserWelcome(user.getAccount().getFlags()) == false && Flags.isChanLHideWelcome(user.getAccount().getChanlev(channel)) == false) ) {
                 String welcomeMsg = "";
                 try { welcomeMsg = sqliteDb.getWelcomeMsg(channel); }
-                catch (Exception e) { }
-                if (welcomeMsg == null) { welcomeMsg = ""; }
+                catch (Exception e) { log.error(String.format("CService/handleJoin: error fetching welcome message for %s: ", channel.getName()), e); }
 
                 if (welcomeMsg.isEmpty() == false) {
                     protocol.sendNotice(client, myUserNode, user, welcomeMsg);
@@ -371,7 +372,7 @@ public class CService {
             savedTopic = sqliteDb.getTopic(chanNode);
         }
 
-        catch (Exception e) { }
+        catch (Exception e) { log.error(String.format("CService/handleTopic: error while fetching topic for %s: ", chanNode.getName()), e); }
 
         if (Flags.isChanForceTopic(chanNode.getFlags()) == true) protocol.setTopic(client, myUserNode, chanNode, savedTopic);
     }
@@ -811,8 +812,8 @@ public class CService {
             });
         }
         catch (Exception e) {
-            e.printStackTrace(); 
-            protocol.sendNotice(client, myUserNode, fromNick, chanlevStrErrGeneric); 
+            log.error(String.format("CService/cServeChanlev: error whith chanlev %s for account/chan %s / %s: ", chanlevModRaw, userAccount.getName(), chanNode.getName()), e);
+            protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanlevErrUnknown);
             return; 
         }
 
@@ -825,7 +826,7 @@ public class CService {
                 protocol.chanPart(client, myUserNode, chanNode);
                 protocol.sendNotice(client, myUserNode, fromNick, chanlevStrDropChanLEmpty);
             }
-            catch (Exception e) { return; }
+            catch (Exception e) { log.error(String.format("CService/cServeChanlev: error dropping channel %s after chanlev left empty: ", chanNode.getName()), e); }
         }
     }
 
@@ -1208,11 +1209,12 @@ public class CService {
             protocol.setMode(client, chanNode, "-r", "");
             protocol.chanPart(client, myUserNode, chanNode);
             protocol.sendNotice(client, myUserNode, fromNick, "Channel successfully dropped."); 
+            log.info(String.format("CService/cServeCDropChan: channel %s dropped by %s", chanNode.getName(), fromNick.getAccount().getName()));
 
         }
         catch (Exception e) { 
             protocol.sendNotice(client, myUserNode, fromNick, "Error dropping the channel."); 
-            e.printStackTrace();
+            log.error(String.format("CService/cServeDropChan: Error while dropping channel %s", chanNode.getName()), e);
             return;
         }
     }
@@ -1342,7 +1344,7 @@ public class CService {
         }
         catch (Exception e) { 
             protocol.sendNotice(client, myUserNode, fromNick, "Error dropping the user."); 
-            e.printStackTrace();
+            log.error(String.format("CService/cServeDropUser: Error dropping user account %s", targetUserAccount.getName()), e);
             return;
         }
     }
@@ -1430,7 +1432,7 @@ public class CService {
             }
             catch (Exception e) { 
                 protocol.sendNotice(client, myUserNode, user, "Error while registering the channel."); 
-                e.printStackTrace();
+                log.error(String.format("CService/cServeRequestBot: Error registering channel %s", chanNode.getName()), e);
                 return;
             }
         }
@@ -1477,7 +1479,7 @@ public class CService {
             pwHash = enc.encodeToString(hash);
             pwSalt = enc.encodeToString(salt);
         }
-        catch (Exception e) { e.printStackTrace();}
+        catch (Exception e) { log.error(String.format("CService/cServeHello: Error handling password."), e); }
 
         try {
             sqliteDb.addUser(userNode.getNick(), email, pwHash, pwSalt, Instant.now().getEpochSecond(), Flags.getDefaultUserFlags()); 
@@ -1632,15 +1634,14 @@ public class CService {
             sqliteDb.addCertfp(userAccount, certfp);
         }
         catch (Exception e) {
-            e.printStackTrace();
-            protocol.sendNotice(client, myUserNode, userNode, String.format(Messages.strCertFpErrUnknown, config.getCServeAccountMaxCertFP())); 
+            log.warn(String.format("Could not add certfp %s to user %s", certfp, userAccount.getName()), e);
             return;
         }
         try {
             userAccountCertfp = sqliteDb.getCertfp(userAccount);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.warn(String.format("Could not fetch certfp for user %s", userAccount.getName()), e);
             return;
         }
         userAccount.setCertFP(userAccountCertfp);
@@ -1796,8 +1797,8 @@ public class CService {
             userAccount.deAuthUserFromAccount(usernode, Const.DEAUTH_TYPE_MANUAL);
         }
         catch (Exception e) {
-            e.printStackTrace();
-            protocol.sendNotice(client, myUserNode, usernode, "Error while logging out.");
+            log.error(String.format("Cannot logout nick %s / account %s", usernode.getNick(), userAccount.getName()), e);
+            protocol.sendNotice(client, myUserNode, usernode, Messages.strLogoutErrUnknown);
             return;
         }
 
@@ -1821,8 +1822,7 @@ public class CService {
             userAccount.deAuthUserFromAccount(usernode, deAuthType);
         }
         catch (Exception e) {
-            e.printStackTrace();
-            log.error("CService/logoutUser: error while logging out nick " + usernode.getNick());
+            log.error("CService/logoutUser: error while logging out nick " + usernode.getNick(), e);
             return;
         }
 
@@ -1870,7 +1870,10 @@ public class CService {
             try {
                 protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getNick());
             }
-            catch (Exception e) { e.printStackTrace(); System.out.println("* Could not set mode for "+ chanNode.getName() + " after REJOIN command"); return; }
+            catch (Exception e) {
+                log.error(String.format("Could not set mode for %s after REJOIN command", chanNode.getName()), e); 
+                return; 
+            }
             protocol.sendNotice(client, myUserNode, userNode, Messages.strSuccess); 
         }
 
@@ -2525,8 +2528,7 @@ public class CService {
         }
         catch (Exception e) { 
             protocol.sendNotice(client, myUserNode, fromNick, strErrGeneric);
-            log.error("CService/cServeSuspendUser: Suspenduser: could not deauth user: " + userAccount.getName() + ".");
-            e.printStackTrace();
+            log.error("CService/cServeSuspendUser: Suspenduser: could not deauth user: " + userAccount.getName() + ".", e);
             return;
         }
 

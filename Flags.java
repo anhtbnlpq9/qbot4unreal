@@ -6,12 +6,17 @@ import java.util.LinkedHashSet;
 
 import static java.util.Map.entry;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Flags class to host all methods regarding flags
  * (user flags, chan flags, chanlev flags).
  * @author me
  */
 abstract class Flags {
+
+    private static Logger log = LogManager.getLogger("common-log");
 
     /*
      * User flags
@@ -1066,7 +1071,7 @@ abstract class Flags {
         try {
             return chanlevFlagCharMap.get(character);
         }
-        catch (Exception e) { return 0; }
+        catch (Exception e) { log.warn(String.format("Flags/getChanLFlagInt: this chanlev flag char %s does not exist: ", character), e); return 0; }
     }
     
     /**
@@ -1078,7 +1083,7 @@ abstract class Flags {
         try {
             return chanlevFlagCharRevMap.get(chanlev);
         }
-        catch (Exception e) { return ""; }
+        catch (Exception e) { log.warn(String.format("Flags/getChanLFlagInt: this chanlev flag int 0x%08x does not exist: ", chanlev), e); return ""; }
     }
 
     /**
@@ -1485,7 +1490,7 @@ abstract class Flags {
         try {
             return chanFlagCharMap.get(character);
         }
-        catch (Exception e) { throw new Exception("The channel flag does not exists."); }
+        catch (Exception e) { log.error(String.format("Flags/getChanFlagInt: this chan flag char %s does not exist: ", character), e); throw new Exception("The channel flag does not exists."); }
     }
     
     /**
@@ -1497,7 +1502,7 @@ abstract class Flags {
         try {
             return chanFlagCharRevMap.get(chanFlag);
         }
-        catch (Exception e) { throw new Exception("The channel flag does not exists."); }
+        catch (Exception e) { log.error(String.format("Flags/getChanFlagChar: this chan flag int 0x%08x does not exist: ", chanFlag), e); throw new Exception("The channel flag does not exists."); }
     }
 
     /**
@@ -1964,7 +1969,7 @@ abstract class Flags {
         try {
             return userFlagCharMap.get(character);
         }
-        catch (Exception e) { return 0; }
+        catch (Exception e) { log.warn(String.format("Flags/getUserFlagInt: this user flag char %s does not exist: ", character), e); return 0; }
     }
     
 
@@ -1982,7 +1987,7 @@ abstract class Flags {
         try {
             return userFlagCharRevMap.get(userFlag);
         }
-        catch (Exception e) { return ""; }
+        catch (Exception e) { log.warn(String.format("Flags/getUserFlagChar: this user flag int 0x%08x does not exist: ", userFlag), e); return ""; }
     }
 
     /**

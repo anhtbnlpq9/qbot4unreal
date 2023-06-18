@@ -74,7 +74,7 @@ public class Client implements Runnable {
             }
             throw new Exception("Connection has been closed.");
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { log.error(String.format("Client/run: Error starting the client: "), e); }
     }
 
     public void launchCService() {
@@ -88,7 +88,7 @@ public class Client implements Runnable {
             try {
                 Thread.sleep(2000);
             }
-            catch (Exception e) { e.printStackTrace(); }
+            catch (Exception e) { log.error(String.format("Client/launchCService: Error while sleep: "), e); }
         }
 
         while ((serverList.get(protocol.getPeerId())).getServerEOS() != true) {
@@ -96,7 +96,7 @@ public class Client implements Runnable {
             try {
                 Thread.sleep(2000);
             }
-            catch (Exception e) { e.printStackTrace(); }
+            catch (Exception e) { log.error(String.format("Client/launchCService: Error while sleep: "), e); }
         }
 
         log.info("Peer has registered and we have EOS");
@@ -131,7 +131,7 @@ public class Client implements Runnable {
 			out.write(str + "\n");
 			out.flush();
 		}
-        catch (IOException e) { e.printStackTrace(); }
+        catch (IOException e) { log.error(String.format("Client/write: Error writing into socket: "), e); }
     }
     
     public Socket getSocket() {

@@ -89,7 +89,7 @@ public class Config {
         try {
             inputStream = new FileInputStream(new File(configFile));
         }
-        catch (FileNotFoundException e) { e.printStackTrace(); }
+        catch (FileNotFoundException e) { log.error(String.format("Config/constructor: configuration file \"%s\" not found: ", configFile), e); }
 
         Yaml yaml = new Yaml();
         HashMap<String, Object> data  = yaml.load(inputStream);

@@ -74,10 +74,7 @@ public class UserAccount {
         try {
             this.userChanlev = sqliteDb.getUserChanlev(this); 
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("UserAccount: could not retrieve chanlev");
-        }
+        catch (Exception e) { log.error(String.format("UserAccount/constructor: error fetching account chanlev for %s: ", this.getName()) , e); }
     }
 
     /**
@@ -98,16 +95,10 @@ public class UserAccount {
         try {
             this.userChanlev = sqliteDb.getUserChanlev(this); 
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("UserAccount: could not retrieve chanlev");
-        }
+        catch (Exception e) { log.error(String.format("UserAccount/constructor: error fetching account chanlev for %s: ", this.getName()) , e); }
 
         try { this.id = sqliteDb.getAccountId(userAccountName); }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("UserAccount: could not retrieve user id");
-        }
+        catch (Exception e) { log.error(String.format("UserAccount/constructor: error fetching account ID for %s: ", this.getName()) , e);  }
     }
 
     /**
@@ -119,6 +110,7 @@ public class UserAccount {
             this.attachedUserNodes.add(user);
         }
         else {
+            log.warn(String.format("UserAccount/addUserAuth: cannot add nick %s to authed list of account %s because it is already in there.", user.getNick(), this.getName()));
             throw new Exception("Cannot add the usernode to the list because it is already in there");
         }
     }
@@ -133,7 +125,7 @@ public class UserAccount {
             this.attachedUserNodes.remove(user);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.warn(String.format("UserAccount/delUserAuth: cannot remove nick %s from authed list of account %s because it is not in there.", user.getNick(), this.getName()), e);
             throw new Exception("Cannot remove the usernode from the logged list because the usernode is not is there.");
         }
     }
@@ -283,7 +275,8 @@ public class UserAccount {
         try {
             inputParam = sqliteDb.getUser(this);
         }
-        catch (Exception e) {
+        catch (Exception e) { 
+            log.error(String.format("UserAccount/auth: could not get account information for auth for %s from database: ", this.getName()), e);
             throw new Exception("(EE) auth: cannot get user account information for auth.");
         }
         
@@ -300,7 +293,7 @@ public class UserAccount {
 
                 pwHash = enc.encodeToString(hash);
             }
-            catch (Exception e) { e.printStackTrace(); }
+            catch (Exception e) { log.error(String.format("UserAccount/auth: error with password check: "), e); }
 
             if (userparam.get("password").equals(pwHash)) return true;
             else return false;
@@ -355,7 +348,7 @@ public class UserAccount {
 
         try { sqliteDb.delUserAuth(usernode, deAuthType, ""); }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("UserAccount/delAuthUserFromAccount: cannot remove nick %s from database authed users for account %s: ", usernode.getNick(), this.getName()), e);
             throw new Exception("(EE) auth: Error finalizing the deauth, user may still be authed: nick = " + usernode.getNick() + ", account = " + this.getName());
         }
         usernode.setAccount(null);
