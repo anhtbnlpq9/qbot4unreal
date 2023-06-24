@@ -36,6 +36,7 @@ public class CService {
 
     private String myUniq;
     private String chanJoinModes    = "";
+    private String userChanJoinMode = "";
 
     interface Whois {
         /**
@@ -139,8 +140,6 @@ public class CService {
 
     }
 
-    public void setClient(Client client) {
-        this.client = client;
     }
 
 
@@ -657,8 +656,8 @@ public class CService {
             return; 
         }
         try {
-            channel = protocol.getChannelNodeByName(channel).getName();
-            chanNode = protocol.getChannelNodeByName(channel);
+            channel = protocol.getChannelNodeByNameCi(channel).getName();
+            chanNode = protocol.getChannelNodeByNameCi(channel);
             if (protocol.getChanList().containsKey(channel) == false) { throw new Exception(); }
         }
         catch (Exception e) {
@@ -725,6 +724,8 @@ public class CService {
         /* Stripping and moving personal flags to new keys (users can set/unset personal flags even if they are not known on the channel) */
         chanlevModSepInt.put("p+", Flags.keepChanlevPersonalConFlags(chanlevModSepInt.get("+")));
         chanlevModSepInt.put("p-", Flags.keepChanlevPersonalConFlags(chanlevModSepInt.get("-")));
+
+        // FIXME: Issue: when applying punishment flags, normal flags stays. If we apply +d, +o should be removed, etc
 
         /* Keeping admin editable flags if the user is admin */
         if (Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
@@ -1144,7 +1145,7 @@ public class CService {
 
         try {
             channel = (str.split(" ", 3))[1];
-            chanNode = protocol.getChannelNodeByName(channel);
+            chanNode = protocol.getChannelNodeByNameCi(channel);
         }
         catch (IndexOutOfBoundsException e) {
             return;
@@ -1208,7 +1209,7 @@ public class CService {
         }
     }
 
-    private void cServeDropUser(UserNode fromNick, String str) { /* DROPUSER <nick|#user> [confirmationcode] */
+    private void cServeDropUser(UserNode fromNick, String str) {
         String user;
         String confirmCode = "";
 
@@ -1306,7 +1307,7 @@ public class CService {
 
             /* Clean the chanlevs */
             targetUserAccount.getChanlev().forEach( (chanName, chanlev) -> {
-                knownChannels.add(protocol.getChannelNodeByName(chanName));
+                knownChannels.add(protocol.getChannelNodeByNameCi(chanName));
             });
             for (ChannelNode channel : knownChannels) {
                 sqliteDb.clearUserChanlev(targetUserAccount.getName(), channel.getName());
@@ -1599,6 +1600,7 @@ public class CService {
             return; 
         }
         */
+
         if (userNode.getCertFP().isEmpty() == false) {
             certfp = userNode.getCertFP();
         }

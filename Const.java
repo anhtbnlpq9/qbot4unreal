@@ -48,26 +48,20 @@ public abstract class Const {
         entry("Account suspended",  DEAUTH_TYPE_SUSPEND)
     );
 
-    private static final Map<Integer, String> constIntToStr = dictionaryRev(constStrToInt);
-
-
+    private static final Map<Integer, String> constIntToStr = buildRevDict(constStrToInt);
 
     public static final Integer      ENTITY_CHANNEL           = 0x0001;
     public static final Integer      ENTITY_USERACCOUNT       = 0x0002;
-
-
-
-
     public static final Integer      ENTITY_NICK              = 0x0003;
     public static final Integer      ENTITY_SERVER            = 0x0004;
 
 
     public static String getAuthTypeString(Integer type) {
-        if (constIntToStr.containsKey(type)) return constIntToStr.get(type);
+        if (constIntToStr.containsKey(type) == true) return constIntToStr.get(type);
         else { return "Other/Unknown";}
     }
 
-    private static Map<Integer, String> dictionaryRev(Map<String, Integer> dictionary) {
+    private static Map<Integer, String> buildRevDict(Map<String, Integer> dictionary) {
         Map<Integer, String> dictionaryRev = new HashMap<>();
         dictionary.forEach( (string, integer) -> {
             dictionaryRev.put(integer, string);

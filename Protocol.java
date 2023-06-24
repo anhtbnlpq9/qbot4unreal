@@ -76,24 +76,21 @@ public class Protocol extends Exception {
         });
 
         sqliteDb.getRegChans().forEach( (chanName, chanHM) -> {
-            
-            this.regChannels.put(chanName, 
-                                 new ChannelNode(sqliteDb, 
-                                 (String) chanHM.get("name"), 
-                                 (Long) chanHM.get("regTS"), 
-                                 (Integer) chanHM.get("chanflags"), 
-                                 (Integer) chanHM.get("channelId"), 
-                                 (String) chanHM.get("welcome"),
-                                 (String) chanHM.get("topic"),
-                                 (Integer) chanHM.get("bantime"),
-                                 (Integer) chanHM.get("autolimit")
-                                   )
-                //...
-            );
 
+            ChannelNode chanNode = new ChannelNode(chanName, (Long) chanHM.get("regTS"));
+
+            chanNode.setFlags((Integer) chanHM.get("chanflags"));
+            chanNode.setId((Integer) chanHM.get("channelId"));
+            chanNode.setWelcomeMsg((String) chanHM.get("welcome"));
+            chanNode.setTopic((String) chanHM.get("topic"));
+            chanNode.setBanTime((Integer) chanHM.get("bantime"));
+            chanNode.setAutoLimit((Integer) chanHM.get("autolimit"));
+            chanNode.setRegistered(true);
+
+            this.regChannels.put(chanName, chanNode);
         });
 
-        // Copy the hashmap, else regChannels will also be modified
+        // Copy the hashmap, else regChannels will also be modified and we will be thrown a concurrent modification exception
         this.channelList = new HashMap<String, ChannelNode>(this.regChannels);
     }
 
@@ -160,8 +157,8 @@ public class Protocol extends Exception {
      */
     public UserAccount getUserAccount(String username) {
         var wrapper = new Object(){ UserAccount foundUserAccount = null; };
-        this.userAccounts.forEach( (theusername, useraccount) -> {
-            if (username.toLowerCase().equals(theusername.toLowerCase())) { wrapper.foundUserAccount = useraccount;}
+        this.userAccounts.forEach( (theUserName, theUserAccount) -> {
+            if (username.toLowerCase().equals(theUserName.toLowerCase())) { wrapper.foundUserAccount = theUserAccount;}
         });
         if (wrapper.foundUserAccount == null) throw new ItemNotFoundException("User account not found");
         return wrapper.foundUserAccount;
@@ -404,6 +401,7 @@ public class Protocol extends Exception {
      * @param reason reason
      */
     public void chanKick(UserNode who, ChannelNode chan, UserNode target, String reason) /*throws Exception*/ {
+
         String str;
         str = String.format(":%s KICK %s %s :%s", who.getUid(), chan.getName(), target.getNick(), reason);
         
@@ -635,6 +633,7 @@ public class Protocol extends Exception {
         
         str = String.format(":%s SASL %s %s D %s", fromUid, userSaslAuthParam, user.getUid(), success == true ? "S" : "F");
         client.write(str);
+        sendNotice(cservice.getMyUserNode(), user, "test SASL notice");
     }
 
     private void sendSaslQuery(UserNode user) {
@@ -744,7 +743,7 @@ public class Protocol extends Exception {
 
             if (curMode.matches("[A-Za-z]") == true) {
 
-                if (curMode.matches("[" + networkChanModesGroup1 + "]")) {
+                if (curMode.matches("[" + networkChanModesGroup1 + "]")) { /* Chan lists */
                     strLists = "";
                     strLists = String.join(" ", chanLists.get(modeAction + curMode), strSplit[paramIndex]);
                     chanLists.replace(modeAction + curMode, strLists);
@@ -1035,6 +1034,8 @@ public class Protocol extends Exception {
                 }
             });
 
+
+
             // Delete the usernodes
             for(UserNode user : affectedUsers) {
                 // The user leaves the channels he is on
@@ -1090,7 +1091,7 @@ public class Protocol extends Exception {
             ipAddress   = command[10];
 
 
-            if (userList.containsKey(command[5]) == false) {
+            if (userList.containsKey(uid) == false) {
                 user = new UserNode(uid);
 
                 user.setNick(nick);
@@ -1152,7 +1153,7 @@ public class Protocol extends Exception {
                     }
             
                     if (Flags.isUserAutoVhost(user.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
-                        this.chgHostVhost(client, user, user.getAccount().getName());
+                        this.chgHostVhost(user, user.getAccount().getName());
                     }
 
                     sqliteDb.addUserAuth(user, Const.AUTH_TYPE_REAUTH);
@@ -1274,7 +1275,7 @@ public class Protocol extends Exception {
                     userList.put(command[1], user);
                     break;
 
-                case "S":
+                case "S": // User's server describe AUTH type
                    /*
                     *    Received " S " from user's server
                     * command[0] = SASL server
@@ -1520,7 +1521,7 @@ public class Protocol extends Exception {
                 log.info(String.format("Protocol/SJOIN: creating channel %s (TS %s)", chan.getName(), chan.getChanTS()));
             }
             else { /* channel already exists because either it was registered or it is just a regular join after EOS */
-                chan = this.getChannelNodeByName(sJoinChan);
+                chan = this.getChannelNodeByNameCi(sJoinChan);
                 log.debug(String.format("Protocol/SJOIN: NOT creating channel %s (TS %s) because it already exists", chan.getName(), chan.getChanTS()));
             }
 
@@ -1580,7 +1581,7 @@ public class Protocol extends Exception {
                     log.error(String.format("Protocol/getResponse: error splitting SJOIN list items %s", listItem), e);
                 }
 
-                user = this.getUserNodeBySid(listItem.replaceAll("^[^A-Za-z0-9]*", ""));
+                user = this.getUserNodeByUid(listItem.replaceAll("^[^A-Za-z0-9]*", ""));
                 log.info(String.format("Protocol/SJOIN: Channel %s: user %s (%s) joined channel", chan.getName(), user.getNick(), user.getUid()));
                 
                 for (String mode: listItemSplitted) {
@@ -1752,7 +1753,7 @@ public class Protocol extends Exception {
 
             Integer chanUserCount = 0;
             
-            kickedUSer.removeFromChan( this.getChannelNodeByName(kickChannelName) );
+            kickedUSer.removeFromChan( this.getChannelNodeByNameCi(kickChannelName) );
             chanUserCount = chanUserPart.getUserCount();
             
             if (chanUserCount.equals(0) == true && ! chanUserPart.getModes().containsKey("P") ) {
@@ -1782,7 +1783,7 @@ public class Protocol extends Exception {
             // :AAAAAAA KILL AAAAAAA :message
             fromEnt = (command[0].split(":"))[1];
             
-            UserNode killedUser = this.getUserNodeBySid(command[2].split(" ")[0]);
+            UserNode killedUser = this.getUserNodeByUid(command[2].split(" ")[0]);
 
             ServerNode userServer = killedUser.getServer();
 
@@ -1825,7 +1826,7 @@ public class Protocol extends Exception {
             ChannelNode chanNode;
             
             /* Normally TOPIC is always sent after SJOIN, so the channel should be created. */
-            chanNode = getChannelNodeByName(topicRawStr[1]);
+            chanNode = getChannelNodeByNameCi(topicRawStr[1]);
 
             chanNode.setTopic(String.valueOf(topicRawStr[4]).replaceFirst(":", ""));
             chanNode.setTopicWhen(Long.valueOf(topicRawStr[3]));
@@ -1837,7 +1838,7 @@ public class Protocol extends Exception {
             String[] topicRawStr = command[2].split(" ", 4);
             ChannelNode chanNode;
             
-            chanNode = getChannelNodeByName(topicRawStr[0]);
+            chanNode = getChannelNodeByNameCi(topicRawStr[0]);
 
             chanNode.setTopic(String.valueOf(topicRawStr[3]).replaceFirst(":", ""));
             chanNode.setTopicWhen(Long.valueOf(topicRawStr[2]));

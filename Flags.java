@@ -280,7 +280,6 @@ abstract class Flags {
         entry(CHFLAG_SUSPENDED,     "z")
     );
 
-
     
     /* 
      * Channel user level ("chanlev") flags
@@ -308,8 +307,7 @@ abstract class Flags {
      *                     Op channel mode +o.
      * +p PROTECT       :: Protects the user holding the flag. Coupled with another flag (+m +n +o +h +v), it will prevent the user
      *                     to be deowner/deadmin/deopped/dehalfopped/devoiced. If so the bot will revert the mode.
-     *                     The flag applies only to the highest mode (if the user with +mop is deopped, the bot will not act, but
-     *                     if the user is deadmin, the bot will set the admin mode to the user, similar to flag +a).
+     *                     The flag applies only to the available modes on the network.
      * +t TOPIC         :: Gives the user the right to use the SETTOPIC command.
      * +u DENYVOICE     :: Punishment flag. Prevents an user to be voiced. If the user is voiced, the bot will devoice them.
      * +v VOICE         :: Gives the user the Op flag on the channel. This also gives the user the known privilege.
@@ -432,8 +430,8 @@ abstract class Flags {
     );
 
     /* Other static attributes for the class */
-    static String flagText  = "";
-    static Integer flagInt  =  0;
+    private static String flagText  = "";
+    private static Integer flagInt  =  0;
 
     /*
      * Chanlev-related methods

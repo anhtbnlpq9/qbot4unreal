@@ -58,7 +58,7 @@ public class Qbot {
 
         if (configFileName.isEmpty() == false) configFile = configFileName;
         else configFile = CONFIG_FILE;
-        
+
         log.info("Loading configuration file: " + configFile);
         Config config = new Config(configFile);
 

@@ -5,6 +5,4 @@ Authenticates you on the bot, where:
 If you do not have a username and password, see HELLO.
 Note: when you AUTH on the bot, it will apply your CHANLEV flags for
       every channel you are on, as if you would join them.
-//Note: due to the sensitive nature of this command, you must send the message
-//to Q@CServe.quakenet.org when using it.
-//Note: the preferred way to authenticate is to use the /AUTH command.
+End of help.

@@ -2,3 +2,4 @@ Usage: CLEARTOPIC <channel>
 Clears the topic on a channel, where:
 channel - channel to use
 CLEARTOPIC requires topic (+t) or master (+m) access on the named channel.
+End of help.
