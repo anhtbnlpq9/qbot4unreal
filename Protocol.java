@@ -1124,6 +1124,8 @@ public class Protocol extends Exception {
                 user.setIpAddress(ipAddress);
                 user.setServer(userServer);
 
+                userNickUidLookup.put(nick, user);
+
                 /* Section to update auth token in the db if the user was authed using SASL, because in this case their TS and ident was unknown */
                 /* Also a good place to set the vhost */
                 //@s2s-md/creationtime=1685464827 :5PK UID plop 0 1685464824 plop desktop-lpvlp15 5PKE08M08 0 +iwx cloak/-F9228E5A cloak/-F9228E5A wKgKGA== :...
