@@ -872,10 +872,6 @@ public class Protocol extends Exception {
             ServerNode server = serverList.get(fromEnt);
             server.setEOS(true);
 
-            String str;
-
-            str = String.format(":%s EOS", config.getServerId());
-            client.write(str);
             serverList.get(config.getServerId()).setEOS(true);
 
             /* If our peer sends the EOS (so last to send EOS) */
@@ -909,6 +905,11 @@ public class Protocol extends Exception {
                         else featureList.put("chanVoice", false);
                     }
                 }
+
+                /* Only send EOS when our peer sends EOS */
+                String str;
+                str = String.format(":%s EOS", config.getServerId());
+                client.write(str);
             }
         }
         else if (command[0].equals("NETINFO")) {
