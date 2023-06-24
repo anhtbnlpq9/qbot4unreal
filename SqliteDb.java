@@ -115,6 +115,10 @@ public class SqliteDb {
         String sql = null;
         ResultSet resultSet = null;
 
+        Long unixTime;
+
+        unixTime = Instant.now().getEpochSecond();
+
         try { 
             statement = connection.createStatement();
             sql = "SELECT name FROM channels WHERE lower(name)='" + channel.getName().toLowerCase() + "'";
