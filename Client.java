@@ -74,7 +74,12 @@ public class Client implements Runnable {
             }
             throw new Exception("Connection has been closed.");
         }
-        catch (Exception e) { log.error(String.format("Client/run: Error starting the client: "), e); }
+        catch (Exception e) { 
+            log.fatal(String.format("Client/run: Error during client runtime. Trying to restart client."), e);
+            Thread.currentThread().interrupt();
+
+            Qbot.runClient(config, sqliteDb);
+         }
     }
 
     public void launchCService() {
