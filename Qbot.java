@@ -12,7 +12,7 @@ public class Qbot {
     private static Logger log = LogManager.getLogger("common-log");
 
     /* This verbosity should always be displayed (displays title) */
-    private static final Level INFO2 = Level.forName("INFO2", 050);
+    private static final Level ALWAYS = Level.forName("ALWAYS", 010);
 
     /**
      * Main method
@@ -36,28 +36,26 @@ public class Qbot {
             }
         }
 
+        log.log(ALWAYS, "  ");
+        log.log(ALWAYS, "                      _..---...,\"\"-._     ,/}/)");
+        log.log(ALWAYS, "                   .''        ,      ``..'(/-< ");
+        log.log(ALWAYS, "                  /   _      {      )         \\ ");
+        log.log(ALWAYS, "                ;   _ `.     `.   <         a(   ");
+        log.log(ALWAYS, "               ,'   ( \\  )      `.  \\ __.._ .: y  ");
+        log.log(ALWAYS, "              (  <\\_-) )'-.____...\\  `._   //-'   ");
+        log.log(ALWAYS, "               `. `-' /-._)))      `-._))) ");
+        log.log(ALWAYS, "                 `...'   ");
+        log.log(ALWAYS, "               _       _   ___                     _  ");
+        log.log(ALWAYS, "           ___| |_ ___| |_| | |_ _ ___ ___ ___ ___| | ");
+        log.log(ALWAYS, "          | . | . | . |  _|_  | | |   |  _| -_| .'| | ");
+        log.log(ALWAYS, "          |_  |___|___|_|   |_|___|_|_|_| |___|__,|_| ");
+        log.log(ALWAYS, "            |_| ");
+        log.log(ALWAYS, " ");
+        log.log(ALWAYS, " ___        __    __         _                        __  __  ");
+        log.log(ALWAYS, "  | |_  _  /  \\  |__) _ |_  (_ _  _  /  \\ _  _ _ _ |||__)/   _| ");
+        log.log(ALWAYS, "  | | )(-  \\_\\/  |__)(_)|_  | (_)|   \\__/| )| (-(_|||| \\ \\__(_| ");
+        log.log(ALWAYS, " ");
 
-        log.log(INFO2, "  ");
-        log.log(INFO2, "                      _..---...,\"\"-._     ,/}/)");
-        log.log(INFO2, "                   .''        ,      ``..'(/-< ");
-        log.log(INFO2, "                  /   _      {      )         \\ ");
-        log.log(INFO2, "                ;   _ `.     `.   <         a(   ");
-        log.log(INFO2, "               ,'   ( \\  )      `.  \\ __.._ .: y  ");
-        log.log(INFO2, "              (  <\\_-) )'-.____...\\  `._   //-'   ");
-        log.log(INFO2, "               `. `-' /-._)))      `-._))) ");
-        log.log(INFO2, "                 `...'   ");
-        log.log(INFO2, "               _       _   ___                     _  ");
-        log.log(INFO2, "           ___| |_ ___| |_| | |_ _ ___ ___ ___ ___| | ");
-        log.log(INFO2, "          | . | . | . |  _|_  | | |   |  _| -_| .'| | ");
-        log.log(INFO2, "          |_  |___|___|_|   |_|___|_|_|_| |___|__,|_| ");
-        log.log(INFO2, "            |_| ");
-        log.log(INFO2, " ");
-        log.log(INFO2, " ___        __    __         _                        __  __  ");
-        log.log(INFO2, "  | |_  _  /  \\  |__) _ |_  (_ _  _  /  \\ _  _ _ _ |||__)/   _| ");
-        log.log(INFO2, "  | | )(-  \\_\\/  |__)(_)|_  | (_)|   \\__/| )| (-(_|||| \\ \\__(_| ");
-        log.log(INFO2, " ");
-
-        
         if (configFileName.isEmpty() == false) configFile = configFileName;
         else configFile = CONFIG_FILE;
         
