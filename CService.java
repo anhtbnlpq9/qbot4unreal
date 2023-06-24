@@ -107,7 +107,7 @@ public class CService {
                 protocol.chanJoin(myUserNode, regChannelNode);
                 try { protocol.setMode( regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getNick()); }
                 catch (Exception e) {
-                    log.error(String.format("Cannot set mode on %s: %s", regChannelNode.getName(), "+r" + wrapper.chanJoinModes, myUserNode.getNick()), e);
+                    log.error(String.format("Cannot set mode on %s: %s", regChannelNode.getName(), "+r" + wrapper.chanJoinModes + " " + myUserNode.getNick()), e);
                 }
 
                 /* Look into every user account belonging to the channel chanlev and applying rights to authed logins of accounts */

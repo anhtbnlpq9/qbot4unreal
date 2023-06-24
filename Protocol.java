@@ -320,7 +320,7 @@ public class Protocol extends Exception {
                     newChannel.setRegistered(true);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(String.format("Protocol/chanJoin: error fetching data from registered channel %s", newChannel.getName()), e);
                 }
             }
 
@@ -333,15 +333,14 @@ public class Protocol extends Exception {
             chan.setChanlev(sqliteDb.getChanChanlev(chan));
         }
         catch (Exception e) {
-            e.printStackTrace();
-            log.error(String.format("Protocol/chanJoin: error setting chanlev for channel %s", chan.getName()));
+            log.error(String.format("Protocol/chanJoin: error setting chanlev for channel %s", chan.getName()), e);
         }
 
         try {
             who.addToChan(chan, "");
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("Protocol/chanJoin: could not add user %s to chan %s", who.getNick(), chan.getName()), e);
         }
 
         log.info(String.format("Protocol/chanJoin: Updating channel %s usercount to %s", chan.getName(), chan.getUserCount()));
@@ -444,7 +443,7 @@ public class Protocol extends Exception {
                         else wrapperUMode.userNode.removeUserModeChan(chan, String.valueOf(mode.charAt(1)));
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        log.error(String.format("Protocol/setMode: error setting mode for channel %s", chan.getName()), e);
                     }
                 }
             }
@@ -1406,8 +1405,8 @@ public class Protocol extends Exception {
                             password = authStringItems[2];
                             
                         }
-                        catch (Exception e) { 
-                            e.printStackTrace(); 
+                        catch (Exception e) {
+                            log.error(String.format("Protocol/getResponse: unknown error with SASL plain login"), e);
                             this.sendSaslResult(user, false);
                             return;
 
@@ -1578,7 +1577,7 @@ public class Protocol extends Exception {
                     listItemSplitted = listItem.split("[A-Za-z0-9]", 0);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(String.format("Protocol/getResponse: error splitting SJOIN list items %s", listItem), e);
                 }
 
                 user = this.getUserNodeBySid(listItem.replaceAll("^[^A-Za-z0-9]*", ""));
@@ -1637,7 +1636,7 @@ public class Protocol extends Exception {
                 }
 
                 if (cServeReady == true && user != null && chan.isRegistered() == true) {
-                    log.info(String.format("Protocol/SJOIN: CService ready, sending the join to CService"));
+                    log.info(String.format("Protocol/SJOIN: user %s has joined registered channel %s", user.getNick(), chan.getName()));
                     cservice.handleJoin(user, chan);
                 }
             }
@@ -1677,7 +1676,7 @@ public class Protocol extends Exception {
                             else wrapperUMode.userNode.removeUserModeChan(chan, String.valueOf(mode.charAt(1)));
                         }
                         catch (Exception e) {
-                            e.printStackTrace();
+                            log.error(String.format("Protocol/getResponse: error setting channel %s modes", chan.getName()), e);
                         }
                     }
                 }
@@ -1728,8 +1727,7 @@ public class Protocol extends Exception {
             log.info(String.format("Protocol/chanPart: user %s left chan %s", fromUser.getNick(), chanUserPart.getName()));
             }
             catch (Exception e) {
-                e.printStackTrace();
-                log.error(String.format("Protocol/chanPart: cannot remove the user %s from chan %s because it is not inside it", fromUser.getNick(), chanUserPart.getName()));
+                log.error(String.format("Protocol/chanPart: cannot remove the user %s from chan %s because it is not inside it", fromUser.getNick(), chanUserPart.getName()), e);
             }
             chanUserCount = chanUserPart.getUserCount();
             
