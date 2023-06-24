@@ -1392,7 +1392,7 @@ public class Protocol extends Exception {
                         }
                     }
 
-                    else { // SASL PLAIN auth
+                    else if (user.getSaslAuthParam("authType").equals("PLAIN") == true) { // SASL PLAIN auth
                         Base64.Decoder dec = Base64.getDecoder();
                         decodedAuthString = dec.decode(command[3]);
                         authString = new String(decodedAuthString);
@@ -1451,6 +1451,11 @@ public class Protocol extends Exception {
                                 this.sendInvite(user, this.getChannelNodeByNameCi(channel));
                             }
                         });
+                    }
+                    else {
+                        log.info(String.format("Protocol/getResponse (SASL): user is trying to auth with unsupported SASL machanism (%s)", user.getSaslAuthParam("authType")));
+                        this.sendSaslResult(user, false);
+                        return;
                     }
                     break;
             }
