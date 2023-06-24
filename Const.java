@@ -58,6 +58,8 @@ public abstract class Const {
 
 
 
+    public static final Integer      ENTITY_NICK              = 0x0003;
+    public static final Integer      ENTITY_SERVER            = 0x0004;
 
 
     public static String getAuthTypeString(Integer type) {
