@@ -74,6 +74,8 @@ public class Dispatcher {
 
     public void addUserCertFp(UserAccount userAccount, String certfp) throws Exception, MaxLimitReachedException {
 
+        if (userAccount.getCertFP().size() >= config.getCServeAccountMaxCertFP()) throw new MaxLimitReachedException("Max CertFP limit reached");
+        
         try {
             sqliteDb.addCertfp(userAccount, certfp);
             userAccount.addCertFP(certfp);
