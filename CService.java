@@ -75,26 +75,20 @@ public class CService {
 
         unixTime = Instant.now().getEpochSecond();
 
-        String str;
-        str = String.format(":%s UID %s 1 %s %s %s %s * %s * * * :%s", config.getServerId(), config.getCServeNick(), unixTime, config.getCServeIdent(), config.getCServeHost(), 
-                                                                          this.myUniq, config.getCServeModes(), config.getCServeRealName());
-        client.write(str);
-        // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
-        UserNode user = new UserNode(myUniq);
+        this.myUserNode = new UserNode(myUniq);
 
-        user.setNick(config.getCServeNick());
-        user.setIdent(config.getCServeIdent());
-        user.setHost(config.getCServeHost());
-        user.setRealHost(config.getCServeHost());
-        user.setRealName(config.getCServeRealName());
-        user.setUserTS(unixTime);
-        user.setModes(config.getCServeModes());
+        myUserNode.setNick(config.getCServeNick());
+        myUserNode.setIdent(config.getCServeIdent());
+        myUserNode.setHost(config.getCServeHost());
+        myUserNode.setRealHost(config.getCServeHost());
+        myUserNode.setRealName(config.getCServeRealName());
+        myUserNode.setUserTS(unixTime);
+        myUserNode.setModes(config.getCServeModes());
+        myUserNode.setIpAddress("fwAAAQ=="); /* IP address = 127.0.0.1 */
+        myUserNode.setServer(protocol.getServerList().get(config.getServerId()));
 
-        this.myUserNode = user;
+        protocol.sendUid(myUserNode);
 
-        user.setServer(protocol.getServerList().get(config.getServerId()));
-        protocol.getUserList().put(myUniq, user);
-        protocol.addNickLookupTable(config.getCServeNick(), myUniq);
         if      (protocol.getFeature("chanOwner")  == true) userChanJoinMode = "q";
         else if (protocol.getFeature("chanAdmin")  == true) userChanJoinMode = "a";
         else if (protocol.getFeature("chanOp")     == true) userChanJoinMode = "o";
