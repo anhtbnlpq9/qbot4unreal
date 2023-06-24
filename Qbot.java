@@ -65,35 +65,44 @@ public class Qbot {
         log.info("Opening database");
         SqliteDb sqliteDb = new SqliteDb(config);
 
-
-        /* Client thread */
-        Client tlsClient = new Client(config, sqliteDb);
-        Thread thread = new Thread(tlsClient);
-        thread.start();
-
-        tlsClient.setThread(thread);
-
-        while (tlsClient.getReady() == false) {
-            try { Thread.sleep(1000); }
-            catch (Exception e) { log.error("QBot/main: error while sleeping: ", e); }
-        }
-
-        log.info("Sending server ident");
-        tlsClient.sendIdent();
-
-        log.info("Starting CService");
-        tlsClient.launchCService(); 
-
-        /* Thread to manage the database schedules tasks */
-        SqliteDbTasks sqliteDbCleanup = new SqliteDbTasks(sqliteDb);
-        Thread sqliteDbCleanupThread = new Thread(sqliteDbCleanup);
-        sqliteDbCleanupThread.start();
+        runClient(config, sqliteDb);
+        runTasks(sqliteDb);
 
     }
 
     private static void printUsage() {
 
         System.out.println("Usage: java Qbot [-h | --help] [-c file]");
+
+    }
+
+    public static void runClient(Config config, SqliteDb sqliteDb) {
+        /* Client thread */
+        Client tlsClient = new Client(config, sqliteDb);
+        Thread clientThread = new Thread(tlsClient);
+        clientThread.start();
+
+        tlsClient.setThread(clientThread);
+
+        while (tlsClient.getReady() == false) {
+            try { Thread.sleep(1000); }
+            catch (Exception e) { log.error("QBot/main: error while sleeping", e); }
+        }
+
+        log.info("Sending server ident");
+        tlsClient.sendIdent();
+
+        log.info("Starting CService");
+        tlsClient.launchCService();
+    }
+
+    private static void runTasks(SqliteDb sqliteDb) {
+
+        /* Thread to manage the database schedules tasks */
+        SqliteDbTasks sqliteDbCleanup = new SqliteDbTasks(sqliteDb);
+        Thread sqliteDbCleanupThread = new Thread(sqliteDbCleanup);
+        sqliteDbCleanupThread.start();
+
 
     }
 
