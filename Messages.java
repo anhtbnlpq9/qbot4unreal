@@ -19,6 +19,7 @@ public class Messages {
     static String strErrNickNotFound       = "Can't find this nick.";
     static String strErrNickNotAuthed      = "That nickname is not authed.";
     static String strErrNoAccess           = "You do not have sufficient rights on %s to use %s.";
+    static String strErrModeNotSupported   = "This network does not support that mode.";
     static String strSuccess               = "Done.";
     static String strEndOfList             = "End of List.";
     static String strMsgNever              = "(never)";
