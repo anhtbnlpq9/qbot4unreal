@@ -368,27 +368,32 @@ public class Protocol extends Exception {
      * @param chan channelnode
      */
     public void chanPart(UserNode who, ChannelNode chanUserPart) /*throws Exception*/ {
+        String reason = "PART";
         String str;
         str = String.format(":%s PART %s", who.getUid(), chanUserPart.getName());
 
-        try {
-            who.removeFromChan(chanUserPart);
-            log.info(String.format("Protocol/chanPart: user %s left chan %s", who.getNick(), chanUserPart.getName()));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error(String.format("Protocol/chanPart: cannot remove the user %s from chan %s because it is not inside it", who.getNick(), chanUserPart.getName()));
-        }
-
-        Integer chanUserCount = chanUserPart.getUserCount();
-
-        if (chanUserCount.equals(0) == true && chanUserPart.getModes().containsKey("P") == false) {
-            channelList.remove( chanUserPart.getName() );
-            log.info(String.format("Protocol/chanPart: deleting channel %s because it is empty and it is not persistent", chanUserPart.getName()));
-            chanUserPart = null;
-        }
+        handleLeavingChan(chanUserPart, who, reason);
 
         client.write(str);
+    }
+
+    public void handleLeavingChan(ChannelNode chan, UserNode user, String leavingSource) {
+        Integer chanUserCount;
+        try {
+            user.removeFromChan(chan);
+            log.info(String.format("Protocol/handleLeavingChan: user %s left chan %s following action %s", user.getNick(), chan.getName(), leavingSource));
+        }
+        catch (Exception e) {
+            log.error(String.format("Protocol/handleLeavingChan: cannot remove the user %s from chan %s (%s) because it is not inside it", user.getNick(), chan.getName(), leavingSource), e);
+        }
+
+        chanUserCount = chan.getUserCount();
+
+        if (chanUserCount.equals(0) == true && chan.getModes().containsKey("P") == false) {
+            channelList.remove( chan.getName() );
+            log.info(String.format("Protocol/handleLeavingChan: deleting channel %s because it is empty and it is not persistent", chan.getName()));
+            chan = null;
+        }
     }
 
     /**
@@ -403,21 +408,7 @@ public class Protocol extends Exception {
         String str;
         str = String.format(":%s KICK %s %s :%s", who.getUid(), chan.getName(), target.getNick(), reason);
         
-        try {
-            who.removeFromChan(chan);
-            log.info(String.format("Protocol/chanKick: user %s kicked from chan %s", who.getNick(), chan.getName()));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error(String.format("Protocol/chanKick: cannot remove the user %s from chan %s because it is not inside it", who.getNick(), chan.getName()));
-        }
-
-        Integer chanUserCount = chan.getUserCount();
-
-        if (chanUserCount.equals(0) == true && chan.getModes().containsKey("P") == false) {
-            channelList.remove( chan.getName() );
-            log.info(String.format("Protocol/chanKick: deleting channel %s because it is empty and it is not persistent", chan.getName()));
-        }
+        handleLeavingChan(chan, who, "KICK");
 
         client.write(str);
     }
@@ -1047,6 +1038,12 @@ public class Protocol extends Exception {
 
             // Delete the usernodes
             for(UserNode user : affectedUsers) {
+                // The user leaves the channels he is on
+                HashMap<ChannelNode, String> userChanList = new HashMap<>(user.getChanList());
+                userChanList.forEach( (chan, mode) -> {
+                    handleLeavingChan(chan, user, "SQUIT");
+                });
+
                 // Deauth user if needed
                 if (user.isAuthed() == true) {
                     user.getAccount().delUserAuth(user);
@@ -1774,14 +1771,7 @@ public class Protocol extends Exception {
 
             ServerNode userServer = userToRemove.getServer();
 
-            curUserChanList.forEach( (chan, mode) -> {
-                try {
-                    userToRemove.removeFromChan(chan);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            curUserChanList.forEach( (chan, mode) -> {  handleLeavingChan(chan, userToRemove, "QUIT"); });
 
             if (userToRemove.isAuthed() == true) sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             userToRemove.setAccount(null);
@@ -1800,14 +1790,7 @@ public class Protocol extends Exception {
 
             HashMap<ChannelNode, String> curUserChanList = new HashMap<>(killedUser.getChanList());
 
-            curUserChanList.forEach( (chan, mode) -> {
-                try {
-                    killedUser.removeFromChan(chan);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            curUserChanList.forEach( (chan, mode) -> { handleLeavingChan(chan, killedUser, "KILL"); });
 
             if (killedUser.isAuthed() == true) sqliteDb.delUserAuth(killedUser, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             killedUser.setAccount(null);
