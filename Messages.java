@@ -9,7 +9,7 @@ public class Messages {
 
     /* Generic */
     static String strErrCommandUnknown     = "Unknown command. Type SHOWCOMMANDS for a list of available commands.";
-    static String strErrCommandSyntax      = "Command has syntax. Type HELP <COMMAND> to get information on that command.";
+    static String strErrCommandSyntax      = "Command has invalid syntax. Type HELP <COMMAND> to get information on that command.";
     static String strErrUserNonReg         = "Can't find this user.";
     static String strErrChanNonExist       = "This channel does not exist.";
     static String strErrChanNonReg         = "Can't find this channel.";
