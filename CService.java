@@ -1549,7 +1549,7 @@ public class CService {
         });
     }
    
-    private void cServeCertfpAdd(UserNode userNode, String str) { // TODO: dispatch
+    private void cServeCertfpAdd(UserNode userNode, String str) {
 
         String certfp;
 
@@ -1596,25 +1596,15 @@ public class CService {
             log.warn(String.format("Could not add certfp %s to user %s", certfp, userAccount.getName()), e);
             return;
         }
-
-        try {
-            userAccountCertfp = sqliteDb.getCertfp(userAccount);
-        }
-        catch (Exception e) {
-            log.warn(String.format("Could not fetch certfp for user %s", userAccount.getName()), e);
-            return;
-        }
-        userAccount.setCertFP(userAccountCertfp);
+        protocol.sendNotice(myUserNode, userNode, String.format(Messages.strCertFpSucAdd, certfp));
         protocol.sendNotice(myUserNode, userNode, Messages.strSuccess);
     }
 
     private void cServeCertfpDel(UserNode userNode, String str) {
         String[] command = str.split(" ",5);
-        String certfp = command[1];
+        String certfp;
 
         UserAccount userAccount;
-
-        HashSet<String> userAccountCertfp;
 
         if (userNode.isAuthed() == false) {
             protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
@@ -1643,6 +1633,7 @@ public class CService {
             protocol.sendNotice(myUserNode, userNode, Messages.strCertFpErrRemove); 
             return;
         }
+        protocol.sendNotice(myUserNode, userNode, Messages.strCertFpSucRemove);
         protocol.sendNotice(myUserNode, userNode, Messages.strSuccess); 
     }
 

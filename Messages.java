@@ -55,6 +55,8 @@ public class Messages {
     static String strCertFpErrNoCertFp     = "There is no CertFP to add. You must connect using a certificate in order to use this command.";
     static String strCertFpErrRemove       = "Could not remove the fingerprint.";
     static String strCertFpErrAddSyntax    = "Invalid command. CERTFPADD <certfp>.";
+    static String strCertFpSucRemove       = "The requested certificate will be removed from your account if it matches one of your fingerprints.";
+    static String strCertFpSucAdd          = "The following fingerprint has been added to your account: %s";
 
     /* CHANFLAGS */
     static String strChanFlagsErrUnknown   = "Error setting chanflags.";
