@@ -2,7 +2,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.Base64;
 
@@ -430,18 +429,7 @@ public class UserNode {
         return sb.toString();
 
     }
-
-    /**
-     * Sort a string alphabetically
-     * @param str Input string
-     * @return Sorted string
-     */
-    private static String sortString(String str) {
-        char charArray[] = str.toCharArray();
-        Arrays.sort(charArray);
-        return new String(charArray);
-    }
-    
+ 
     public UUID getAuthUuid() {
         return this.authSessUUID;
     }

@@ -37,7 +37,7 @@ public class CService {
     private Boolean cServiceReady = false;
 
     private String myUniq;
-    private String chanJoinModes = "";
+    private String chanJoinModes    = "";
 
     interface Whois {
         /**
@@ -65,7 +65,7 @@ public class CService {
         this.protocol = protocol;
         this.sqliteDb = sqliteDb;
     }
- 
+
     public void runCService(Config config, Protocol protocol) {
 
         Long unixTime;
@@ -151,6 +151,7 @@ public class CService {
     public void setClient(Client client) {
         this.client = client;
     }
+
 
     public Boolean isReady() {
         return this.cServiceReady;
@@ -541,18 +542,6 @@ public class CService {
 
                     });
                 }
-
-                if (user.getValue().isAuthed() == true && ( user.getValue().getNick().equals(fromNick.getNick()) ) ) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- chanlev: ");
-
-                    user.getValue().getAccount().getChanlev().forEach( (key, value) -> {
-                        wrappercServeWhois2.bufferMode = "";
-
-                        if (Flags.flagsIntToChars("chanlev", value).isEmpty() == false) { wrappercServeWhois2.bufferMode = "+" + Flags.flagsIntToChars("chanlev", value); }
-
-                        protocol.sendNotice(client, myUserNode, fromNick, "| |- " + key + ": " + wrappercServeWhois2.bufferMode);
-                    });
-                }
                 protocol.sendNotice(client, myUserNode, fromNick, Messages.strEndOfList);
             }
         }
@@ -839,7 +828,6 @@ public class CService {
         catch (ArrayIndexOutOfBoundsException e) {
             if (fromNick.getAccount().getFlags() != 0) outputFlagsList =  Flags.flagsIntToChars("userflags", fromNick.getAccount().getFlags());
             protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUserFlagsList, fromNick.getAccount().getName(), outputFlagsList));
-
             return;
         }
 
@@ -1317,10 +1305,14 @@ public class CService {
     }
 
     private void cServeRequestbot(UserNode user, String str, Boolean operMode) {
+
         String channel;
-        ChannelNode chanNode;
         String target;
+
+        ChannelNode chanNode;
+
         UserAccount targetAccount = null;
+        UserAccount ownerAccount;
 
         if (user.isAuthed() == false) {
             protocol.sendNotice(client, myUserNode, user, Messages.strErrCommandUnknown); 
@@ -1363,8 +1355,6 @@ public class CService {
                 return;
             }
         }
-
-        UserAccount ownerAccount;
 
         if (operMode == true) ownerAccount = targetAccount;
         else ownerAccount = user.getAccount();
@@ -2390,9 +2380,7 @@ public class CService {
             }
         }
         else {
-            try {
-                userNode = protocol.getUserNodeByNick(user);
-            }
+            try { userNode = protocol.getUserNodeByNick(user); }
             catch (Exception e) {
                 protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound);
                 return;

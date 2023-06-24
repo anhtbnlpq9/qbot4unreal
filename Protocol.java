@@ -27,7 +27,7 @@ public class Protocol extends Exception {
     private HashMap<String, ServerNode>      serverList          = new HashMap<>();
 
     private HashMap<String, UserNode>        userList            = new HashMap<>();
-    private HashMap<String, UserNode>        userNickSidLookup   = new HashMap<>(); // Lookup map for Nick -> Sid ; TODO : to transform to <String, UserNode>
+    private HashMap<String, UserNode>        userNickUidLookup   = new HashMap<>(); // Lookup map for Nick -> Uid ; TODO : to transform to <String, UserNode>
 
     private HashMap<String, UserAccount>     userAccounts        = new HashMap<>();
 
@@ -118,21 +118,21 @@ public class Protocol extends Exception {
     }
 
     /**
-     * Adds a map nick -> user SID
+     * Adds a map nick -> user UID
      * @param nick user nick
-     * @param sid user SID
+     * @param uid user UID
      */
-    public void addNickLookupTable(String nick, String sid) {
-        userNickSidLookup.put(nick, this.getUserNodeBySid(sid));
+    public void addNickLookupTable(String nick, String uid) {
+        userNickUidLookup.put(nick, this.getUserNodeByUid(uid));
     }
 
     /**
-     * Returns the UserNode behind a SID
-     * @param userSid user SID
+     * Returns the UserNode behind a UID
+     * @param userUid user UID
      * @return UserNode
      */
-    public UserNode getUserNodeBySid(String userSid) {
-        return userList.get(userSid);
+    public UserNode getUserNodeByUid(String userUid) {
+        return userList.get(userUid);
     }
 
     /**
@@ -140,8 +140,8 @@ public class Protocol extends Exception {
      * @param userNick user nick
      * @return UserNode
      */
-    public UserNode getUserNodeByNick(String userNick) {
-        if (userNickSidLookup.containsKey(userNick)) {
+    public UserNode getUserNodeByNick(String userNick) throws ItemNotFoundException {
+        if (userNickUidLookup.containsKey(userNick)) {
             return getNickLookupTableCi(userNick);
         }
         else return null;
@@ -185,21 +185,21 @@ public class Protocol extends Exception {
     }
 
     /**
-     * Removes a map nick -> sid
+     * Removes a map nick -> uid
      * @param nick nick
      */
     public void delNickLookupTable(String nick) {
-        userNickSidLookup.remove(nick);
+        userNickUidLookup.remove(nick);
     }
 
     /**
-     * Renicks a SID when their nick changes
-     * @param sid user SID
+     * Renicks a UID when their nick changes
+     * @param uid user UID
      * @param oldNick previous nick
      * @param newNick new nick
      */
-    public void renameNickLookupTable(String sid, String oldNick, String newNick) {
-        addNickLookupTable(sid, newNick);
+    public void renameNickLookupTable(String uid, String oldNick, String newNick) {
+        addNickLookupTable(uid, newNick);
         delNickLookupTable(oldNick);
     }
 
@@ -209,7 +209,7 @@ public class Protocol extends Exception {
      * @return
      */
     private UserNode getNickLookupTable(String nick) {
-        return userNickSidLookup.get(nick);
+        return userNickUidLookup.get(nick);
     }
 
     /**
@@ -219,7 +219,7 @@ public class Protocol extends Exception {
      */
     private UserNode getNickLookupTableCi(String nick) {
         var wrapper = new Object(){ UserNode foundNickLookUpCi = null; };
-        userNickSidLookup.forEach( (userNick, userNode) -> {
+        userNickUidLookup.forEach( (userNick, userNode) -> {
             if (userNick.toLowerCase().equals(nick.toLowerCase())) { 
                 wrapper.foundNickLookUpCi = userNode; 
             }
@@ -891,7 +891,7 @@ public class Protocol extends Exception {
                     String target = mdParams[1];
                     UserNode userNode;
                     if (target.length() == 9) { 
-                        userNode = getUserNodeBySid(target);
+                        userNode = getUserNodeByUid(target);
                         userNode.setCertFP(mdParams[3].replaceFirst(":", ""));
                     } 
                     break;
@@ -1039,12 +1039,12 @@ public class Protocol extends Exception {
                 user.setRealName(gecos);
                 user.setUserTS(ts);
                 user.setModes(modes);
-
-                userList.put(uid, user);
-                userNickSidLookup.put(nick, user);
                 user.setServer(userServer);
                 user.setCloakedHost(cloakedHost);
                 user.setIpAddress(ipAddress);
+
+                userList.put(uid, user);
+                userNickUidLookup.put(nick, user);
             }
 
             else {
@@ -1223,7 +1223,7 @@ public class Protocol extends Exception {
                     * command[4] = CertFP if EXTERNAL, empty if PLAIN
                     */
 
-                    user = this.getUserNodeBySid(command[1]);
+                    user = this.getUserNodeByUid(command[1]);
                     user.setSaslAuthParam("authType", command[3]);
                     if (command[3].equals("EXTERNAL")) { 
                         try {
@@ -1255,7 +1255,7 @@ public class Protocol extends Exception {
                     * command[3] = Base64 hash of <Login\0Login\0Pass>
                     */
 
-                    user = this.getUserNodeBySid(command[1]);
+                    user = this.getUserNodeByUid(command[1]);
 
                     if (user.getConnPlainText() == true && config.getFeature("denyauthplainconn") == true) {
                         /* User is logging from plain text connection */
@@ -1492,19 +1492,16 @@ public class Protocol extends Exception {
                     if (listItem.startsWith("&")) { // +b
                         chan.addBanList(chanListItem);
                         log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));
-
                     }
 
                     else if (listItem.startsWith("\"")) { // +e
                         chan.addExceptList(chanListItem);
                         log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));
-
                     }
 
                     else if (listItem.startsWith("'")) { // +I
                         chan.addInviteList(chanListItem);
                         log.debug(String.format("Protocol/SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));
-
                     }
 
                     /* No need to go further because list does not contains user modes */
@@ -1723,7 +1720,7 @@ public class Protocol extends Exception {
             if (userToRemove.isAuthed() == true) sqliteDb.delUserAuth(userToRemove, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             userToRemove.setAccount(null);
 
-            userNickSidLookup.remove(userToRemove.getNick());
+            userNickUidLookup.remove(userToRemove.getNick());
             userServer.removeLocalUser(userToRemove);
             userList.remove(fromEnt);
         }
@@ -1749,7 +1746,7 @@ public class Protocol extends Exception {
             if (killedUser.isAuthed() == true) sqliteDb.delUserAuth(killedUser, Const.DEAUTH_TYPE_QUIT, command[2].toString().replaceFirst(":", ""));
             killedUser.setAccount(null);
 
-            userNickSidLookup.remove(killedUser.getNick());
+            userNickUidLookup.remove(killedUser.getNick());
             userServer.removeLocalUser(killedUser);
             userList.remove(killedUser.getUid());
 
@@ -1766,10 +1763,10 @@ public class Protocol extends Exception {
 
             fromEnt = (command[0].split(":"))[1];
 
-            UserNode usernode = this.getUserNodeBySid(fromEnt);
+            UserNode usernode = this.getUserNodeByUid(fromEnt);
             
-            userNickSidLookup.remove(userList.get(fromEnt).getNick());
-            userNickSidLookup.put((command[2].split(" "))[0], usernode);
+            userNickUidLookup.remove(userList.get(fromEnt).getNick());
+            userNickUidLookup.put((command[2].split(" "))[0], usernode);
 
             userList.get(fromEnt).setNick( (command[2].split(" "))[0] );
         }
@@ -1784,8 +1781,8 @@ public class Protocol extends Exception {
             chanNode = getChannelNodeByName(topicRawStr[1]);
 
             chanNode.setTopic(String.valueOf(topicRawStr[4]).replaceFirst(":", ""));
-            chanNode.setTopicTS(Long.valueOf(topicRawStr[3]));
-            chanNode.setTopicBy(topicRawStr[2]);
+            chanNode.setTopicWhen(Long.valueOf(topicRawStr[3]));
+            chanNode.setTopicWho(topicRawStr[2]);
         }
         else if (command[1].equals("TOPIC")) { /* only after syncing */
             //:ABC TOPIC #chan w!h@h ts :topic
@@ -1796,8 +1793,8 @@ public class Protocol extends Exception {
             chanNode = getChannelNodeByName(topicRawStr[0]);
 
             chanNode.setTopic(String.valueOf(topicRawStr[3]).replaceFirst(":", ""));
-            chanNode.setTopicTS(Long.valueOf(topicRawStr[2]));
-            chanNode.setTopicBy(topicRawStr[1]);
+            chanNode.setTopicWhen(Long.valueOf(topicRawStr[2]));
+            chanNode.setTopicWho(topicRawStr[1]);
 
             try {
                 cservice.handleTopic(chanNode);

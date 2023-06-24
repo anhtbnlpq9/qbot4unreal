@@ -1343,7 +1343,7 @@ public class SqliteDb {
             
             statement.executeUpdate(sql);
             statement.close();
-        }
+    }
         catch (Exception e) { log.error(String.format("SqliteDb/addUnSuspendHistory: could not update suspend history: "), e); throw new Exception("Error: could not update suspend history line for that entity."); }
     }
 

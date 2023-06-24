@@ -18,23 +18,22 @@ public class ChannelNode {
 
     private static Logger log = LogManager.getLogger("common-log");
     
-    private Integer userCount  = 0;
-    private Integer flags   = 0;
-    private Integer autoLimit      = 10;
-    private Integer banTime        = 0;
-    private Integer channelId;
-    private Integer id = 0;
+    private Integer userCount   = 0;
+    private Integer flags       = 0;
+    private Integer autoLimit   = 10;
+    private Integer banTime     = 0;
+    private Integer id          = 0;
 
     private String name;
     private String topic               = "";
     private String chanRegisteredTopic = "";
     private String chanWelcomeMsg      = "";
-    private String topicBy;
+    private String topicWho;
 
     private UUID confirmCode = null;
 
 
-    private Long topicTS;
+    private Long topicWhen;
     private Long channelTS; /* If channel is registered, channel TS = registration TS */
 
     private Boolean channelRegistered = false;
@@ -44,14 +43,13 @@ public class ChannelNode {
     private HashMap<String, Integer> chanlev  = new HashMap<>(); // Map username -> chanlev
 
     /* HM maps mode -> parameter */
-    private HashMap<String, String> mLockModes = new HashMap<>(); 
-    private HashMap<String, String> channelModes = new HashMap<String, String>(); // Map mode -> parameter
+    private HashMap<String, String> mLockModes   = new HashMap<>(); 
+    private HashMap<String, String> channelModes = new HashMap<>(); // Map mode -> parameter
 
     
     /* Contains the UserNodes inside the chan */
     private HashSet<UserNode> chanUserList = new HashSet<>();
-   
-    
+
     private HashSet<String> banList = new HashSet<>();
     private HashSet<String> exceptList = new HashSet<>();
     private HashSet<String> inviteList = new HashSet<>();
@@ -64,35 +62,6 @@ public class ChannelNode {
     public ChannelNode(String channelName, long channelTS) {
         this.name = channelName;
         this.channelTS = channelTS;
-    }
-
-    /**
-     * Constructor used to create the registered channels at initiation of the protocol
-     * @param sqliteDb
-     * @param channelName
-     * @param channelTS
-     * @param channelFlags
-     * @param chanId
-     * @param chanWelcomeMsg
-     * @param chanRegTopic
-     * @param banTime
-     * @param autoLimit
-     */
-    public ChannelNode(SqliteDb sqliteDb, String channelName, Long channelTS, Integer channelFlags, Integer chanId, String chanWelcomeMsg, String chanRegTopic, Integer banTime, Integer autoLimit) {
-        this.name = channelName;
-        this.channelTS = channelTS;
-        this.flags = channelFlags;
-        this.channelRegistered = true;
-        this.channelId = chanId;
-        this.chanWelcomeMsg = chanWelcomeMsg;
-        this.chanRegisteredTopic = chanRegTopic;
-        this.banTime = banTime;
-        this.autoLimit = autoLimit;
-
-        try {
-            this.id = sqliteDb.getChanId(this);
-        }
-        catch (Exception e) { log.error(String.format("ChannelNode/constuctor: Getting channel ID from database: "), e); }
     }
 
     /**
@@ -140,12 +109,12 @@ public class ChannelNode {
         this.topic = topic;
     }
 
-    public void setTopicTS(Long ts) {
-        this.topicTS = ts;
+    public void setTopicWhen(Long ts) {
+        this.topicWhen = ts;
     }
 
-    public void setTopicBy(String mask) {
-        this.topicBy = mask;
+    public void setTopicWho(String mask) {
+        this.topicWho = mask;
     }
     
     public void setRegistered(Boolean registered) {
@@ -347,5 +316,21 @@ public class ChannelNode {
 
     public UUID getConfirmCode() {
         return this.confirmCode;
+    }
+
+    public void setWelcomeMsg(String string) {
+        this.chanWelcomeMsg = string;
+    }
+
+    public String getWelcomeMsg() {
+        return this.chanWelcomeMsg;
+    }
+
+    public void setBanTime(Integer time) {
+        this.banTime = time;
+    }
+
+    public Integer getBanTime() {
+        return this.banTime;
     }
 }
