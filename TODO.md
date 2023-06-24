@@ -26,13 +26,13 @@
 - [ ] bans, excepts, invites
 - [ ] chanlev history
 - [ ] channel auto expiry
-- [ ] handle setting multiple chan modes at the same time
-- [ ] handle setting multiple user chan modes at the same time
+- [ ] handle setting multiple (user) chan modes at the same time
 
 ## Advanced stuff
 
 ### Protocol
-- [ ] IRCv3
+- [X] decode IRCv3 tags
+- [ ] do IRCv3 stuff?
 
 ### Accounts
 - [X] multi user auth
@@ -42,6 +42,7 @@
 - [X] SASL EXTERNAL
 - [X] user auto vhost on auth
 - [X] certfp authentication
+- [ ] implement argon2 for password hashing
 
 
 ### Channels
@@ -118,7 +119,7 @@
 ## Added commands
 - [ ] CHANINFO
 - [ ] CHANORPHANS
-- [X] CHANLIST
+- [ ] CHANLIST => lookup registered chans and not all chans
 - [X] DIE
 - [X] DROP
 - [ ] GHOST
@@ -127,7 +128,7 @@
 - [X] REQUESTBOT
 - [ ] RESTART
 - [X] SERVERLIST
-- [X] USERLIST
+- [ ] USERLIST => lookup registered users and not all users
 - [X] HALFOP
 - [X] ADMIN
 - [X] OWNER
@@ -136,6 +137,7 @@
 - [X] CERTFPADD
 - [X] CERTFPDEL
 - [ ] MLOCK
+- [ ] CHANBAN -> implement channel "gline"
 
 ## Interesting commands/features
 - [ ] user modes setting on auth
@@ -151,3 +153,4 @@
 - [X] rework CHANLEV
 - [X] rework DROP commands to include some "safety integrity"
 - [ ] rework channel user count again
+- [ ] implement restartable threads in case of crash
