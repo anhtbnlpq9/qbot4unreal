@@ -95,14 +95,13 @@ public class CService {
         user.setServer(protocol.getServerList().get(config.getServerId()));
         protocol.getUserList().put(myUniq, user);
         protocol.addNickLookupTable(config.getCServeNick(), myUniq);
+        if      (protocol.getFeature("chanOwner")  == true) userChanJoinMode = "q";
+        else if (protocol.getFeature("chanAdmin")  == true) userChanJoinMode = "a";
+        else if (protocol.getFeature("chanOp")     == true) userChanJoinMode = "o";
+        else if (protocol.getFeature("chanHalfop") == true) userChanJoinMode = "h";
+        else if (protocol.getFeature("chanVoice")  == true) userChanJoinMode = "v";
 
-        unixTime = Instant.now().getEpochSecond();
-
-        if (protocol.getFeature("chanOwner") == true) chanJoinModes += "q";
-        else if (protocol.getFeature("chanAdmin") == true) chanJoinModes += "a";
-        else if (protocol.getFeature("chanOp") == true) chanJoinModes += "o";
-        else if (protocol.getFeature("chanHalfop") == true) chanJoinModes += "h";
-        else if (protocol.getFeature("chanVoice") == true) chanJoinModes += "v";
+        chanJoinModes += userChanJoinMode;
  
         var wrapper = new Object(){ String chanJoinModes; };
         wrapper.chanJoinModes = chanJoinModes;
