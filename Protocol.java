@@ -57,6 +57,10 @@ public class Protocol extends Exception {
         sqliteDb.setProtocol(this);
 
         sqliteDb.getRegUsers().forEach( (username, userHM) -> {
+
+            @SuppressWarnings("unchecked")
+            HashSet<String> userHMCerFp = (HashSet<String>) userHM.get("certfp");
+
             this.userAccounts.put(
                 username, 
                 new UserAccount(
@@ -65,7 +69,7 @@ public class Protocol extends Exception {
                     (Integer) userHM.get("uid"), 
                     (Integer) userHM.get("userFlags"), 
                     (String) userHM.get("email"), 
-                    (HashSet<String>) userHM.get("certfp"), 
+                    userHMCerFp,
                     (Long) userHM.get("regTS"))
                 );
             this.userAccounts.get(username).setConfigRef(config);

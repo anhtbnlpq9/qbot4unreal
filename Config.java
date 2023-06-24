@@ -31,7 +31,7 @@ public class Config {
     private String serverVersionString   = "qbot4u - The Q Bot for UnrealIRCd.";
 
     /* Admin parameters */
-    private ArrayList<String> adminInformation = new ArrayList<String>();
+    private ArrayList<String> adminInformation;
     
     /* Link parameters */
     private String  linkPeer     = "";
@@ -95,8 +95,11 @@ public class Config {
         Yaml yaml = new Yaml();
         HashMap<String, Object> data  = yaml.load(inputStream);
         
-        adminInformation               = (ArrayList<String>) data.get("admin");
-        
+        @SuppressWarnings("unchecked")
+        ArrayList<String> adminInformation               = (ArrayList<String>) data.get("admin");
+        this.adminInformation = adminInformation;
+
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confme   = (HashMap<String, Object>) data.get("me");
         serverName                       = (String) confme.get("name");
         serverId                         = (String) confme.get("sid");
@@ -106,13 +109,16 @@ public class Config {
         serverFullVersionText            = (String) confme.get("fullversiontext");
         serverVersionString              = (String) confme.get("versionstring");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> conflink    = (HashMap<String, Object>) data.get("link");
         linkPeer                            = (String)  conflink.get("peer");
         linkHost                            = (String)  conflink.get("host");
         linkPassword                        = (String)  conflink.get("password");
         linkPort                            = (Integer) conflink.get("port"); 
         
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confcservice    = (HashMap<String, Object>) data.get("cservice");
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confcserviceBot = (HashMap<String, Object>) confcservice.get("bot");
         cserviceBotNick                           = (String) confcserviceBot.get("nick");
         cserviceBotUid                            = (String) confcserviceBot.get("uid");
@@ -120,6 +126,7 @@ public class Config {
         cserviceBotHost                           = (String) confcserviceBot.get("host");
         cserviceBotReal                           = (String) confcserviceBot.get("realname");
         cserviceBotModes                          = (String) confcserviceBot.get("modes");
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> cserviceaccount   = (HashMap<String, Object>) confcservice.get("accountsettings");
         cserviceAccountHostPrefix                 = (String)   cserviceaccount.get("authvhostprefix");
         cserviceAccountHostSuffix                 = (String)   cserviceaccount.get("authvhostsuffix");
@@ -128,18 +135,22 @@ public class Config {
         cserviceAccountMaxPassLength              = (Integer)  cserviceaccount.get("maxpasslen");
         cserviceAccountMaxChannels                = (Integer)  cserviceaccount.get("maxchannels");
         cserviceAccountWrongCredWait              = (Integer)  cserviceaccount.get("wrongcredwait");
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> cservicechan   = (HashMap<String, Object>) confcservice.get("chansettings");
         cserviceChanAutoLimitFreq              = (Integer) cservicechan.get("autolimitfreq");
         cserviceChanMaxChanlevs                = (Integer) cservicechan.get("maxchanlevs");
         cserviceChanDefaultModes               = (String)  cservicechan.get("defaultmodes");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confNetwork  = (HashMap<String, Object>) data.get("network");
         networkName                          = (String) confNetwork.get("name");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confLogging  = (HashMap<String, Object>) data.get("logging");
         logDebugIn                           = (Boolean) confLogging.get("debugIn");
         logDebugOut                          = (Boolean) confLogging.get("debugOut");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confFeatures  = (HashMap<String, Object>) data.get("features");
         featureSasl                           = (Boolean) confFeatures.get("sasl");
         featureSvslogin                       = (Boolean) confFeatures.get("svslogin");
@@ -152,16 +163,19 @@ public class Config {
         featuresList.put("denyauthplainconn", featureDenyAuthConnPainText);
 
 
-
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confDatabase    = (HashMap<String, Object>) data.get("database");
         databasePath                            = (String) confDatabase.get("path");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> confSsl     = (HashMap<String, Object>) data.get("ssl");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> sslKeystore     = (HashMap<String, Object>) confSsl.get("keystore");
         sslKeystorePath                         = (String) sslKeystore.get("path");
         sslKeystorePassword                     = (String) sslKeystore.get("password");
 
+        @SuppressWarnings("unchecked")
         HashMap<String, Object> sslTuststore    = (HashMap<String, Object>) confSsl.get("truststore");
         sslTruststorePath                       = (String) sslTuststore.get("path");
         sslTruststorePassword                   = (String) sslTuststore.get("password");
