@@ -261,7 +261,7 @@ public class Protocol extends Exception {
      * @param to target usernode
      * @param msg message string
      */
-    public void sendPrivmsg(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
+    public void sendPrivmsg(UserNode from, UserNode to, String msg) /*throws Exception*/ {
         String str;
         str = String.format(":%s PRIVMSG %s :%s", from.getUid(), to.getUid(), msg);
         client.write(str);
@@ -274,13 +274,13 @@ public class Protocol extends Exception {
      * @param to target usernode
      * @param msg message string
      */
-    public void sendNotice(Client client, UserNode from, UserNode to, String msg) /*throws Exception*/ {
+    public void sendNotice(UserNode from, UserNode to, String msg) /*throws Exception*/ {
         String str;
         str = String.format(":%s NOTICE %s :%s", from.getUid(), to.getUid(), msg);
         client.write(str);
     }
 
-    public void sendInvite(Client client, UserNode to, ChannelNode chanNode) /*throws Exception*/ {
+    public void sendInvite(UserNode to, ChannelNode chanNode) /*throws Exception*/ {
         String str;
         str = String.format(":%s INVITE %s %s", config.getServerId() + config.getCServeUniq(), to.getUid(), chanNode.getName());
         client.write(str);
@@ -292,7 +292,7 @@ public class Protocol extends Exception {
      * @param who originator usernode
      * @param chan target channel
      */
-    public void chanJoin(Client client, UserNode who, ChannelNode chan) /*throws Exception*/ {
+    public void chanJoin(UserNode who, ChannelNode chan) /*throws Exception*/ {
         String str;
 
         str = String.format(":%s JOIN %s", who.getUid(), chan.getName());
@@ -363,7 +363,7 @@ public class Protocol extends Exception {
      * @param who usernode originator
      * @param chan channelnode
      */
-    public void chanPart(Client client, UserNode who, ChannelNode chanUserPart) /*throws Exception*/ {
+    public void chanPart(UserNode who, ChannelNode chanUserPart) /*throws Exception*/ {
         String str;
         str = String.format(":%s PART %s", who.getUid(), chanUserPart.getName());
 
@@ -395,7 +395,7 @@ public class Protocol extends Exception {
      * @param target usernode
      * @param reason reason
      */
-    public void chanKick(Client client, UserNode who, ChannelNode chan, UserNode target, String reason) /*throws Exception*/ {
+    public void chanKick(UserNode who, ChannelNode chan, UserNode target, String reason) /*throws Exception*/ {
         String str;
         str = String.format(":%s KICK %s %s :%s", who.getUid(), chan.getName(), target.getNick(), reason);
         
@@ -427,7 +427,7 @@ public class Protocol extends Exception {
      * @param parameters
      * @throws Exception
      */
-    public void setMode(Client client, String who, ChannelNode chan, String modes, String modesParams) throws Exception {
+    public void setMode(String who, ChannelNode chan, String modes, String modesParams) {
 
         HashMap<String, HashMap<String, String>>   modChanModesAll  = this.parseChanModes(modes + " " + modesParams);
 
@@ -493,7 +493,7 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
+    public void setMode(UserNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getUid();
         String target = toTarget.getNick();
         //setMode(client, who, target, modes, parameters);
@@ -508,7 +508,7 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
+    public void setMode(ServerNode fromWho, UserNode toTarget, String modes, String parameters) throws Exception { // FIXME: will not work because needs SVSMODE
         String who = fromWho.getSid();
         String target = toTarget.getNick();
         //setMode(client, who, target, modes, parameters);
@@ -523,7 +523,7 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, UserNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
+    public void setMode(UserNode fromWho, ChannelNode toTarget, String modes, String parameters) {
         String who = fromWho.getUid();
         setMode(client, who, toTarget, modes, parameters);
     }
@@ -546,9 +546,9 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
+    public void setMode(ServerNode fromWho, ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = fromWho.getSid();
-        setMode(client, who, toTarget, modes, parameters);
+        setMode(who, toTarget, modes, parameters);
     }
 
     /**
@@ -559,12 +559,12 @@ public class Protocol extends Exception {
      * @param parameters parameters
      * @throws Exception
      */
-    public void setMode(Client client, ChannelNode toTarget, String modes, String parameters) throws Exception {
+    public void setMode(ChannelNode toTarget, String modes, String parameters) throws Exception {
         String who = config.getServerId();
-        setMode(client, who, toTarget, modes, parameters);
+        setMode(who, toTarget, modes, parameters);
     }
 
-    public void setTopic(Client client, UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
+    public void setTopic(UserNode from, ChannelNode to, String topic) /*throws Exception*/ {
         String str;
         str = String.format(":%s TOPIC %s :%s", from.getUid(), to.getName(), topic);
         client.write(str);
@@ -581,7 +581,7 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
-    public void chgHost(Client client, UserNode toTarget, String vhost) {
+    public void chgHost(UserNode toTarget, String vhost) {
         String who = config.getServerId();
         String vhostComplete = vhost;
         String str;
@@ -1277,7 +1277,7 @@ public class Protocol extends Exception {
                     if (user.getConnPlainText() == true && config.getFeature("denyauthplainconn") == true) {
                         /* User is logging from plain text connection */
                         log.info("User did not provide certfp => failing the auth.");
-                        this.sendNotice(client, cservice.getMyUserNode(), user, "You are using plain text connection. Denying the auth.");
+                        this.sendNotice(cservice.getMyUserNode(), user, "You are using plain text connection. Denying the auth.");
                         this.sendSaslResult(user, false);
                         return;
                     }
@@ -1326,12 +1326,12 @@ public class Protocol extends Exception {
                             }
 
                             if (Flags.isUserAutoVhost(user.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
-                                this.chgHostVhost(client, user, user.getAccount().getName());
+                                this.chgHostVhost(user, user.getAccount().getName());
                             }
 
                             userAccountToAuth.getChanlev().forEach( (channel, chanlev) -> { 
                                 if (Flags.isChanLAutoInvite(chanlev) == true) {
-                                    this.sendInvite(client, user, this.getChannelNodeByName(channel));
+                                    this.sendInvite(user, this.getChannelNodeByNameCi(channel));
                                 }
 
                             });
@@ -1395,12 +1395,12 @@ public class Protocol extends Exception {
                             this.sendSvsLogin(user, userAccountToAuth);
                         }
                         if (Flags.isUserAutoVhost(user.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
-                            this.chgHostVhost(client, user, user.getAccount().getName());
+                            this.chgHostVhost(user, user.getAccount().getName());
                         }
 
                         userAccountToAuth.getChanlev().forEach( (channel, chanlev) -> { 
                             if (Flags.isChanLAutoInvite(chanlev) == true) {
-                                this.sendInvite(client, user, this.getChannelNodeByName(channel));
+                                this.sendInvite(user, this.getChannelNodeByNameCi(channel));
                             }
                         });
                     }

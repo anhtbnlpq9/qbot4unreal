@@ -7,13 +7,11 @@ import Exceptions.MaxLimitReachedException;
  */
 public class Dispatcher {
 
-    private Client   client;
     private SqliteDb sqliteDb;
     private Config   config;
     private Protocol protocol;
     
-    public Dispatcher(Client client, Config config, SqliteDb sqliteDb, Protocol protocol) {
-        this.client = client;
+    public Dispatcher(Config config, SqliteDb sqliteDb, Protocol protocol) {
         this.config = config;
         this.sqliteDb = sqliteDb;
         this.protocol = protocol;

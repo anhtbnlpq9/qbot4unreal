@@ -24,15 +24,13 @@ public class CService {
 
     private UserNode myUserNode;
 
-    private Client client;
-
     private Protocol protocol;
 
     private SqliteDb sqliteDb;
 
     private Config config;
 
-    private Dispatcher dispatcher = new Dispatcher(client, config, sqliteDb, protocol);
+    private Dispatcher dispatcher;
 
     private Boolean cServiceReady = false;
 
@@ -56,12 +54,10 @@ public class CService {
     }
 
     /**
-     * @param client
      * @param protocol
      * @param sqliteDb
      */
-    public CService(Client client, Protocol protocol, SqliteDb sqliteDb) {
-        this.client = client;
+    public CService(Protocol protocol, SqliteDb sqliteDb) {
         this.protocol = protocol;
         this.sqliteDb = sqliteDb;
     }
@@ -69,6 +65,8 @@ public class CService {
     public void runCService(Config config, Protocol protocol) {
 
         Long unixTime;
+
+        this.dispatcher = new Dispatcher(config, sqliteDb, protocol);
 
         this.config = config;
         this.myUniq = config.getServerId()+config.getCServeUniq();
@@ -113,8 +111,8 @@ public class CService {
         regChannels.forEach( (regChannelName, regChannelNode) -> {
             if (Flags.isChanJoined(regChannelNode.getFlags()) == true) {
                 /* Making the bot join the registered (and +j) channels */
-                protocol.chanJoin(client, myUserNode, regChannelNode);
-                try { protocol.setMode(client, regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getNick()); }
+                protocol.chanJoin(myUserNode, regChannelNode);
+                try { protocol.setMode( regChannelNode, "+r" + wrapper.chanJoinModes, myUserNode.getNick()); }
                 catch (Exception e) {
                     log.error(String.format("Cannot set mode on %s: %s", regChannelNode.getName(), "+r" + wrapper.chanJoinModes, myUserNode.getNick()), e);
                 }
@@ -311,8 +309,8 @@ public class CService {
             if (user.getAccount().getChanlev().containsKey(channel.getName())) {
                 if (  Flags.isChanLBanned( user.getAccount().getChanlev(channel)) == true ) {
                     try {
-                        protocol.setMode(client, myUniq, channel, "+b", String.format(autoBanMask, user.getIdent(), user.getHost()));
-                        protocol.chanKick(client, myUserNode, channel, user, autoBanReason);
+                        protocol.setMode( myUniq, channel, "+b", String.format(autoBanMask, user.getIdent(), user.getHost()));
+                        protocol.chanKick(myUserNode, channel, user, autoBanReason);
                     }
                     catch (Exception e) { log.error(String.format("CService/handleJoin: error while +b nick %s on %s: ", user.getNick(), channel.getName()), e); }
                 }
@@ -321,31 +319,31 @@ public class CService {
 
                     if (  Flags.isChanLOwner( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanOwner") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel, "+q", user.getNick());
+                            protocol.setMode( myUniq, channel, "+q", user.getNick());
                         }
                         catch (Exception e) { log.error(String.format("CService/handleJoin: error while +q nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLMaster( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanAdmin") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel, "+a", user.getNick());
+                            protocol.setMode( myUniq, channel, "+a", user.getNick());
                         }
                         catch (Exception e) { log.error(String.format("CService/handleJoin: error while +a nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLOp( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanOp") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel, "+o", user.getNick());
+                            protocol.setMode( myUniq, channel, "+o", user.getNick());
                         }
                         catch (Exception e) { log.error(String.format("CService/handleJoin: error while +o nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLHalfOp( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanHalfop") == true) {
                         try {
-                            protocol.setMode(client, myUniq, channel, "+h", user.getNick());
+                            protocol.setMode( myUniq, channel, "+h", user.getNick());
                         }
                         catch (Exception e) { log.error(String.format("CService/handleJoin: error while +h nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
                     else if (  Flags.isChanLVoice( user.getAccount().getChanlev(channel)) && protocol.getFeature("chanVoice") == true ) {
                         try {
-                            protocol.setMode(client, myUniq, channel, "+v", user.getNick());
+                            protocol.setMode( myUniq, channel, "+v", user.getNick());
                         }
                         catch (Exception e) { log.error(String.format("CService/handleJoin: error while +v nick %s on %s: ", user.getNick(), channel.getName()), e); }
                     }
@@ -360,7 +358,7 @@ public class CService {
                 catch (Exception e) { log.error(String.format("CService/handleJoin: error fetching welcome message for %s: ", channel.getName()), e); }
 
                 if (welcomeMsg == null) welcomeMsg = "";
-                if (welcomeMsg.isEmpty() == false) protocol.sendNotice(client, myUserNode, user, welcomeMsg);
+                if (welcomeMsg.isEmpty() == false) protocol.sendNotice(myUserNode, user, welcomeMsg);
             }
         }
     }
@@ -383,7 +381,7 @@ public class CService {
 
         catch (Exception e) { log.error(String.format("CService/handleTopic: error while fetching topic for %s: ", chanNode.getName()), e); }
 
-        if (Flags.isChanForceTopic(chanNode.getFlags()) == true) protocol.setTopic(client, myUserNode, chanNode, savedTopic);
+        if (Flags.isChanForceTopic(chanNode.getFlags()) == true) protocol.setTopic(myUserNode, chanNode, savedTopic);
     }
 
     /**
@@ -404,23 +402,23 @@ public class CService {
             if (wrapper.buffer.isEmpty() == true) { wrapper.buffer = Messages.strMsgNone; }
 
             if ( Flags.hasUserOperPriv(whoisUserAccount.getFlags()) == true) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserLevel, config.getNetworkName(), Messages.strWhoisContentUserLevIrcop));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserLevel, config.getNetworkName(), Messages.strWhoisContentUserLevIrcop));
             }
 
             else if ( Flags.hasUserStaffPriv(whoisUserAccount.getFlags()) == true) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserLevel, config.getNetworkName(), Messages.strWhoisContentUserLevStaff));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserLevel, config.getNetworkName(), Messages.strWhoisContentUserLevStaff));
             }
 
             if ( (Flags.hasUserStaffPriv(fromNick.getAccount().getFlags()) == true) || (fromNick.getAccount() == whoisUserAccount) ) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserId, whoisUserAccount.getId()));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserId, whoisUserAccount.getId()));
 
                 if (whoisUserAccount.getFlags() != 0) { wrapper.buffer2 = "+" + Flags.flagsIntToChars("userflags", whoisUserAccount.getFlags()); }
                 else wrapper.buffer2 = Messages.strMsgNone;
 
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserFlags, wrapper.buffer2));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserFlags, wrapper.buffer2));
             }
 
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserLinkedNicks, wrapper.buffer));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserLinkedNicks, wrapper.buffer));
 
             if ( (Flags.hasUserStaffPriv(fromNick.getAccount().getFlags()) == true) || (fromNick.getAccount() == whoisUserAccount) ) {
                 SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
@@ -432,31 +430,31 @@ public class CService {
                 Date dateAuthTS = new Date((whoisUserAccount.getLastAuthTS()*1000L));
                 String accountLastAuthTS = jdf.format(dateAuthTS);
 
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserCreated, accountCreationTS));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserLastAuth, accountLastAuthTS));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserEmail, whoisUserAccount.getEmail()));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserEmailLast, ""));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserPassLast, ""));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserSuspensions, "", "", ""));
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisContentUserSuspended, "", "", ""));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserCreated, accountCreationTS));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserLastAuth, accountLastAuthTS));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserEmail, whoisUserAccount.getEmail()));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserEmailLast, ""));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserPassLast, ""));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserSuspensions, "", "", ""));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserSuspended, "", "", ""));
 
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strWhoisContentUserCertFpTitle);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strWhoisContentUserCertFpTitle);
                 var wrapperCertfp = new Object(){ Integer lineCounter=1;};
                 whoisUserAccount.getCertFP().forEach( (certfp) -> {
                     if (certfp.isEmpty() == false) {
-                        protocol.sendNotice(client, myUserNode, fromNick, " #" + wrapperCertfp.lineCounter + spaceFill.repeat(5-String.valueOf(wrapperCertfp.lineCounter).length()) + certfp);
+                        protocol.sendNotice(myUserNode, fromNick, " #" + wrapperCertfp.lineCounter + spaceFill.repeat(5-String.valueOf(wrapperCertfp.lineCounter).length()) + certfp);
                         wrapperCertfp.lineCounter++;
                     }
                 } );
 
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strWhoisContentUserChanlevTitle);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strWhoisContentUserChanlevHead);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strWhoisContentUserChanlevTitle);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strWhoisContentUserChanlevHead);
 
                 var wrapperCL = new Object() { Integer chanlev;};
                 whoisUserAccount.getChanlev().forEach( (chan, chanlev) -> {
                     wrapperCL.chanlev = chanlev;
                     if (wrapperCL.chanlev != 0) {
-                        protocol.sendNotice(client, myUserNode, fromNick, " " + chan + spaceFill.repeat(30-chan.length()) +"+" + Flags.flagsIntToChars("chanlev", wrapperCL.chanlev));
+                        protocol.sendNotice(myUserNode, fromNick, " " + chan + spaceFill.repeat(30-chan.length()) +"+" + Flags.flagsIntToChars("chanlev", wrapperCL.chanlev));
                     }
                 } );
 
@@ -464,7 +462,7 @@ public class CService {
         };
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -473,11 +471,11 @@ public class CService {
             if (protocol.getUserAccount(nick.replaceFirst("#","")) != null) {
                 UserAccount userAccount = protocol.getUserAccount(nick.replaceFirst("#",""));
 
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisHeaderAccount, userAccount.getName()));
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisHeaderAccount, userAccount.getName()));
                 whois.displayW(userAccount);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strEndOfList);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strEndOfList);
             }
-            else { protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound); }
+            else { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound); }
 
         }
         else {
@@ -489,14 +487,14 @@ public class CService {
 
                     if (foundUser.isAuthed() == true) {
 
-                        protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWhoisHeaderNick, foundUser.getNick(), foundUser.getAccount().getName()));
+                        protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisHeaderNick, foundUser.getNick(), foundUser.getAccount().getName()));
                         whois.displayW(foundUser.getAccount());
-                        protocol.sendNotice(client, myUserNode, fromNick, Messages.strEndOfList);
+                        protocol.sendNotice(myUserNode, fromNick, Messages.strEndOfList);
                     }
-                    else { protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed); }
+                    else { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotAuthed); }
                 }
             }
-            if (foundNick == 0) { protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed);  }
+            if (foundNick == 0) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotAuthed);  }
         }
     }
 
@@ -517,36 +515,36 @@ public class CService {
                 jdf.setTimeZone(TimeZone.getTimeZone("UTC"));
                 String userTSdate = jdf.format(date);
 
-                protocol.sendNotice(client, myUserNode, fromNick, " + " + user.getValue().getNick() + " (" + user.getValue().getUid() + ") is " + user.getValue().getIdent() + "@" + user.getValue().getHost() + " * " + user.getValue().getRealName());
+                protocol.sendNotice(myUserNode, fromNick, " + " + user.getValue().getNick() + " (" + user.getValue().getUid() + ") is " + user.getValue().getIdent() + "@" + user.getValue().getHost() + " * " + user.getValue().getRealName());
 
                 if (fromNick.isOper() == true || user.getValue().getNick().equals(fromNick.getNick()) ) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- is connecting from " + user.getValue().getRealHost());
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- is using modes " + user.getValue().getModes());
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- is using server " + (user.getValue().getServer()).getName() + " (" + (user.getValue().getServer()).getSid() + ")");
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- signed on " + userTSdate );
+                    protocol.sendNotice(myUserNode, fromNick, "|- is connecting from " + user.getValue().getRealHost() + " (ip: " + user.getValue().getIpAddressAsString() + ")");
+                    protocol.sendNotice(myUserNode, fromNick, "|- is using modes " + user.getValue().getModes());
+                    protocol.sendNotice(myUserNode, fromNick, "|- is using server " + (user.getValue().getServer()).getName() + " (" + (user.getValue().getServer()).getSid() + ")");
+                    protocol.sendNotice(myUserNode, fromNick, "|- signed on " + userTSdate );
                 }
 
                 if (user.getValue().isAuthed() == true) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- is authed as " + user.getValue().getAccount().getName());
+                    protocol.sendNotice(myUserNode, fromNick, "|- is authed as " + user.getValue().getAccount().getName());
                 }
 
                 if (fromNick.isOper() == true || user.getValue().getNick().equals(fromNick.getNick()) ) {
-                    protocol.sendNotice(client, myUserNode, fromNick, "|- on channels: ");
+                    protocol.sendNotice(myUserNode, fromNick, "|- on channels: ");
 
                     user.getValue().getChanList().forEach( (chan, mode) -> {
                         wrappercServeWhois2.bufferMode = "";
 
                         if (mode.isEmpty() == false) { wrappercServeWhois2.bufferMode = "(+" + mode + ")"; }
 
-                        protocol.sendNotice(client, myUserNode, fromNick, "| |- " + chan + " " + wrappercServeWhois2.bufferMode);
+                        protocol.sendNotice(myUserNode, fromNick, "| |- " + chan.getName() + " " + wrappercServeWhois2.bufferMode);
 
                     });
                 }
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strEndOfList);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strEndOfList);
             }
         }
         if (foundNick == 0) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound);
         }
     }
 
@@ -581,8 +579,8 @@ public class CService {
             var wrapper = new Object() { Integer chanlev;};
 
             if (  Flags.hasChanLSignificant(fromN.getAccount().getChanlev(channode)) == true || Flags.hasUserStaffPriv(fromN.getAccount().getFlags()) == true  ) {
-                protocol.sendNotice(client, myUserNode, fromN, String.format(Messages.strChanlevListTitle, channode.getName()));
-                protocol.sendNotice(client, myUserNode, fromN, Messages.strChanlevListHeader);
+                protocol.sendNotice(myUserNode, fromN, String.format(Messages.strChanlevListTitle, channode.getName()));
+                protocol.sendNotice(myUserNode, fromN, Messages.strChanlevListHeader);
 
                 channode.getChanlev().forEach( (user, chanlev) -> {
 
@@ -606,27 +604,27 @@ public class CService {
 
 
                     if ( wrapper.chanlev != 0 && ((useraccount != null && user.equals(useraccount.getName())) || useraccount == null)) {
-                        protocol.sendNotice(client, myUserNode, fromN, " " + user + spaceFill.repeat(19-user.length()) + "+" + Flags.flagsIntToChars("chanlev", wrapper.chanlev)); 
+                        protocol.sendNotice(myUserNode, fromN, " " + user + spaceFill.repeat(19-user.length()) + "+" + Flags.flagsIntToChars("chanlev", wrapper.chanlev)); 
                     }
                 });
-                protocol.sendNotice(client, myUserNode, fromN, Messages.strEndOfList); 
+                protocol.sendNotice(myUserNode, fromN, Messages.strEndOfList); 
             }
 
             else {
-                protocol.sendNotice(client, myUserNode, fromN, String.format(Messages.strErrNoAccess, channode.getName(), "chanlev") ); 
+                protocol.sendNotice(myUserNode, fromN, String.format(Messages.strErrNoAccess, channode.getName(), "chanlev") ); 
             }
 
         };
 
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
         try {
@@ -635,7 +633,7 @@ public class CService {
             if (protocol.getChanList().containsKey(channel) == false) { throw new Exception(); }
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanSusOrNotFound); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanSusOrNotFound); 
             return;
         }
         
@@ -654,7 +652,7 @@ public class CService {
 
                 if (usernode.isAuthed() == true) userAccount = usernode.getAccount();
                 else {
-                    protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed);
+                    protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotAuthed);
                     return; 
                 }
             }
@@ -667,7 +665,7 @@ public class CService {
         }
         catch (Exception f) {
             f.printStackTrace();
-            if (userNick.startsWith("#")) protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrUserNonReg);
+            if (userNick.startsWith("#")) protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg);
             else {
                 try { protocol.getUserNodeByNick(userNick); }
                 catch (ItemNotFoundException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound); }
@@ -683,7 +681,7 @@ public class CService {
         }
 
         if (Flags.isChanSuspended(chanNode.getFlags()) == true) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanSuspended);
             return;
         }
 
@@ -740,7 +738,7 @@ public class CService {
 
         /* User has provided no personal flags and has no rights on the chan */
         if (chanlevModSepInt.get("+") + chanlevModSepInt.get("-") + chanlevModSepInt.get("p+") + chanlevModSepInt.get("p-") == 0 ) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "chanlev"));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "chanlev"));
             return;
         }
 
@@ -759,7 +757,7 @@ public class CService {
 
 
         if (chanlevModSepInt.get("combined") == 0) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanlevErrNoMod); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strChanlevErrNoMod); 
             return; 
         }
 
@@ -782,8 +780,8 @@ public class CService {
             if ( Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false && Flags.hasUserStaffPriv(fromNick.getAccount().getFlags()) == false) {
                 wrapper.chanlev = Flags.stripChanlevPunishFlags(wrapper.chanlev);
             }
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strChanlevSuccessSummary, userAccount.getName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
+            protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strChanlevSuccessSummary, userAccount.getName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
 
             userAccount.getUserLogins().forEach( (usernode) -> {
                 if (usernode.getChanList().containsKey(chanNode)) {
@@ -793,16 +791,16 @@ public class CService {
         }
         catch (Exception e) {
             log.error(String.format("CService/cServeChanlev: error whith chanlev %s for account/chan %s / %s: ", chanlevModRaw, userAccount.getName(), chanNode.getName()), e);
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanlevErrUnknown);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strChanlevErrUnknown);
             return; 
         }
 
         if (chanNode.getChanlevWoutPersonalFlags() == null || chanNode.getChanlevWoutPersonalFlags().isEmpty() == true) {
             try {
                 dispatcher.dropChan(chanNode, fromNick);
-                protocol.setMode(client, chanNode, "-r", "");
-                protocol.chanPart(client, myUserNode, chanNode);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanlevDropChanLEmpty);
+                protocol.setMode( chanNode, "-r", "");
+                protocol.chanPart(myUserNode, chanNode);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strChanlevDropChanLEmpty);
             }
             catch (Exception e) { log.error(String.format("CService/cServeChanlev: error dropping channel %s after chanlev left empty: ", chanNode.getName()), e); }
         }
@@ -822,14 +820,14 @@ public class CService {
         HashMap<String, Integer> flagsModInt = new HashMap<String, Integer>(); 
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { flagsModRaw = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) {
             if (fromNick.getAccount().getFlags() != 0) outputFlagsList =  Flags.flagsIntToChars("userflags", fromNick.getAccount().getFlags());
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUserFlagsList, fromNick.getAccount().getName(), outputFlagsList));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strUserFlagsList, fromNick.getAccount().getName(), outputFlagsList));
             return;
         }
 
@@ -867,7 +865,7 @@ public class CService {
         }
 
         if (flagsModInt.get("combined") == 0) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strUserFlagsErrNoMode); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strUserFlagsErrNoMode); 
             return; 
         }
 
@@ -881,12 +879,12 @@ public class CService {
             if (userNewFlags != 0) { userNewFlagsStr = Flags.flagsIntToChars("userflags", userNewFlags); }
             else { userNewFlagsStr = Messages.strMsgNone; }
 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUserFlagsList, fromNick.getAccount().getName(), userNewFlagsStr) );
+            protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strUserFlagsList, fromNick.getAccount().getName(), userNewFlagsStr) );
         }
         catch (Exception e) {
             log.error(String.format("CService/cServeUserFlags: error whith userflags %s for chan %s: ", flagsModStr, fromNick.getAccount().getName()), e);
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strUserFlagsErrUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strUserFlagsErrUnknown); 
             return; 
         }
     }
@@ -911,19 +909,19 @@ public class CService {
         HashMap<String, Integer> chanFlagsModSepInt = new HashMap<>();
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
             return;
         }
 
@@ -940,7 +938,7 @@ public class CService {
                     applicableChFlagsInt = Flags.stripChanNonPublicFlags(chanNode.getFlags()); 
                 }
                 else {
-                    protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "chanflags")); 
+                    protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "chanflags")); 
                     return;
                 }
             } 
@@ -950,12 +948,12 @@ public class CService {
             }
             else { applicableChFlagsStr = Messages.strMsgNone; }
 
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strChanFlagsList, chanNode.getName(), applicableChFlagsStr)); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strChanFlagsList, chanNode.getName(), applicableChFlagsStr)); 
             return;
         }
 
         if (Flags.isChanSuspended(chanNode.getFlags()) == true) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanSuspended);
             return;
         }
 
@@ -991,14 +989,14 @@ public class CService {
         }
         /* User has no rights on the chan */
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "chanflags")); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "chanflags")); 
             return;
         }
 
         chanFlagsModSepInt.replace("combined", chanFlagsModSepInt.get("+") | chanFlagsModSepInt.get("-"));
 
         if (chanFlagsModSepInt.get("combined") == 0) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanFlagsErrNoMod); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strChanFlagsErrNoMod); 
             return; 
         }
 
@@ -1013,13 +1011,13 @@ public class CService {
             if (chanNewFlagsInt > 0) { chanNewFlagsStr = "+" + Flags.flagsIntToChars("chanflags", chanNode.getFlags()); }
             else { chanNewFlagsStr = Messages.strMsgNone; }
 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strChanFlagsSuccessSumm, chanNode.getName(), chanNewFlagsStr) );
+            protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strChanFlagsSuccessSumm, chanNode.getName(), chanNewFlagsStr) );
         }
 
         catch (Exception e) {
             log.error(String.format("CService/cServeChanFlags: error whith chanflags %s for chan %s: ", chanFlagsModRaw, chanNode.getName()), e);
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strChanFlagsErrUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strChanFlagsErrUnknown); 
             return;
         }
 
@@ -1037,7 +1035,7 @@ public class CService {
 
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1056,13 +1054,13 @@ public class CService {
                 if (target.startsWith("#") == true) {
                     userAccount = protocol.getUserAccount(target.replaceFirst("#", ""));
                     if (userAccount == null) {
-                        protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrUserNonReg); 
+                        protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg); 
                         return;
                     }
                 }
                 else {
                     try { userAccount = protocol.getUserNodeByNick(target).getAccount(); }
-                    catch (NullPointerException e) { protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound); return; }
+                    catch (NullPointerException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound); return; }
                 }
 
                 try { authHistList = sqliteDb.getAuthHistory(userAccount); }
@@ -1070,7 +1068,7 @@ public class CService {
 
             }
             else {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
                 return;
             }
         }
@@ -1079,7 +1077,7 @@ public class CService {
             try { authHistList = sqliteDb.getAuthHistory(userAccount); }
             catch (Exception e) { authHistList = new ArrayList<>(); }
         }
-        protocol.sendNotice(client, myUserNode, fromNick, Messages.strAuthHistoryHead);
+        protocol.sendNotice(myUserNode, fromNick, Messages.strAuthHistoryHead);
         int i=1;
         for(HashMap<String, Object> authLine : authHistList) {
             Date dateAuthTS = new Date( (Long) authLine.get("authTS")*1000L);
@@ -1091,14 +1089,14 @@ public class CService {
 
             String quitResult = (authLine.get("deAuthReason")) == null ? Messages.strMsgNone : (String)authLine.get("deAuthReason");
 
-            protocol.sendNotice(client, myUserNode, fromNick, 
+            protocol.sendNotice(myUserNode, fromNick, 
               "#" + String.valueOf(i) + strFiller.repeat(3 - String.valueOf(i).length()) 
               + authLine.get("maskFrom") + strFiller.repeat(50 - String.valueOf(authLine.get("maskFrom")).length())
               + jdf.format(dateAuthTS) + " (" + authType + ")" + strFiller.repeat(42 - String.valueOf(dateAuthTS).length() - String.valueOf(" (" + authType + ")").length())
               + String.valueOf(deAuthResult) + strFiller.repeat(20 - (String.valueOf(deAuthResult).length())) + quitResult); 
             i++;
         }
-        protocol.sendNotice(client, myUserNode, fromNick, Messages.strEndOfList); 
+        protocol.sendNotice(myUserNode, fromNick, Messages.strEndOfList); 
         
 
 
@@ -1111,7 +1109,7 @@ public class CService {
         ChannelNode chanNode;
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1127,26 +1125,25 @@ public class CService {
         }
 
         if (protocol.getRegChanList().containsKey(channel) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropChanErrChanNotReg, channel));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropChanErrChanNotReg, channel));
             return;
         }
 
-        if ( Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false ) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropChanErrUserNotOwner);
+        if ( Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false && Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false ) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropChanErrUserNotOwner);
             return;
         }
 
         if ( Flags.isChanSuspended(chanNode.getFlags()) == true ) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropChanErrChanSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropChanErrChanSuspended);
             return;
         }
-
 
         if (chanNode.getConfirmCode() == null) { /* This is the first time the user requests the dropping of the channel */
 
             chanNode.setConfirmCode(UUID.randomUUID());
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropChanConfirmMessage1, chanNode.getName())); 
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropChanConfirmMessage2, chanNode.getName(), chanNode.getConfirmCode()));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropChanConfirmMessage1, chanNode.getName())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropChanConfirmMessage2, chanNode.getName(), chanNode.getConfirmCode()));
             return;
 
         }
@@ -1155,28 +1152,28 @@ public class CService {
             confirmCode = (str.split(" ", 3))[2];
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropChanConfirmMessage3, chanNode.getName(), chanNode.getConfirmCode())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropChanConfirmMessage3, chanNode.getName(), chanNode.getConfirmCode())); 
             return;
         }
 
         if (confirmCode.equals(chanNode.getConfirmCode().toString()) == false) {
             chanNode.setConfirmCode(null);
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropChanErrWrongConfirm); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropChanErrWrongConfirm); 
             return;
         }
 
         try {
             dispatcher.dropChan(chanNode, fromNick);
 
-            protocol.setMode(client, chanNode, "-r", "");
-            protocol.chanPart(client, myUserNode, chanNode);
+            protocol.setMode( chanNode, "-r", "");
+            protocol.chanPart(myUserNode, chanNode);
 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropChanSuccess);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropChanSuccess);
             log.info(String.format("CService/cServeCDropChan: channel %s dropped by %s", chanNode.getName(), fromNick.getAccount().getName()));
 
         }
         catch (Exception e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropChanErrUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropChanErrUnknown); 
             log.error(String.format("CService/cServeDropChan: Error while dropping channel %s", chanNode.getName()), e);
             return;
         }
@@ -1193,7 +1190,7 @@ public class CService {
         UserAccount targetUserAccount = null;
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1201,7 +1198,7 @@ public class CService {
             user = (str.split(" ", 3))[1];
         }
         catch (IndexOutOfBoundsException e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropUserErrSyntax);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropUserErrSyntax);
             return;
         }
 
@@ -1210,7 +1207,7 @@ public class CService {
                 targetUserAccount = protocol.getUserAccount(user.replaceFirst("#", ""));
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrUserNonReg);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg);
             }
         }
         else {
@@ -1224,18 +1221,18 @@ public class CService {
                 targetUserAccount = targetUserNode.getAccount();
             }
             else {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotAuthed);
                 return;
             }
         }
 
         if (fromNick.getAccount().equals(targetUserAccount) == false && Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropUserErrTargetUser);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropUserErrTargetUser);
             return;
         }
         else {
             if ( Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == true && Flags.isUserSuspended(targetUserAccount.getFlags()) == true ) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropUserErrUserSuspended); 
+                protocol.sendNotice(myUserNode, fromNick, Messages.strDropUserErrUserSuspended); 
                 return;
             }
         }
@@ -1243,8 +1240,8 @@ public class CService {
         if (targetUserAccount.getConfirmationCode() == null) { /* This is the first time the user requests the dropping of the channel */
 
             targetUserAccount.setConfirmationCode(UUID.randomUUID());
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropUserConfirmMessage1, targetUserAccount.getName())); 
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropUserConfirmMessage2, targetUserAccount.getName(), targetUserAccount.getConfirmationCode()));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropUserConfirmMessage1, targetUserAccount.getName())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropUserConfirmMessage2, targetUserAccount.getName(), targetUserAccount.getConfirmationCode()));
             return;
 
         }
@@ -1253,13 +1250,13 @@ public class CService {
             confirmCode = (str.split(" ", 3))[2];
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strDropUserConfirmMessage3, targetUserAccount.getName(), targetUserAccount.getConfirmationCode())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strDropUserConfirmMessage3, targetUserAccount.getName(), targetUserAccount.getConfirmationCode())); 
             return;
         }
 
         if (confirmCode.equals(targetUserAccount.getConfirmationCode().toString()) == false) {
             targetUserAccount.setConfirmationCode(null);
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropUserErrWrongConfirm); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropUserErrWrongConfirm); 
             return;
         }
 
@@ -1271,7 +1268,7 @@ public class CService {
             for (UserNode loggedUserNode : loggedUserNodes) {
                 try {
                     this.logoutUser(loggedUserNode, Const.DEAUTH_TYPE_DROP);
-                    protocol.sendNotice(client, myUserNode, loggedUserNode, Messages.strDropUserDeAuth);
+                    protocol.sendNotice(myUserNode, loggedUserNode, Messages.strDropUserDeAuth);
                 }
                 catch (Exception e) {
                     log.error("CService/DropAccount: could not deauthenticate nick " + loggedUserNode.getNick() + " from account " + targetUserAccount.getName() + ": ", e);
@@ -1296,11 +1293,11 @@ public class CService {
             /* Delete the reference */
             targetUserAccount = null;
 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropUserSuccess);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropUserSuccess);
 
         }
         catch (Exception e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strDropUserErrUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strDropUserErrUnknown); 
             log.error(String.format("CService/cServeDropUser: Error dropping user account %s", targetUserAccount.getName()), e);
             return;
         }
@@ -1317,7 +1314,7 @@ public class CService {
         UserAccount ownerAccount;
 
         if (user.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, user, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, user, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1330,7 +1327,8 @@ public class CService {
             return;
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, user, Messages.strErrChanNonExist); 
+            protocol.sendNotice(myUserNode, user, Messages.strRequestBotErrUnknown); 
+            log.error(String.format("CService/cServeRequestBot: error while getting channel name to channel node. String was: %s", str), e);
             return;
         }
 
@@ -1340,7 +1338,7 @@ public class CService {
                 target = (str.split(" "))[2];
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, user, Messages.strRequestBotErrCmdIncomplete); 
+                protocol.sendNotice(myUserNode, user, Messages.strRequestBotErrCmdIncomplete); 
                 return;
             }
 
@@ -1353,11 +1351,11 @@ public class CService {
                 }
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, user, Messages.strRequestBotErrNickOrAccNotFound); 
+                protocol.sendNotice(myUserNode, user, Messages.strRequestBotErrNickOrAccNotFound); 
                 return;
             }
             if (targetAccount == null) {
-                protocol.sendNotice(client, myUserNode, user, Messages.strErrNickNotAuthed); 
+                protocol.sendNotice(myUserNode, user, Messages.strErrNickNotAuthed); 
                 return;
             }
         }
@@ -1367,7 +1365,7 @@ public class CService {
 
         /* Check the user chanlev in case the limit is reached */
         if (ownerAccount.getChanlev().size() >= config.getCServeAccountMaxChannels() && Flags.hasUserOperPriv(ownerAccount.getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, user, Messages.strRequestBotErrChanlevFull); 
+            protocol.sendNotice(myUserNode, user, Messages.strRequestBotErrChanlevFull); 
             return;
         }
 
@@ -1388,18 +1386,18 @@ public class CService {
                 chanNode.setChanlev(chanNewChanlev);
                 chanNode.setFlags(Flags.getDefaultChanFlags());
 
-                protocol.chanJoin(client, myUserNode, chanNode);
-                protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getNick());
-                protocol.sendNotice(client, myUserNode, user, Messages.strRequestBotSuccess);
+                protocol.chanJoin(myUserNode, chanNode);
+                protocol.setMode( chanNode, "+r" + chanJoinModes, myUserNode.getNick());
+                protocol.sendNotice(myUserNode, user, Messages.strRequestBotSuccess);
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, user, Messages.strRequestBotErrUnknown);
+                protocol.sendNotice(myUserNode, user, Messages.strRequestBotErrUnknown);
                 log.error(String.format("CService/cServeRequestBot: Error registering channel %s", chanNode.getName()), e);
                 return;
             }
         }
         else {
-            protocol.sendNotice(client, myUserNode, user, Messages.strRequestBotErrChanNotPresentOrOp);
+            protocol.sendNotice(myUserNode, user, Messages.strRequestBotErrChanNotPresentOrOp);
         }
     }
 
@@ -1409,7 +1407,7 @@ public class CService {
         
         String[] command = str.split(" ",4);
         if (userNode.isAuthed() == true) { 
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strHelloErrAlreadyAuth); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strHelloErrAlreadyAuth); 
             return;                 
         }
 
@@ -1417,14 +1415,14 @@ public class CService {
             email = command[2]; 
             password = command[1];
         }
-        catch (ArrayIndexOutOfBoundsException e) { protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandSyntax); return; }
+        catch (ArrayIndexOutOfBoundsException e) { protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandSyntax); return; }
 
         if (email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+")==false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strHelloErrEmailInvalid);
+            protocol.sendNotice(myUserNode, userNode, Messages.strHelloErrEmailInvalid);
             return;
         }
         if (password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{" + config.getCServiceAccountMinPassLength() + "," + config.getCServiceAccountMaxPassLength() + "}$")==false) {
-            protocol.sendNotice(client, myUserNode, userNode, String.format(Messages.strHelloErrTooEasy, config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
+            protocol.sendNotice(myUserNode, userNode, String.format(Messages.strHelloErrTooEasy, config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
             return;
         }
         String pwHash = null;
@@ -1449,10 +1447,10 @@ public class CService {
             protocol.getRegUserList().put(userNode.getNick(), newUserAccount);
         }
         catch (Exception e) { 
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strHelloErrAccountExists); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strHelloErrAccountExists); 
             return;
         }
-        protocol.sendNotice(client, myUserNode, userNode, String.format(Messages.strHelloSucNewAccount, userNode.getNick(), userNode.getNick()));
+        protocol.sendNotice(myUserNode, userNode, String.format(Messages.strHelloSucNewAccount, userNode.getNick(), userNode.getNick()));
 
     }
 
@@ -1465,7 +1463,7 @@ public class CService {
         
         String[] command = str.split(" ",4);
         if (usernode.isAuthed() == true) { 
-            protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrAlreadyAuth);
+            protocol.sendNotice(myUserNode, usernode, Messages.strAuthErrAlreadyAuth);
             return;                 
         }
 
@@ -1473,7 +1471,7 @@ public class CService {
             username = command[1];
         }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, usernode, Messages.strErrCommandSyntax);
+            protocol.sendNotice(myUserNode, usernode, Messages.strErrCommandSyntax);
             return; 
         }
 
@@ -1489,7 +1487,7 @@ public class CService {
             /* Delay auth to slow down brute force attack */
             try { Thread.sleep(config.getCServeAccountWrongCredWait() *1000); }
             catch (Exception f) { /* Nothing to do */ }
-            protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrAccountCred);
+            protocol.sendNotice(myUserNode, usernode, Messages.strAuthErrAccountCred);
             return;
         }
 
@@ -1503,7 +1501,7 @@ public class CService {
             catch (Exception e) {
                 try { Thread.sleep(config.getCServeAccountWrongCredWait() *1000); }
                 catch (Exception f) { /* Nothing to do */ }
-                protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrAccountCred);
+                protocol.sendNotice(myUserNode, usernode, Messages.strAuthErrAccountCred);
                 return;
             }
         }
@@ -1517,13 +1515,13 @@ public class CService {
                     useraccount.authUserToAccount(usernode, certfp, authType);
                 }
                 catch (Exception e) {
-                    protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrAccountCred);
+                    protocol.sendNotice(myUserNode, usernode, Messages.strAuthErrAccountCred);
                     return;
                 }
 
             }
             else {
-                protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthErrCertFpNotAvail); 
+                protocol.sendNotice(myUserNode, usernode, Messages.strAuthErrCertFpNotAvail); 
                 return;
             }
         }
@@ -1533,16 +1531,16 @@ public class CService {
         }
 
         if (Flags.isUserAutoVhost(usernode.getAccount().getFlags()) == true && config.getFeature("chghost") == true) {
-            protocol.chgHostVhost(client, usernode, usernode.getAccount().getName());
+            protocol.chgHostVhost(usernode, usernode.getAccount().getName());
         }
 
         usernode.getAccount().getChanlev().forEach( (channel, chanlev) -> {
-            if (Flags.isChanLAutoInvite(chanlev) == true && usernode.getChanList().containsKey(protocol.getChannelNodeByName(channel)) == false) {
-                protocol.sendInvite(client, usernode, protocol.getChannelNodeByName(channel));
+            if (Flags.isChanLAutoInvite(chanlev) == true && usernode.getChanList().containsKey(protocol.getChannelNodeByNameCi(channel)) == false) {
+                protocol.sendInvite(usernode, protocol.getChannelNodeByNameCi(channel));
             }
         });
 
-        protocol.sendNotice(client, myUserNode, usernode, Messages.strAuthSuccess); 
+        protocol.sendNotice(myUserNode, usernode, Messages.strAuthSuccess); 
 
         // Now we apply the modes of the user's chanlev as it was joining the channels
         // But no welcome message
@@ -1558,7 +1556,7 @@ public class CService {
         UserAccount userAccount;
 
         if (userNode.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1568,7 +1566,7 @@ public class CService {
         /*
         try { certfp = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrAddSyntax); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strCertFpErrAddSyntax); 
             return; 
         }
         */
@@ -1576,12 +1574,12 @@ public class CService {
             certfp = userNode.getCertFP();
         }
         else {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrNoCertFp); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strCertFpErrNoCertFp); 
             return; 
         }
 
         if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrMalformed); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strCertFpErrMalformed); 
             return;
         }
 
@@ -1591,7 +1589,7 @@ public class CService {
             dispatcher.addUserCertFp(userAccount, certfp);
         }
         catch (MaxLimitReachedException e) {
-            protocol.sendNotice(client, myUserNode, userNode, String.format(Messages.strCertFpErrAdd, config.getCServeAccountMaxCertFP()));
+            protocol.sendNotice(myUserNode, userNode, String.format(Messages.strCertFpErrAdd, config.getCServeAccountMaxCertFP()));
             return;
         }
         catch (Exception e) {
@@ -1607,7 +1605,7 @@ public class CService {
             return;
         }
         userAccount.setCertFP(userAccountCertfp);
-        protocol.sendNotice(client, myUserNode, userNode, Messages.strSuccess); 
+        protocol.sendNotice(myUserNode, userNode, Messages.strSuccess);
     }
 
     private void cServeCertfpDel(UserNode userNode, String str) {
@@ -1619,7 +1617,7 @@ public class CService {
         HashSet<String> userAccountCertfp;
 
         if (userNode.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1627,12 +1625,12 @@ public class CService {
 
         try { certfp = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandSyntax); 
             return; 
         }
 
         if (certfp.matches("^[A-Fa-f0-9]+") == false || certfp.length() > 129) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrMalformed); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strCertFpErrMalformed); 
             return;
         }
 
@@ -1642,19 +1640,19 @@ public class CService {
         }
         catch (Exception e) {
             log.error(String.format("Could not remove certfp %s for account %s", certfp, userAccount.getName()), e);
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strCertFpErrRemove); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strCertFpErrRemove); 
             return;
         }
-        protocol.sendNotice(client, myUserNode, userNode, Messages.strSuccess); 
+        protocol.sendNotice(myUserNode, userNode, Messages.strSuccess); 
     }
 
     private void cServeChanlist(UserNode userNode, String str) {
 
         if (userNode.getModes().matches("(.*)o(.*)") == false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
-        protocol.sendNotice(client, myUserNode, userNode, "List of channels:");
+        protocol.sendNotice(myUserNode, userNode, "List of channels:");
         
         /*for (Map.Entry<A, B> e : myMap.entrySet()) {
             A key    = e.getKey();
@@ -1685,26 +1683,26 @@ public class CService {
                     wrapperChanList.bufferParam  = wrapperChanList.bufferParam + " " + param;
                 });
                 // FIXME: modes are incorrect
-                protocol.sendNotice(client, myUserNode, userNode, String.format(" + %s [U=%s C=%s] [M=%s] ", chan, node.getUserCount(), chanTSdate, wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam));
-                //protocol.sendNotice(client, myUserNode, userNode, " + " + chan + " (users: " + node.getUserCount() + ")");
-                //protocol.sendNotice(client, myUserNode, userNode, " |- modes: +" + wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam );
-                //protocol.sendNotice(client, myUserNode, userNode, " |- created: " + chanTSdate );
-                protocol.sendNotice(client, myUserNode, userNode, " |- ban list: " + node.getBanList().toString() );
-                protocol.sendNotice(client, myUserNode, userNode, " |- except list: " + node.getExceptList().toString() );
-                protocol.sendNotice(client, myUserNode, userNode, " `- invite list: " + node.getInviteList().toString() );
+                protocol.sendNotice(myUserNode, userNode, String.format(" + %s [U=%s C=%s] [M=%s] ", chan, node.getUserCount(), chanTSdate, wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam));
+                //protocol.sendNotice(myUserNode, userNode, " + " + chan + " (users: " + node.getUserCount() + ")");
+                //protocol.sendNotice(myUserNode, userNode, " |- modes: +" + wrapperChanList.bufferMode + " " + wrapperChanList.bufferParam );
+                //protocol.sendNotice(myUserNode, userNode, " |- created: " + chanTSdate );
+                protocol.sendNotice(myUserNode, userNode, " |- ban list: " + node.getBanList().toString() );
+                protocol.sendNotice(myUserNode, userNode, " |- except list: " + node.getExceptList().toString() );
+                protocol.sendNotice(myUserNode, userNode, " `- invite list: " + node.getInviteList().toString() );
             }
         });
-        protocol.sendNotice(client, myUserNode, userNode, "There are " + protocol.getChanList().size() + " channels on the network.");
-        protocol.sendNotice(client, myUserNode, userNode, Messages.strEndOfList);
+        protocol.sendNotice(myUserNode, userNode, "There are " + protocol.getChanList().size() + " channels on the network.");
+        protocol.sendNotice(myUserNode, userNode, Messages.strEndOfList);
     }
 
     private void cServeUserlist (UserNode userNode, String str) {
         if (userNode.getModes().matches("(.*)o(.*)") == false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
 
-        protocol.sendNotice(client, myUserNode, userNode, "List of users:");
+        protocol.sendNotice(myUserNode, userNode, "List of users:");
         
         /*for (Map.Entry<A, B> e : myMap.entrySet()) {
             A key    = e.getKey();
@@ -1712,19 +1710,19 @@ public class CService {
         }*/
 
         for (Map.Entry<String, UserNode> user : protocol.getUserList().entrySet()) {
-            protocol.sendNotice(client, myUserNode, userNode, " * " + user.getValue().getUid() + " " + user.getValue().getNick() + "!" + user.getValue().getIdent() + "@" + user.getValue().getHost() + " [" + user.getValue().getRealHost() + "] " + user.getValue().getModes() + " * " + user.getValue().getRealName());
+            protocol.sendNotice(myUserNode, userNode, " * " + user.getValue().getUid() + " " + user.getValue().getNick() + "!" + user.getValue().getIdent() + "@" + user.getValue().getHost() + " [" + user.getValue().getRealHost() + "] " + user.getValue().getModes() + " * " + user.getValue().getRealName());
         }
-        protocol.sendNotice(client, myUserNode, userNode, "There are " + protocol.getUserList().size() + " users on the network.");
-        protocol.sendNotice(client, myUserNode, userNode, Messages.strEndOfList);
+        protocol.sendNotice(myUserNode, userNode, "There are " + protocol.getUserList().size() + " users on the network.");
+        protocol.sendNotice(myUserNode, userNode, Messages.strEndOfList);
     }
 
     private void cServeServerlist(UserNode userNode, String str) {
         if (userNode.getModes().matches("(.*)o(.*)") == false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
 
-        protocol.sendNotice(client, myUserNode, userNode, "List of servers:");
+        protocol.sendNotice(myUserNode, userNode, "List of servers:");
         
         /*for (Map.Entry<A, B> e : myMap.entrySet()) {
             A key    = e.getKey();
@@ -1733,22 +1731,22 @@ public class CService {
 
         for (Map.Entry<String, ServerNode> server : protocol.getServerList().entrySet()) {
             String serverPeerStatus = "";
-            if (server.getValue().getServerPeer()==true) { serverPeerStatus = "@";  }
+            if (server.getValue().isPeer()==true) { serverPeerStatus = "@";  }
             else { serverPeerStatus = "*"; }
             String serverEOS = "no";
-            if (server.getValue().getServerEOS()==true) { serverEOS = "yes";  }
+            if (server.getValue().hasEOS()==true) { serverEOS = "yes";  }
             String introducedBy = Messages.strMsgNone;
             if (server.getValue().getParent() != null) { introducedBy = server.getValue().getParent().getName(); }
-            protocol.sendNotice(client, myUserNode, userNode, serverPeerStatus + " " + server.getValue().getName() + " (" + server.getValue().getSid() + ") /  EOS:" + serverEOS + " / introduced by: " + introducedBy);
+            protocol.sendNotice(myUserNode, userNode, serverPeerStatus + " " + server.getValue().getName() + " (" + server.getValue().getSid() + ") /  EOS:" + serverEOS + " / introduced by: " + introducedBy);
         }
-        protocol.sendNotice(client, myUserNode, userNode, "There are " + protocol.getServerList().size() + " servers on the network.");
-        protocol.sendNotice(client, myUserNode, userNode, Messages.strEndOfList);
+        protocol.sendNotice(myUserNode, userNode, "There are " + protocol.getServerList().size() + " servers on the network.");
+        protocol.sendNotice(myUserNode, userNode, Messages.strEndOfList);
     }
 
     private void cServeLogout(UserNode usernode) {
 
         if (usernode.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, usernode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, usernode, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1759,19 +1757,19 @@ public class CService {
         }
         catch (Exception e) {
             log.error(String.format("Cannot logout nick %s / account %s", usernode.getNick(), userAccount.getName()), e);
-            protocol.sendNotice(client, myUserNode, usernode, Messages.strLogoutErrUnknown);
+            protocol.sendNotice(myUserNode, usernode, Messages.strLogoutErrUnknown);
             return;
         }
 
         if (Flags.isUserAutoVhost(userAccount.getFlags()) == true && config.getFeature("chghost") == true) {
-            protocol.chgHost(client, usernode, usernode.getCloakedHost());
+            protocol.chgHost(usernode, usernode.getCloakedHost());
         }
         
         if (config.getFeature("svslogin") == true) {
             protocol.sendSvsLogin(usernode);
         }
 
-        protocol.sendNotice(client, myUserNode, usernode, Messages.strSuccess);
+        protocol.sendNotice(myUserNode, usernode, Messages.strSuccess);
     }
 
     private void logoutUser(UserNode usernode, Integer deAuthType) {
@@ -1787,7 +1785,7 @@ public class CService {
         }
 
         if (Flags.isUserAutoVhost(userAccount.getFlags()) == true && config.getFeature("chghost") == true) {
-            protocol.chgHost(client, usernode, usernode.getCloakedHost());
+            protocol.chgHost(usernode, usernode.getCloakedHost());
         }
         
         if (config.getFeature("svslogin") == true) {
@@ -1803,7 +1801,7 @@ public class CService {
         ChannelNode chanNode;
 
         if (userNode.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1811,34 +1809,34 @@ public class CService {
 
             try { channel = command[1]; }
             catch (ArrayIndexOutOfBoundsException e) { 
-                protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandSyntax); 
+                protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandSyntax); 
                 return; 
             }
     
-            try { chanNode = protocol.getChannelNodeByName(channel); }
+            try { chanNode = protocol.getChannelNodeByNameCi(channel); }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, userNode, Messages.strErrChanNonReg); 
+                protocol.sendNotice(myUserNode, userNode, Messages.strErrChanNonReg); 
                 return;
             }
             if (Flags.isChanJoined(chanNode.getFlags()) == false) {
                 /* Channel does not have +j flag (could be suspended or something) */
-                protocol.sendNotice(client, myUserNode, userNode, Messages.strErrChanNotJoined); 
+                protocol.sendNotice(myUserNode, userNode, Messages.strErrChanNotJoined); 
                 return;
             }
-            protocol.chanPart(client, myUserNode, chanNode);
-            protocol.chanJoin(client, myUserNode, chanNode);
+            protocol.chanPart(myUserNode, chanNode);
+            protocol.chanJoin(myUserNode, chanNode);
             try {
-                protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getNick());
+                protocol.setMode( chanNode, "+r" + chanJoinModes, myUserNode.getNick());
             }
             catch (Exception e) {
                 log.error(String.format("Could not set mode for %s after REJOIN command", chanNode.getName()), e); 
                 return; 
             }
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strSuccess); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strSuccess); 
         }
 
         else {
-            protocol.sendNotice(client, myUserNode, userNode, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, userNode, Messages.strErrCommandUnknown); 
             return;
         }
 
@@ -1853,19 +1851,19 @@ public class CService {
         ChannelNode chanNode;
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
             return;
         }
 
@@ -1878,9 +1876,9 @@ public class CService {
             }
             catch (Exception f) { }
             if (Flags.hasChanLSignificant(fromNick.getAccount().getChanlev(chanNode)) == true || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == true) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWelcomeDispMess, chanNode.getName(), curWelcomeMsg) ); 
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWelcomeDispMess, chanNode.getName(), curWelcomeMsg) ); 
             }
-            else protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "welcome")); 
+            else protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "welcome")); 
             return; 
         }
 
@@ -1888,16 +1886,16 @@ public class CService {
 
             try {
                 sqliteDb.setWelcomeMsg(chanNode, newWelcomeMsg);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess); 
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWelcomeDispMess, chanNode.getName(), newWelcomeMsg)); 
+                protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess); 
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWelcomeDispMess, chanNode.getName(), newWelcomeMsg)); 
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strWelcomeErrUnknown, chanNode.getName())); 
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWelcomeErrUnknown, chanNode.getName())); 
                 return;
             }
         }
         else {
-            protocol.sendNotice(client, myUserNode, fromNick,  String.format(Messages.strErrNoAccess, chanNode.getName(), "welcome")); 
+            protocol.sendNotice(myUserNode, fromNick,  String.format(Messages.strErrNoAccess, chanNode.getName(), "welcome")); 
         }
     }
 
@@ -1910,19 +1908,19 @@ public class CService {
         ChannelNode chanNode;
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
             return;
         }
 
@@ -1936,17 +1934,17 @@ public class CService {
             try {
                 if (newTopic == null) { chanNode.getTopic();}
                 sqliteDb.setTopic(chanNode, newTopic);
-                if (newTopic.equals(chanNode.getTopic()) == false)  protocol.setTopic(client, myUserNode, chanNode, newTopic);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess); 
+                if (newTopic.equals(chanNode.getTopic()) == false)  protocol.setTopic(myUserNode, chanNode, newTopic);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess); 
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strSetTopicErrUnknown, chanNode.getName())); 
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strSetTopicErrUnknown, chanNode.getName())); 
                 return;
             }
 
         }
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "settopic")); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "settopic")); 
         }
     }
 
@@ -1959,35 +1957,35 @@ public class CService {
         ChannelNode chanNode;
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
             return;
         }
 
         if (Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == true || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == true || Flags.isChanLTopic(fromNick.getAccount().getChanlev(chanNode)) == true ) {
             try {
                 sqliteDb.setTopic(chanNode, newTopic);
-                if (newTopic.equals(chanNode.getTopic()) == false)  protocol.setTopic(client, myUserNode, chanNode, newTopic);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess); 
+                if (newTopic.equals(chanNode.getTopic()) == false)  protocol.setTopic(myUserNode, chanNode, newTopic);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess); 
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strClearTopicErrUnknown, chanNode.getName())); 
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strClearTopicErrUnknown, chanNode.getName())); 
                 return;
             }
         }
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "cleartopic")); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "cleartopic")); 
         }
     }
 
@@ -1997,7 +1995,7 @@ public class CService {
      * @param commandName command string
      */
     private void cServeHelp(UserNode fromNick, String commandName) {
-        Help.getHelp("commands", commandName).forEach( (line) -> { protocol.sendNotice(client, myUserNode, fromNick, line);} );
+        Help.getHelp("commands", commandName).forEach( (line) -> { protocol.sendNotice(myUserNode, fromNick, line);} );
     }
 
     private void cServeShowcommands(UserNode fromNick) {
@@ -2027,31 +2025,31 @@ public class CService {
             switch (context) {
                 case "000":
                     if (fromNick.isAuthed() == false) {
-                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                        protocol.sendNotice(myUserNode, fromNick, content);
                     }
                     break;
 
                 case "050":
                     if (fromNick.isAuthed() == true) {
-                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                        protocol.sendNotice(myUserNode, fromNick, content);
                     }
                     break;
 
                 case "100":
                     if (fromNick.isAuthed() == true && Flags.hasUserStaffPriv(fromNick.getAccount().getFlags())) {
-                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                        protocol.sendNotice(myUserNode, fromNick, content);
                     }
                     break;
 
                 case "150":
                     if (fromNick.isAuthed() == true && Flags.hasUserOperPriv(fromNick.getAccount().getFlags())) {
-                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                        protocol.sendNotice(myUserNode, fromNick, content);
                     }
                     break;
 
                 case "200":
                     if (fromNick.isAuthed() == true && Flags.hasUserAdminPriv(fromNick.getAccount().getFlags())) {
-                        protocol.sendNotice(client, myUserNode, fromNick, content);
+                        protocol.sendNotice(myUserNode, fromNick, content);
                     }
                     break;
 
@@ -2064,14 +2062,14 @@ public class CService {
                     break;
 
                 default:
-                    protocol.sendNotice(client, myUserNode, fromNick, content);
+                    protocol.sendNotice(myUserNode, fromNick, content);
                     break;
             }
         } );
     }
 
     private void cServeVersion(UserNode fromNick) {
-        protocol.sendNotice(client, myUserNode, fromNick, config.getCServeVersionString());
+        protocol.sendNotice(myUserNode, fromNick, config.getCServeVersionString());
     }
 
     /**
@@ -2094,7 +2092,7 @@ public class CService {
 
             if (Flags.isChanAutolimit(chanNode.getFlags()) == true && Flags.isChanJoined(chanNode.getFlags()) == true && newLimit != curChanModeLimit) {
                 try {
-                    protocol.setMode(client, myUserNode, chanNode, "+l", String.valueOf(newLimit));
+                    protocol.setMode(myUserNode, chanNode, "+l", String.valueOf(newLimit));
                     log.info("Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
                 }
                 catch (Exception e) {
@@ -2120,24 +2118,24 @@ public class CService {
         ChannelNode chanNode;
 
         if (fromNick.isAuthed() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
         try { 
-            chanNode = protocol.getChannelNodeByName(channel);
+            chanNode = protocol.getChannelNodeByNameCi(channel);
             if (Flags.isChanSuspended(chanNode.getFlags()) == true) {
                 throw new Exception("Channel suspended.");
             }
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanSusOrNotFound);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanSusOrNotFound);
             return;
         }
 
@@ -2147,9 +2145,9 @@ public class CService {
 
             if ( Flags.hasUserStaffPriv(fromNick.getAccount().getFlags()) == true || Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == true ) {
                 chanCurAutoLimit = chanNode.getAutoLimit();
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strAutoLimitCurConf, chanNode.getName(), chanCurAutoLimit)); 
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strAutoLimitCurConf, chanNode.getName(), chanCurAutoLimit)); 
             }
-            else { protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "autolimit")); } 
+            else { protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "autolimit")); } 
             return;
 
         }
@@ -2159,13 +2157,13 @@ public class CService {
                 sqliteDb.setChanAutoLimit(chanNode, chanAutoLimitInt);
                 chanNode.setAutoLimit(chanAutoLimitInt);
 
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
-                protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strAutoLimitStrSuccessSummary, chanNode.getName(), chanAutoLimitInt));
+                protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
+                protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strAutoLimitStrSuccessSummary, chanNode.getName(), chanAutoLimitInt));
 
             }
             catch (Exception e) {
                 log.error(String.format("CService/cServeAutoLimit: cannot set autolimit for channel %s", chanNode.getName()), e);
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strAutoLimitErrUnknown); 
+                protocol.sendNotice(myUserNode, fromNick, Messages.strAutoLimitErrUnknown); 
                 return; 
             }
 
@@ -2173,7 +2171,7 @@ public class CService {
 
         /* User has no rights on the chan */
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "autolimit"));
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "autolimit"));
             return;
         }
     }
@@ -2197,35 +2195,35 @@ public class CService {
 
         /* Preliminary checks */
         if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
         try { reason = command[2]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg);
             return;
         }
         
         if (chanNode.isRegistered() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg);
             return;
         }
 
         if (Flags.isChanSuspended(chanNode.getFlags()) == true) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuspendChanErrSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strSuspendChanErrSuspended);
             return;
         }
 
@@ -2244,9 +2242,9 @@ public class CService {
         }
         chanNode.setFlags(newChanFlags);
 
-        protocol.chanPart(client, myUserNode, chanNode);
+        protocol.chanPart(myUserNode, chanNode);
         try {
-            protocol.setMode(client, chanNode, "-r", null);
+            protocol.setMode( chanNode, "-r", null);
         }
         catch (Exception e) {
             log.error(String.format("CService/cServeSuspendChan: cannot set mode for chan %s", chanNode.getName()), e);
@@ -2256,11 +2254,11 @@ public class CService {
             sqliteDb.addSuspendHistory(chanNode, reason);
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strSuspendChanErrHistory, chanNode.getName())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strSuspendChanErrHistory, chanNode.getName())); 
             log.error(String.format(Messages.strSuspendChanErrHistory, chanNode.getName()), e);
             return;
         }
-        protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
     }
 
     private void cServeUnSuspendChan(UserNode fromNick, String str) {
@@ -2275,29 +2273,29 @@ public class CService {
 
         /* Preliminary checks */
         if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { channel = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
-        try { chanNode = protocol.getChannelNodeByName(channel); }
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg);
             return;
         }
         
         if (chanNode.isRegistered() == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrChanNonReg);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg);
             return;
         }
 
         if (Flags.isChanSuspended(chanNode.getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strUnSuspendChanErrSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strUnSuspendChanErrSuspended);
             return;
         }
 
@@ -2316,9 +2314,9 @@ public class CService {
         }
         chanNode.setFlags(newChanFlags);
 
-        protocol.chanJoin(client, myUserNode, chanNode);
+        protocol.chanJoin(myUserNode, chanNode);
         try {
-            protocol.setMode(client, chanNode, "+r" + chanJoinModes, myUserNode.getNick());
+            protocol.setMode( chanNode, "+r" + chanJoinModes, myUserNode.getNick());
         }
         catch (Exception e) {
             log.error(String.format("CService/cServeUnsuspendChan: cannot set mode for chan %s", chanNode.getName()), e);
@@ -2328,11 +2326,11 @@ public class CService {
             sqliteDb.addUnSuspendHistory(chanNode);
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName())); 
             log.error(String.format(Messages.strUnSuspendChanErrHistory, chanNode.getName()), e);
             return;
         }
-        protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
     }
 
     /**
@@ -2360,19 +2358,19 @@ public class CService {
 
         /* Preliminary checks */
         if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { user = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
         try { reason = command[2]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
@@ -2381,14 +2379,14 @@ public class CService {
                 userAccount = protocol.getRegUserAccount(user.replaceFirst("#", ""));
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrUserNonReg);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg);
                 return;
             }
         }
         else {
             try { userNode = protocol.getUserNodeByNick(user); }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound);
                 return;
             }
 
@@ -2396,13 +2394,13 @@ public class CService {
                 userAccount = userNode.getAccount();
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotAuthed);
                 return;
             }
         }
 
         if (Flags.isUserSuspended(userAccount.getFlags()) == true) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuspendUserErrSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strSuspendUserErrSuspended);
             return;
         }
 
@@ -2425,7 +2423,7 @@ public class CService {
             sqliteDb.addSuspendHistory(userAccount, reason);
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strSuspendUserErrHistory, userAccount.getName())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strSuspendUserErrHistory, userAccount.getName())); 
             log.error(String.format(Messages.strSuspendUserErrHistory, userAccount.getName()), e);
             return;
         }
@@ -2437,8 +2435,8 @@ public class CService {
             });
             for (UserNode loggedUserNode : loggedUserNodes) {
                 try {
-                    this.logoutUser(loggedUserNode, Const.DEAUTH_TYPE_DROP);
-                    protocol.sendNotice(client, myUserNode, loggedUserNode, String.format(Messages.strSuspendUserDeAuth, reason));
+                    this.logoutUser(loggedUserNode, Const.DEAUTH_TYPE_SUSPEND);
+                    protocol.sendNotice(myUserNode, loggedUserNode, String.format(Messages.strSuspendUserDeAuth, reason));
                 }
                 catch (Exception e) {
                     log.error("CService/cServeSuspendChan/Suspenduser: could not deauthenticate: " + loggedUserNode.getNick() + " from account " + userAccount.getName(), e);
@@ -2446,12 +2444,12 @@ public class CService {
             }
         }
         catch (Exception e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuspendUserErrUnknown);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strSuspendUserErrUnknown);
             log.error("CService/cServeSuspendUser: Suspenduser: could not deauth user: " + userAccount.getName() + ".", e);
             return;
         }
 
-        protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
     }
 
     private void cServeUnSuspendUser(UserNode fromNick, String str) {
@@ -2468,13 +2466,13 @@ public class CService {
 
         /* Preliminary checks */
         if (fromNick.isAuthed() == false || Flags.hasUserOperPriv(fromNick.getAccount().getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
 
         try { user = command[1]; }
         catch (ArrayIndexOutOfBoundsException e) { 
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
@@ -2483,17 +2481,17 @@ public class CService {
                 userAccount = protocol.getRegUserAccount(user.replaceFirst("#", ""));
             }
             catch (Exception e) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrUserNonReg);
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg);
                 return;
             }
         }
         else {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
             return; 
         }
 
         if (Flags.isUserSuspended(userAccount.getFlags()) == false) {
-            protocol.sendNotice(client, myUserNode, fromNick, Messages.strUnSuspendUserErrSuspended);
+            protocol.sendNotice(myUserNode, fromNick, Messages.strUnSuspendUserErrSuspended);
             return;
         }
 
@@ -2515,12 +2513,12 @@ public class CService {
             sqliteDb.addUnSuspendHistory(userAccount);
         }
         catch (Exception e) {
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(Messages.strUnSuspendUserErrHistory, userAccount.getName())); 
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strUnSuspendUserErrHistory, userAccount.getName())); 
             log.error(String.format(Messages.strUnSuspendUserErrHistory, userAccount.getName()), e);
             return;
         }
 
-        protocol.sendNotice(client, myUserNode, fromNick, Messages.strSuccess);
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
     }
 
     /**

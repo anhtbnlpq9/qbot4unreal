@@ -81,7 +81,7 @@ public class Client implements Runnable {
         
         Map<String, ServerNode>   serverList = protocol.getServerList();
 
-        cservice = new CService(this, protocol, sqliteDb);
+        cservice = new CService(protocol, sqliteDb);
 
         while (serverList.get(config.getServerId()).hasPeerResponded() != true) {
             log.info("Waiting for peer to register");
