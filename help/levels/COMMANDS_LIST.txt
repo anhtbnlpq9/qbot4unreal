@@ -2,6 +2,7 @@ The following commands are available to you.
 For more information on a specific command, type HELP <command>:
 //050!ADDUSER            Adds one or more users to a channel.
 150!ADDCHAN*           Registers a new channel for another user.
+050!ADMIN              Admins you or other users on channel(s).
 000!AUTH               Authenticates you on the bot.
 050!AUTHHISTORY        View auth history for an account.
 050!AUTOLIMIT          Shows or changes the autolimit threshold on a channel.
@@ -23,7 +24,8 @@ For more information on a specific command, type HELP <command>:
 050!CLEARTOPIC         Clears the topic on a channel.
 //050!DEOPALL            Deops all users on channel.
 //050!DEVOICEALL         Devoices all users on a channel.
-050!DROP               Removes the bot to a channel.
+050!DROPCHAN           Removes the bot from a channel.
+050!DROPUSER           Deletes your user account.
 //050!EMAIL              Change your email address.
 //050!GIVEOWNER          Gives total control over a channel to another user.
 000!HELLO              Creates a new user account. 
@@ -31,7 +33,8 @@ HELP               Displays help on a specific command.
 //050!INVITE             Invites you to a channel or channels.
 050!LOGOUT             Deauthenticates yourself from the bot.
 //050!NEWPASS            Change your password.
-//050!OP                 Ops you or other users on channel(s).
+050!OP                 Ops you or other users on channel(s).
+050!OWNER              Owners you or other users on channel(s).
 //050!PERMBAN            Permanently bans a hostmask on a channel.
 //050!RECOVER            Recovers a channel (same as deopall, unbanall, clearchan).
 //050!REMOVEUSER         Removes one or more users from a channel.
@@ -52,9 +55,10 @@ SHOWCOMMANDS       Lists available commands.
 100!USERLIST*          List of the current connected users on the network.
 //USERS              Displays a list of users on the channel.
 VERSION            Show Version.
-//VOICE              Voices you or other users on channel(s).
+050!VOICE              Voices you or other users on channel(s).
 050!WELCOME            Shows or changes the welcome message on a channel.
 050!WHOAMI             Displays information about you.
 050!WHOIS              Displays information about a user.
 100!* denotes a command limited to staff members (staff, oper, admin).
+100!Note: some of the regular commands may have additional power for staff members.
 End of list.

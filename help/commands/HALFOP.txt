@@ -1,0 +1,8 @@
+Usage: HALFOP <channel> [user1] [user2] [...] [user15]
+Halfops the defined users on the channel:
+ * channel - channel name
+ * users   - the users to act on, up to 15 users.
+If you do not provide a list of users, the bot will act on you.
+Note: - the requester must hold OP privilege flag on the channel chanlev.
+      - the bot will not warn if there are unknown nicks in the list
+End of help.

@@ -2543,5 +2543,273 @@ public class CService {
      */
     private void cServeModeLock(UserNode fromNick, String str) {
 
+    private void cServeOwner(UserNode fromNick, String str) {
+        String[] command = str.split(" ", 3); /* index=0 => command name, index=1 => channel name, index=2 => nick list */
+        String[] nickList;
+        String channel = "";
+        UserNode userNode;
+        ChannelNode chanNode;
+
+        if (fromNick.isAuthed() == false) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
+        catch (ItemNotFoundException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
+            return; 
+        }
+
+        if (protocol.getFeature("chanOwner") == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrModeNotSupported); return;  }
+
+        try {
+            String[] nickListTmp = command[2].split(" ", 15);
+            nickList = nickListTmp;
+        }
+        catch (Exception e) {
+            /* User did not provide a nick list => applying on the user */
+            String[] nickListTmp = new String[1];
+            nickListTmp[0] = fromNick.getNick();
+            nickList = nickListTmp;
+        }
+
+        if (Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "owner"));
+            return;
+        }
+
+        for (String nick: nickList) {
+            /* 1st check if nick exists and is authed, if not => pass */
+            try { userNode = protocol.getUserNodeByNick(nick); }
+            catch (ItemNotFoundException e) { continue; }
+            protocol.setMode(myUserNode, chanNode, "+q", userNode.getNick());
+        }
+    }
+
+    private void cServeAdmin(UserNode fromNick, String str) {
+        String[] command = str.split(" ", 3); /* index=0 => command name, index=1 => channel name, index=2 => nick list */
+        String[] nickList;
+        String channel = "";
+        UserNode userNode;
+        ChannelNode chanNode;
+
+        if (fromNick.isAuthed() == false) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
+        catch (ItemNotFoundException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
+            return; 
+        }
+
+        if (protocol.getFeature("chanAdmin") == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrModeNotSupported); return;  }
+
+        try {
+            String[] nickListTmp = command[2].split(" ", 15);
+            nickList = nickListTmp;
+        }
+        catch (Exception e) {
+            /* User did not provide a nick list => applying on the user */
+            String[] nickListTmp = new String[1];
+            nickListTmp[0] = fromNick.getNick();
+            nickList = nickListTmp;
+        }
+
+        if (Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "admin"));
+            return;
+        }
+
+        for (String nick: nickList) {
+            /* 1st check if nick exists and is authed, if not => pass */
+            try { userNode = protocol.getUserNodeByNick(nick); }
+            catch (ItemNotFoundException e) { continue; }
+            protocol.setMode(myUserNode, chanNode, "+a", userNode.getNick());
+        }
+    }
+
+    private void cServeOp(UserNode fromNick, String str) {
+
+        String[] command = str.split(" ", 3); /* index=0 => command name, index=1 => channel name, index=2 => nick list */
+        String[] nickList;
+        String channel = "";
+        UserNode userNode;
+        ChannelNode chanNode;
+
+        if (fromNick.isAuthed() == false) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
+        catch (ItemNotFoundException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
+            return; 
+        }
+
+        if (protocol.getFeature("chanOp") == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrModeNotSupported); return;  }
+
+        try {
+            String[] nickListTmp = command[2].split(" ", 15);
+            nickList = nickListTmp;
+        }
+        catch (Exception e) {
+            /* User did not provide a nick list => applying on the user */
+            String[] nickListTmp = new String[1];
+            nickListTmp[0] = fromNick.getNick();
+            nickList = nickListTmp;
+        }
+
+        if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "op"));
+            return;
+        }
+
+        for (String nick: nickList) {
+            /* 1st check if nick exists and is authed, if not => pass */
+            try { userNode = protocol.getUserNodeByNick(nick); }
+            catch (ItemNotFoundException e) { continue; }
+
+            /* if user has punishment-op => pass */
+            if (userNode.isAuthed() == true && Flags.isChanLDenyOp(userNode.getAccount().getChanlev(chanNode)) == true) continue;
+
+            protocol.setMode(myUserNode, chanNode, "+o", userNode.getNick());
+        }
+
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
+
+    }
+
+    private void cServeHalfOp(UserNode fromNick, String str) {
+        String[] command = str.split(" ", 3); /* index=0 => command name, index=1 => channel name, index=2 => nick list */
+        String[] nickList;
+        String channel = "";
+        UserNode userNode;
+        ChannelNode chanNode;
+
+        if (fromNick.isAuthed() == false) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
+        catch (ItemNotFoundException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
+            return; 
+        }
+
+        if (protocol.getFeature("chanHalfOp") == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrModeNotSupported); return;  }
+
+        try {
+            String[] nickListTmp = command[2].split(" ", 15);
+            nickList = nickListTmp;
+        }
+        catch (Exception e) {
+            /* User did not provide a nick list => applying on the user */
+            String[] nickListTmp = new String[1];
+            nickListTmp[0] = fromNick.getNick();
+            nickList = nickListTmp;
+        }
+
+        if (Flags.hasChanLHalfOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "voice"));
+            return;
+        }
+
+        for (String nick: nickList) {
+            /* 1st check if nick exists and is authed, if not => pass */
+            try { userNode = protocol.getUserNodeByNick(nick); }
+            catch (ItemNotFoundException e) { continue; }
+
+            /* if user has punishment-halfop => pass */
+            //if (userNode.isAuthed() == true && Flags.isChanLDenyVoice(userNode.getAccount().getChanlev(chanNode)) == true) continue;
+
+            protocol.setMode(myUserNode, chanNode, "+h", userNode.getNick());
+        }
+    }
+
+    private void cServeVoice(UserNode fromNick, String str) {
+        String[] command = str.split(" ", 3); /* index=0 => command name, index=1 => channel name, index=2 => nick list */
+        String[] nickList;
+        String channel = "";
+        UserNode userNode;
+        ChannelNode chanNode;
+
+        if (fromNick.isAuthed() == false) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
+            return;
+        }
+
+        try { channel = command[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); 
+            return; 
+        }
+
+        try { chanNode = protocol.getChannelNodeByNameCi(channel); }
+        catch (ItemNotFoundException e) { 
+            protocol.sendNotice(myUserNode, fromNick, Messages.strErrChanNonReg); 
+            return; 
+        }
+
+        if (protocol.getFeature("chanVoice") == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrModeNotSupported); return;  }
+
+        try {
+            String[] nickListTmp = command[2].split(" ", 15);
+            nickList = nickListTmp;
+        }
+        catch (Exception e) {
+            /* User did not provide a nick list => applying on the user */
+            String[] nickListTmp = new String[1];
+            nickListTmp[0] = fromNick.getNick();
+            nickList = nickListTmp;
+        }
+
+        if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strErrNoAccess, chanNode.getName(), "voice"));
+            return;
+        }
+
+        for (String nick: nickList) {
+            /* 1st check if nick exists and is authed, if not => pass */
+            try { userNode = protocol.getUserNodeByNick(nick); }
+            catch (ItemNotFoundException e) { continue; }
+
+            if (userNode.isAuthed() == false) continue;
+
+            /* if user has punishment-voice => pass */
+            if (userNode.isAuthed() == true && Flags.isChanLDenyVoice(userNode.getAccount().getChanlev(chanNode)) == true) continue;
+
+            protocol.setMode(myUserNode, chanNode, "+v", userNode.getNick());
+        }
+        
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
     }
 }

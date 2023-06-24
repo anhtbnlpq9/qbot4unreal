@@ -86,7 +86,7 @@
 - [ ] JUPE  => operservice?
 - [ ] LISTFLAGS
 - [ ] NEWPASS
-- [ ] OP
+- [X] OP
 - [ ] PERMBAN
 - [ ] RECOVER
 - [X] REJOIN
@@ -110,7 +110,7 @@
 - [X] USERFLAGS
 - [ ] USERS
 - [X] VERSION
-- [ ] VOICE
+- [X] VOICE
 - [X] WELCOME
 - [X] WHOAMI
 - [X] WHOIS
@@ -128,9 +128,9 @@
 - [ ] RESTART
 - [X] SERVERLIST
 - [X] USERLIST
-- [ ] HALFOP
-- [ ] ADMIN
-- [ ] OWNER
+- [X] HALFOP
+- [X] ADMIN
+- [X] OWNER
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
 - [X] CERTFPADD
