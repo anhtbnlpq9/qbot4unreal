@@ -529,17 +529,7 @@ public class Protocol extends Exception {
      */
     public void setMode(UserNode fromWho, ChannelNode toTarget, String modes, String parameters) {
         String who = fromWho.getUid();
-        setMode(client, who, toTarget, modes, parameters);
-    }
-
-    public void setMlock(Client client, ServerNode fromWho, ChannelNode toTarget, String modes) {
-        /* :5PB MLOCK 1681424518 #chan PCfHntT */
-        String str;
-        Long unixTime;
-        unixTime = Instant.now().getEpochSecond();
-
-        str = String.format(":%s MLOCK %s %s %s", fromWho.getSid(), unixTime, toTarget.getName(), modes);
-        client.write(str);
+        setMode(who, toTarget, modes, parameters);
     }
 
     /**
@@ -574,7 +564,37 @@ public class Protocol extends Exception {
         client.write(str);
     }
 
-    public void chgHostVhost(Client client, UserNode toTarget, String vhost) {
+    public void setMlock(ServerNode fromWho, ChannelNode toTarget, String modes) {
+        /* :5PB MLOCK 1681424518 #chan PCfHntT */
+        String str;
+        Long unixTime;
+        unixTime = Instant.now().getEpochSecond();
+
+        str = String.format(":%s MLOCK %s %s %s", fromWho.getSid(), unixTime, toTarget.getName(), modes);
+        client.write(str);
+    }
+    
+    public void sendQuit(UserNode from, String msg) {
+        String str;
+        str = String.format(":%s QUIT :%s", from.getUid(), msg);
+        this.userList.remove(from.getUid());
+        this.addNickLookupTable(from.getNick(), from.getUid());
+        client.write(str);
+    }
+
+    public void sendUid(UserNode from) {
+        String str;
+        // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
+        str = String.format(":%s UID %s 1 %s %s %s %s * %s * * %s :%s", 
+                config.getServerId(), from.getNick(), from.getUserTS(), from.getIdent(), from.getHost(), from.getUid(), from.getModes(), from.getIpAddressBase64(), from.getRealName()
+        );
+
+        client.write(str);
+        this.userList.put(from.getUid(), from);
+        this.addNickLookupTable(from.getNick(), from.getUid());
+    }
+    
+    public void chgHostVhost(UserNode toTarget, String vhost) {
         String who = config.getServerId();
         String vhostComplete = config.getCServeHostPrefix() + vhost + config.getCServeHostSuffix();
         String str;
