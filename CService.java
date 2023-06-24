@@ -337,6 +337,89 @@ public class CService {
         if (Flags.isChanForceTopic(chanNode.getFlags()) == true) protocol.setTopic(myUserNode, chanNode, savedTopic);
     }
 
+    public void handleChanMode(ChannelNode chan, HashMap<String, HashMap<String, String>> modChanModesAll) {
+
+        HashMap<String, String>     chanModes = modChanModesAll.get("chanModes");
+        HashMap<String, String> chanUserModes = modChanModesAll.get("chanUserModes");
+        HashMap<String, String>     chanLists = modChanModesAll.get("chanLists");
+
+        String[] userChanModeNickList;
+        for (HashMap.Entry<String, String> entry: chanUserModes.entrySet()) {
+            String mode = entry.getKey();
+            String nickList = entry.getValue();
+
+            UserNode userNode = null;
+            UserAccount userAccount = null;
+
+            userChanModeNickList = nickList.split(" ");
+
+            for (String nick: userChanModeNickList) {
+
+                try { userNode = protocol.getUserNodeByNick(nick); }
+                catch(ItemNotFoundException e) { continue; }
+
+                if (userNode == null) continue; /* Special case because of the String.join, string might begin with a space, so we ignore it and skip to the next turn */
+
+                if (nick.equals(myUserNode.getNick()) && mode.equals("-" + userChanJoinMode)) { /* Protects the bot from being demoted on the channel */
+                    
+                    log.warn(String.format("Bot critical mode has changed on channel %s", chan.getName()));
+                    try {
+                        protocol.setMode( chan, "+" + userChanJoinMode, myUserNode.getNick());
+                    }
+                    catch (Exception e) {
+                        log.error(String.format("Could not set mode on channel %s", chan.getName()));
+                    }
+                }
+                else if (userNode.isAuthed() == true) { /* Look at mode change for regular authed users */
+            
+                    try { userAccount = userNode.getAccount(); }
+                    catch (Exception e) { log.error(String.format("CService/handleMode: could not set user account of authed nick %s", userNode.getNick()), e); return; }
+
+                    /* Check punishment flags */
+                    /* +q/+a/+h are never punished (to implement for +h in the future) */
+                    if (Flags.isChanLDenyOp(userAccount.getChanlev(chan)) == true && mode.equals("+o") == true) { 
+                        try {
+                            protocol.setMode(myUserNode, chan, "-o", userNode.getNick());
+                            //return; /* Return, else protect might be run */
+                        }
+                        catch (Exception e) {
+                            log.error(String.format("Could not set mode on channel %s", chan.getName()));
+                        }
+                    }
+                    else if (Flags.isChanLDenyVoice(userAccount.getChanlev(chan)) == true && mode.equals("+v") == true) { 
+                        try {
+                            protocol.setMode(myUserNode, chan, "-v", userNode.getNick());
+                            //return; /* Return, else protect might be run */
+                        }
+                        catch (Exception e) { log.error(String.format("Could not set mode on channel %s", chan.getName())); }
+                    }
+
+                    /* Check protect flags */
+                    else if (Flags.isChanLProtect(userAccount.getChanlev(chan)) == true && Flags.isChanLOwner(userAccount.getChanlev(chan)) && mode.equals("-q") == true) { 
+                        try { protocol.setMode(myUserNode, chan, "+q", userNode.getNick()); }
+                        catch (Exception e) { log.error(String.format("Could not set mode on channel %s", chan.getName())); }
+                    }
+                    else if (Flags.isChanLProtect(userAccount.getChanlev(chan)) == true && Flags.isChanLMaster(userAccount.getChanlev(chan)) && mode.equals("-a") == true) { 
+                        try { protocol.setMode(myUserNode, chan, "+a", userNode.getNick()); }
+                        catch (Exception e) { log.error(String.format("Could not set mode on channel %s", chan.getName())); }
+                    }
+                    else if (Flags.isChanLProtect(userAccount.getChanlev(chan)) == true && Flags.isChanLOp(userAccount.getChanlev(chan)) && mode.equals("-o") == true) { 
+                        try { protocol.setMode(myUserNode, chan, "+o", userNode.getNick()); }
+                        catch (Exception e) { log.error(String.format("Could not set mode on channel %s", chan.getName())); }
+                    }
+                    else if (Flags.isChanLProtect(userAccount.getChanlev(chan)) == true && Flags.isChanLHalfOp(userAccount.getChanlev(chan)) && mode.equals("-h") == true) { 
+                        try { protocol.setMode(myUserNode, chan, "+h", userNode.getNick()); }
+                        catch (Exception e) { log.error(String.format("Could not set mode on channel %s", chan.getName())); }
+                    }
+                    else if (Flags.isChanLProtect(userAccount.getChanlev(chan)) == true && Flags.isChanLVoice(userAccount.getChanlev(chan)) && mode.equals("-v") == true) { 
+                        try { protocol.setMode(myUserNode, chan, "+v", userNode.getNick()); }
+                        catch (Exception e) { log.error(String.format("Could not set mode on channel %s", chan.getName())); }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * 
      * @param fromNick requester user node
