@@ -797,12 +797,19 @@ public class Protocol extends Exception {
         return result;
     }
 
-    public void getResponse(String raw) throws Exception {
+    public void getResponse(String raw) throws Exception { // XXX: to rewrite completely
         String response = "";
         String fromEnt;
         String v3Tag = "";
 
         String[] command;
+
+        HashMap< String, HashMap<String, String> > v3TagsList ;
+
+        HashMap<String, String> v3tagsListStd;
+        HashMap<String, String> v3tagsListVendorSpec;
+        HashMap<String, String> v3tagsListClientOnly;
+        HashMap<String, String> v3tagsListVendorSpecClientOnly;
 
         command = raw.split(" ", 3); // Begin to split raw message to fetch the command (part0 part1 part2part3part4...)
 
@@ -812,6 +819,23 @@ public class Protocol extends Exception {
             v3Tag = command[0];
             command = (command[1] + " " + command[2]).split(" ", 3); // This cuts the IRCv3 prelude
         }
+
+
+        log.trace(String.format("Received message to handle: %s %s", command[0], command[1]));
+
+        if (v3Tag.isEmpty() == false) {
+            v3TagsList                     =  parseV3Tag(v3Tag);
+            v3tagsListStd                  = v3TagsList.get("standardized");
+            v3tagsListVendorSpec           = v3TagsList.get("vendor-specific");
+            v3tagsListClientOnly           = v3TagsList.get("client-only");
+            v3tagsListVendorSpecClientOnly = v3TagsList.get("vendor-specific-client-only");
+
+            v3tagsListStd                 .forEach( (prop, val) -> { log.trace(String.format("IRCv3 Standard tags: %s -> %s",                  prop, val));  });
+            v3tagsListVendorSpec          .forEach( (prop, val) -> { log.trace(String.format("IRCv3 VendorSpecific tags: %s -> %s",            prop, val)); });
+            v3tagsListClientOnly          .forEach( (prop, val) -> { log.trace(String.format("IRCv3 ClientOnly tags: %s -> %s",                prop, val)); });
+            v3tagsListVendorSpecClientOnly.forEach( (prop, val) -> { log.trace(String.format("IRCv3 ClientOnly+VendorSpecific tags: %s -> %s", prop, val)); });
+        }
+
         if (command[1].equals("PRIVMSG")) {
             // :ABC PRIVMSG  DEF :MESSAGE
             // | 0| |    1| |      2     |   
@@ -1851,7 +1875,86 @@ public class Protocol extends Exception {
         }
     }
 
-    private void traverseTree(HashSet nodes, ServerNode node) {
+    private HashMap< String, HashMap<String, String> > parseV3Tag(String v3tagIn) throws Exception {
+        /*
+         * TAG FORMAT
+         * ==========
+         * 
+         * @...
+         * Standardized: @prop1=val1;prop2=val2;prop3;prop4=val4...
+         * Vendor-specific: @prop1=val1;vendorIdentifier/prop2=val2;prop3...
+         * Client-only tag: @prop1=val1;+prop2=val2;prop3;+prop4...
+         * Vendor-specific client-only tag: @prop1=val1;+vendorId/prop2=val2;prop3;+prop4...
+         */
+
+        HashMap< String, HashMap<String, String> > v3TagsFamily = new HashMap<>();
+
+        HashMap<String, String> v3tagsListStd                   = new HashMap<>();
+        HashMap<String, String> v3tagsListVendorSpec            = new HashMap<>();
+        HashMap<String, String> v3tagsListClientOnly            = new HashMap<>();
+        HashMap<String, String> v3tagsListVendorSpecClientOnly  = new HashMap<>();
+
+        String[] v3tagsSplit;
+        String[] propValSplit;
+
+        String property = "";
+        String value    = "";
+        String v3tag    = "";
+
+        Boolean isStandard   = false;
+        Boolean isVendorSpec = false;
+        Boolean isClientOnly = false;
+
+        /* First get rid of prepending @ */
+        v3tag = v3tagIn.replaceFirst("@", "");
+        v3tagsSplit = v3tag.split(";");
+
+        v3TagsFamily.put("standardized",                v3tagsListStd);
+        v3TagsFamily.put("vendor-specific",             v3tagsListVendorSpec);
+        v3TagsFamily.put("client-only",                 v3tagsListClientOnly);
+        v3TagsFamily.put("vendor-specific-client-only", v3tagsListVendorSpecClientOnly);
+
+        for (String propVal: v3tagsSplit) {
+            property = "";
+            value    = "";
+            propValSplit = propVal.split("=", 2);
+
+            /* Getting property through try, but if we are thrown an exception, something really went bad */
+            try { property = propValSplit[0]; }
+            catch (ArrayIndexOutOfBoundsException e) { throw new Exception(String.format("Tag item contains no property: %s", propVal)); }
+
+            try { value = propValSplit[1]; }
+            catch (ArrayIndexOutOfBoundsException e) { }
+
+            /* First assume the tag item is standard */
+            isStandard = true;
+            isVendorSpec = false;
+            isClientOnly = false;
+
+            /* Now checking for tag item property content / and + */
+            if (property.contains("/") == true) { isStandard = false; isVendorSpec = true; }
+            if (property.startsWith("+") == true) { isStandard = false; isClientOnly = true; }
+
+            /* Now putting the tat item into the proper list */
+            if (isStandard.equals(true) == true) {
+                v3tagsListStd.put(property, value);
+            }
+            else if (isVendorSpec.equals(true) == true && isClientOnly.equals(true) == true) {
+                v3tagsListVendorSpecClientOnly.put(property, value);
+            }
+            else if (isVendorSpec.equals(true) == true && isClientOnly.equals(true) == false) {
+                v3tagsListVendorSpec.put(property, value);
+            }
+            else if (isVendorSpec.equals(true) == false && isClientOnly.equals(true) == true) {
+                v3tagsListClientOnly.put(property, value);
+            }
+
+        }
+
+        return v3TagsFamily;
+    }
+
+    private void traverseTree(HashSet<ServerNode> nodes, ServerNode node) {
         for (ServerNode child: node.getChildNodes()) {
             nodes.add(child);
             traverseTree(nodes, child);
