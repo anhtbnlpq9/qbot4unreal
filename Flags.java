@@ -24,9 +24,13 @@ abstract class Flags {
      * 
      * The following is the description of the user flags. User flags do not take argument.
      * +a ADMIN         :: Gives the user the admin status on the bot.
-     *                     The admin has the right to perform any possible action on the bot,
+     *                     The admin has the right to perform (almost) any possible action on the bot,
      *                     such as DIE, RESTART or changing USERFLAGS, CHANFLAGS and CHANLEV
      *                     status of anyone/channel.
+     * +d DEVGOD        :: Gives the user the "developper god" status on the bot.
+     *                     In addition to commands available to ADMIN flag, the user also has
+     *                     access to developper/debugging commands that may usually break
+     *                     things and crash the bot.
      * +g GLINE         :: TBD
      * +l NOAUTHLIMIT   :: Inhibit the per-account login limit.
      * +o OPER          :: Gives the user the oper status on the bot.
@@ -67,7 +71,7 @@ abstract class Flags {
     private static final Integer   UFLAG_ADMIN         = 0x02000000; // +a
     //private static final Integer   UFLAG_SPARE_b       = 0x01000000; // +b
     //private static final Integer   UFLAG_SPACE_c       = 0x00800000; // +c
-    //private static final Integer   UFLAG_SPARE_d       = 0x00400000; // +d
+    private static final Integer   UFLAG_DEVGOD        = 0x00400000; // +d
     //private static final Integer   UFLAG_SPARE_e       = 0x00200000; // +e
     //private static final Integer   UFLAG_SPARE_f       = 0x00100000; // +f
     private static final Integer   UFLAG_GLINE         = 0x00080000; // +g
@@ -104,16 +108,16 @@ abstract class Flags {
 
     private static final Integer   UFLAGS_ALLOWED      = (UFLAGS_USERCON | UFLAGS_OPERCON | UFLAGS_ADMINCON);
 
-    private static final Integer   UFLAG_STAFF_PRIV    = (UFLAG_STAFF | UFLAG_OPER | UFLAG_ADMIN );
-    private static final Integer   UFLAG_OPER_PRIV     = (UFLAG_OPER | UFLAG_ADMIN );
-    private static final Integer   UFLAG_ADMIN_PRIV    = (UFLAG_ADMIN );
+    private static final Integer   UFLAG_STAFF_PRIV    = (UFLAG_STAFF | UFLAG_OPER | UFLAG_ADMIN | UFLAG_DEVGOD );
+    private static final Integer   UFLAG_OPER_PRIV     = (UFLAG_OPER | UFLAG_ADMIN | UFLAG_DEVGOD );
+    private static final Integer   UFLAG_ADMIN_PRIV    = (UFLAG_ADMIN | UFLAG_DEVGOD );
+    private static final Integer   UFLAG_DEVGOD_PRIV   = (UFLAG_DEVGOD);
     
     private static final Integer   UFLAGS_PUBLIC       = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
 
     private static final Integer   UFLAGS_NEW_ACCOUNT  = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
 
     private static final Integer   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE | UFLAG_DELETED ); /* flags non-settable through USERFLAGS */
-
 
 
     /**
@@ -129,7 +133,8 @@ abstract class Flags {
         entry("v",   UFLAG_AUTOVHOST),
         entry("w",   UFLAG_WELCOME),
         entry("z",   UFLAG_SUSPENDED),
-        entry("D",   UFLAG_DELETED)
+        entry("D",   UFLAG_DELETED),
+        entry("d",   UFLAG_DEVGOD)
     );
 
 
@@ -146,7 +151,8 @@ abstract class Flags {
         entry(UFLAG_AUTOVHOST,      "v"),
         entry(UFLAG_WELCOME,        "w"),
         entry(UFLAG_SUSPENDED,      "z"),
-        entry(UFLAG_DELETED,        "D")
+        entry(UFLAG_DELETED,        "D"),
+        entry(UFLAG_DELETED,        "d")
     );
 
     /* 
@@ -1772,6 +1778,18 @@ abstract class Flags {
     }
 
     /**
+     * Returns if the user has DEVGOD flag
+     * @param userFlags use flags
+     * @return true or false
+     */
+    public static Boolean isUserDevGod(Integer userFlags) {
+        if ( (userFlags & UFLAG_DEVGOD) == 0) {
+            return false;
+        }
+        else return true; 
+    }
+
+    /**
      * Returns if the user has staff privilege
      * @param userFlags User flags
      * @return True or False
@@ -1802,6 +1820,18 @@ abstract class Flags {
      */
     public static Boolean hasUserAdminPriv(Integer userFlags) {
         if ((userFlags & UFLAG_ADMIN_PRIV) == 0) {
+            return false;
+        }
+        else return true;
+    }
+
+    /**
+     * Returns if the user has devgod privilege
+     * @param userFlags User flags
+     * @return True or False
+     */
+    public static Boolean hasUserDevGodPriv(Integer userFlags) {
+        if ((userFlags & UFLAG_DEVGOD_PRIV) == 0) {
             return false;
         }
         else return true;
@@ -1880,6 +1910,15 @@ abstract class Flags {
     }
 
     /**
+     * Sets the user flag DEVGOD
+     * @param userFlags User flags
+     * @return Resulting user flags
+     */
+    public static Integer setUserDevGod(Integer userFlags) {
+        return (userFlags | UFLAG_DEVGOD);
+    }
+
+    /**
      * Clears the user flag GLINE
      * @param userFlags User flags
      * @return Resulting user flags
@@ -1951,6 +1990,15 @@ abstract class Flags {
         return (userFlags & ~UFLAG_DELETED);
     }
  
+    /**
+     * Clears the user flag DEVGOD
+     * @param userFlags User flags
+     * @return Cleared user flags
+     */
+    public static Integer clearUserDevGod(Integer userFlags) {
+        return (userFlags & ~UFLAG_DEVGOD);
+    }
+
     /**
      * Clears the user flags
      * @param userFlags User flags
