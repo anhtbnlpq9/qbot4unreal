@@ -163,129 +163,82 @@ public class CService {
         return this.myUserNode;
     }
 
-    public void handleMessage(UserNode fromNickRaw, String str) {
+    public void handleMessage(UserNode fromNickRaw, String str) throws Exception {
         UserNode fromNick = fromNickRaw;
+        String commandName;
+        String[] strSplit;
 
-        String returnStrUnknownCommand = "Unknown command %s. Type SHOWCOMMANDS for a list of available commands."; 
+        try {
+            strSplit = str.split(" ");
+            commandName = strSplit[0].toUpperCase();
+        }
+        catch (ArrayIndexOutOfBoundsException e) { cServeShowcommands(fromNick); return; }
 
-        if (str.toUpperCase().startsWith("HELP")) { 
-            String[] helpCommandNameSplit = str.toUpperCase().split(" ", 3);
-            String helpCommandName;
+        switch (commandName) {
 
-            if(helpCommandNameSplit[0].equals("HELP") == true) {
-                try { helpCommandName = helpCommandNameSplit[1]; }
-                catch (ArrayIndexOutOfBoundsException e) {  cServeShowcommands(fromNick); return; }
-                cServeHelp(fromNick, helpCommandName);
-            }
-        }
-        else if (str.toUpperCase().startsWith("SHOWCOMMANDS")) {
-            cServeShowcommands(fromNick);
-        }
-        else if (str.equalsIgnoreCase("USERLIST")) {
-            cServeUserlist(fromNick, str);
-        }
-        else if (str.equalsIgnoreCase("SERVERLIST")) {
-            cServeServerlist(fromNick, str);
-        }
-        else if (str.toUpperCase().startsWith("CHANLIST")) {
-            cServeChanlist(fromNick, str);
-        } 
-        else if (str.toUpperCase().startsWith("WHOAMI")) {
-            cServeWhois(fromNickRaw, fromNickRaw.getNick(), str);
-        }
-        else if (str.toUpperCase().startsWith("WHOIS ")) {
-            String nick = (str.split(" ", 2))[1];
-            cServeWhois(fromNickRaw, nick, str);
-        }
-        else if (str.toUpperCase().startsWith("WHOIS2 ")) {
-            cServeWhois2(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().matches("HELLO[ ]{0,1}.*")) { // HELLO <password> <email>
-            cServeHello(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("AUTH ")) { // AUTH <username> [password]
-            cServeAuth(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("LOGOUT")) { // LOGOUT
-            cServeLogout(fromNick);    
-        }
-        else if (str.toUpperCase().startsWith("VERSION")) {
-            cServeVersion(fromNick);
-        }
-        else if (str.toUpperCase().startsWith("REQUESTBOT ")) { // REQUESTBOT #channel
-            cServeRequestbot(fromNick, str, false);
-        }
-        else if (str.toUpperCase().startsWith("ADDCHAN ")) { // REQUESTBOT #channel
-            cServeRequestbot(fromNick, str, true);
-        }
-        else if (str.toUpperCase().startsWith("DROPCHAN ")) { /* DROPCHAN #channel */
-            cServeDropChan(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("DROPUSER ")) { /* DROPUSER <nick|#user> [confirmcode] */
-            cServeDropUser(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("CHANLEV ")) { /* CHANLEV <channel> [user [change]] */
-            cServeChanlev(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("USERFLAGS")) { /* USERFLAGS [flags] */
-            cServeUserflags(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("CHANFLAGS")) { /* CHANFLAGS [flags] */
-            cServeChanflags(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("AUTOLIMIT")) { /* CHANFLAGS [flags] */
-            cServeAutoLimit(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("AUTHHISTORY")) { /* AUTHHISTORY */
-            cServeAuthHistory(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("WELCOME")) { /* WELCOME <chan> [msg] */
-            cServeWelcome(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("SETTOPIC")) { /* SETTOPIC <chan> [topic] */
-            cServeSetTopic(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("CLEARTOPIC")) { /* CLEARTOPIC <chan> */
-            cServeSetTopic(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("REJOIN")) { /* REJOIN <chan> */
-            cServeRejoin(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("CERTFPADD")) { /* CERTFPADD <certfp> */
-            cServeCertfpAdd(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("CERTFPDEL")) { /* CERTFPDEL <certfp> */
-            cServeCertfpDel(fromNickRaw, str);
-        }
-        else if (str.toUpperCase().startsWith("SUSPENDCHAN")) {
-            cServeSuspendChan(fromNick, str);
-        }
-        else if (str.toUpperCase().startsWith("UNSUSPENDCHAN")) {
-            cServeUnSuspendChan(fromNick, str);
-        }
-        else if (str.toUpperCase().startsWith("SUSPENDUSER")) {
-            cServeSuspendUser(fromNick, str);
-        }
-        else if (str.toUpperCase().startsWith("UNSUSPENDUSER")) {
-            cServeUnSuspendUser(fromNick, str);
-        }
-        else if (str.toUpperCase().startsWith("CLEARTOPIC")) {
-            cServeClearTopic(fromNick, str);
-        }
-        else if (str.toUpperCase().startsWith("DIE")) {
-            if (fromNick.isAuthed() == true && Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
-                log.fatal(String.format("Received DIE command from %s (account %s), exiting.", fromNick.getNick(), fromNick.getAccount().getName()));
-                System.exit(0);
-            }
+            case "SHOWCOMMANDS":  cServeShowcommands(fromNick); break;
+            case "HELP": 
+                String[] helpCommandNameSplit = str.toUpperCase().split(" ", 3);
+                String helpCommandName;
 
-            else {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrCommandUnknown); 
-                return;
-            }
+                if(helpCommandNameSplit[0].equals("HELP") == true) {
+                    try { helpCommandName = helpCommandNameSplit[1]; }
+                    catch (ArrayIndexOutOfBoundsException e) {  cServeShowcommands(fromNick); return; }
+                    cServeHelp(fromNick, helpCommandName);
+                }
+                break;
+            case "USERLIST":      cServeUserlist(fromNick, str); break;
+            case "SERVERLIST":    cServeServerlist(fromNick, str); break;
+            case "CHANLIST":      cServeChanlist(fromNick, str); break;
+            case "WHOAMI":        cServeWhois(fromNickRaw, fromNickRaw.getNick(), str); break;
+            case "WHOIS": 
+                String nick = (str.split(" ", 2))[1];
+                cServeWhois(fromNickRaw, nick, str);
+                break;
+            case "WHOIS2":        cServeWhois2(fromNickRaw, str); break;
+            case "AUTH":          cServeAuth(fromNickRaw, str); break;
+            case "LOGOUT":        cServeLogout(fromNick); break;
+            case "VERSION":       cServeVersion(fromNick); break;
+            case "REQUESTBOT":    cServeRequestbot(fromNick, str, false); break;
+            case "ADDCHAN":       cServeRequestbot(fromNick, str, true); break;
+            case "DROPCHAN":      cServeDropChan(fromNickRaw, str); break;
+            case "DROPUSER":      cServeDropUser(fromNickRaw, str); break;
+            case "CHANLEV":       cServeChanlev(fromNickRaw, str); break;
+            case "USERFLAGS":     cServeUserflags(fromNickRaw, str); break;
+            case "CHANFLAGS":     cServeChanflags(fromNickRaw, str); break;
+            case "AUTOLIMIT":     cServeAutoLimit(fromNickRaw, str); break;
+            case "AUTHHISTORY":   cServeAuthHistory(fromNickRaw, str); break;
+            case "WELCOME":       cServeWelcome(fromNickRaw, str); break;
+            case "SETTOPIC":      cServeSetTopic(fromNickRaw, str); break;
+            case "REJOIN":        cServeRejoin(fromNickRaw, str); break;
+            case "CERTFPADD":     cServeCertfpAdd(fromNickRaw, str); break;
+            case "CERTFPDEL":     cServeCertfpDel(fromNickRaw, str); break;
+            case "SUSPENDCHAN":   cServeSuspendChan(fromNick, str); break;
+            case "UNSUSPENDCHAN": cServeUnSuspendChan(fromNick, str); break;
+            case "SUSPENDUSER":   cServeSuspendUser(fromNick, str); break;
+            case "UNSUSPENDUSER": cServeUnSuspendUser(fromNick, str); break;
+            case "CLEARTOPIC":    cServeClearTopic(fromNick, str); break;
+            case "HELLO":         cServeHello(fromNick, str); break;
+            case "OWNER":         cServeOwner(fromNick, str); break;
+            case "ADMIN":         cServeAdmin(fromNick, str); break;
+            case "OP":            cServeOp(fromNick, str); break;
+            case "HALFOP":        cServeHalfOp(fromNick, str); break;
+            case "VOICE":         cServeVoice(fromNick, str); break;
+            case "CRASH":         { protocol.sendNotice(myUserNode, fromNick, "Ok, crashing.");  throw new Exception("Catch me if you can"); }
+            case "DIE": 
+                if (fromNick.isAuthed() == true && Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
+                    log.fatal(String.format("Received DIE command from %s (account %s), exiting.", fromNick.getNick(), fromNick.getAccount().getName()));
+                    System.exit(0);
+                }
+                else {
+                    protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
+                    return;
+                }
+                break;
+
+            default: protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); break;
         }
-        else { // Unknown command
-            protocol.sendNotice(client, myUserNode, fromNick, String.format(returnStrUnknownCommand, str.split(" ",2)[0]));
-        }
+
     }
 
     /**
