@@ -461,8 +461,37 @@ public class UserNode {
         return this.cloakedHost;
     }
 
-    public byte[] getIpAddress() {
+    public byte[] getIpAddressByte() {
         return this.ipAddress;
+    }
+
+    public String getIpAddressAsString() {
+        String ip = "";
+        switch (this.ipAddress.length) {
+            case 4:
+                ip = String.format("%d.%d.%d.%d", ipAddress[0] & 0xff, ipAddress[1] & 0xff, ipAddress[2] & 0xff, ipAddress[3] & 0xff); /*  &0xff converts to unsigned int */
+                return ip;
+
+            case 16:
+                ip = String.format("%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                     ipAddress[0], ipAddress[1], ipAddress[2], ipAddress[3], ipAddress[4], ipAddress[5], ipAddress[6], ipAddress[7], 
+                     ipAddress[8], ipAddress[9], ipAddress[10], ipAddress[11], ipAddress[12], ipAddress[13], ipAddress[14], ipAddress[15]);
+                return ip;
+            
+            default: return ip;
+        }
+
+    }
+
+    public String getIpAddressBase64() {
+        String ipEncoded = "";
+        Base64.Encoder enc = Base64.getEncoder();
+        try {
+            ipEncoded = enc.encodeToString(this.ipAddress);
+        }
+        catch (Exception e) { log.error("UserNode/getIpAddressBase64: Could not encode client IP to base64: " + this.getNick() + ".", e); }
+
+        return ipEncoded;
     }
 
 
