@@ -124,7 +124,7 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); }
 
         if (resultSet.next() == true) {
-            throw new Exception("Cannot register the new channel '" + channel .getName()+ "' in the database because it already exists.");
+            throw new ItemExistsException("Cannot register the new channel '" + channel .getName()+ "' in the database because it already exists.");
         }
         statement.close();
 
@@ -136,7 +136,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Error while registering the channel."); 
+            throw new DataBaseExecException("Error while registering the channel."); 
         }
     }
 
@@ -159,7 +159,7 @@ public class SqliteDb {
         catch (Exception e) { e.printStackTrace(); }
 
         if (resultSet.next() == false) {
-            throw new Exception("Error dropping the channel '" + channel + "': it is not registered.");
+            throw new ItemNotFoundException("Error dropping the channel '" + channel + "': it is not registered.");
         }
         statement.close();
 
@@ -171,7 +171,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Unhandled error while deleting the channel chanlev."); 
+            throw new DataBaseExecException("Unhandled error while deleting the channel chanlev."); 
         }
         statement.close();
 
@@ -183,7 +183,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Unhandled error while deleting the channel."); 
+            throw new DataBaseExecException("Unhandled error while deleting the channel."); 
         }
         statement.close();
     }
@@ -209,7 +209,7 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); }
 
-        if (resultSet.next() == true) { throw new Exception("Error registering the user '" + username + "': it already exists."); }
+        if (resultSet.next() == true) { throw new ItemExistsException("Error registering the user '" + username + "': it already exists."); }
         statement.close();
 
         try { 
@@ -220,7 +220,7 @@ public class SqliteDb {
             statement.close();
             
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException(String.format("Error registering the user %s", username));}
     }
     
     /**
@@ -252,11 +252,11 @@ public class SqliteDb {
             userId = resultSet.getInt("uid");
             certfp = resultSet.getString("certfp");
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: cannot fetch the user '" + useraccount.getName() + "' in the database."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Error: cannot fetch the user '" + useraccount.getName() + "' in the database."); }
         statement.close();
 
         if (name.isEmpty() == true) {
-            throw new Exception("Error: cannot fetch the user '" + useraccount.getName() + "' in the database.");
+            throw new ItemNotFoundException("Error: cannot fetch the user '" + useraccount.getName() + "' in the database.");
         }
 
         user.put("name",     name);
@@ -297,7 +297,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace();
-            throw new Exception("Could not get user " + useraccount.getName() + " chanlev.");  /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
+            throw new ItemNotFoundException("Could not get user " + useraccount.getName() + " chanlev.");
         }
         statement.close();
         return userChanlev;
@@ -338,8 +338,7 @@ public class SqliteDb {
             }
         }
         catch (Exception e) { 
-            e.printStackTrace(); 
-            throw new Exception("Could not get user " + userAccount.getName() + " chanlev."); /* XXX: Normally we should not throw an exception but return an empty CL if it does not exist */
+            throw new ItemNotFoundException("Could not get user " + userAccount.getName() + " chanlev.");
         } 
         statement.close();
         return userChanlev;
@@ -376,7 +375,7 @@ public class SqliteDb {
                 chanChanlev.put(username, chanlev);
             }
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not get channel " + channel.getName() + " chanlev."); }
+        catch (Exception e) { throw new ItemNotFoundException("Error: could not get channel " + channel.getName() + " chanlev."); }
         statement.close();
         return chanChanlev;
     }
@@ -434,7 +433,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set user " + userAccount.getName() + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException("Error: could not set user " + userAccount.getName() + " chanlev."); }
     }
 
     /**
@@ -477,7 +476,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset user " + username + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException("Could not unset user " + username + " chanlev."); }
 
     }
 
@@ -503,7 +502,7 @@ public class SqliteDb {
 
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset user " + username + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Could not unset user " + username + " chanlev."); }
 
     }
 
@@ -540,7 +539,7 @@ public class SqliteDb {
             }
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unset " + channel + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException("Could not unset " + channel + " chanlev."); }
     }
 
     /**
@@ -565,7 +564,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + useraccount.getName() + " userflags.");
+            throw new ItemNotFoundException("Could not get user " + useraccount.getName() + " userflags.");
         } 
         statement.close();
         return userFlags;
@@ -593,7 +592,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + channel.getName() + " flags.");
+            throw new DataBaseExecException("Could not get user " + channel.getName() + " flags.");
         } 
         statement.close();
         return chanFlags;
@@ -617,7 +616,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set user " + userAccount.getName() + " flags."); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException("Error: could not set user " + userAccount.getName() + " flags."); }
     }
 
     /**
@@ -642,7 +641,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + useraccount.getName() + " userflags.");
+            throw new DataBaseExecException("Could not get user " + useraccount.getName() + " userflags.");
         } 
         statement.close();
         return userEmail;
@@ -671,7 +670,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " userflags.");
+            throw new DataBaseExecException("Could not get user " + username + " userflags.");
         } 
         statement.close();
         return regTS;
@@ -694,7 +693,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + useraccount.getName() + " last auth ts.");
+            throw new DataBaseExecException("Could not get user " + useraccount.getName() + " last auth ts.");
         } 
         statement.close();
         return authTS;
@@ -722,7 +721,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + useraccount.getName() + " userflags.");
+            throw new DataBaseExecException("Could not get user " + useraccount.getName() + " userflags.");
         } 
         statement.close();
         return userCertFP;
@@ -750,7 +749,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get channel " + channel.getName() + " autolimit.");
+            throw new DataBaseExecException("Could not get channel " + channel.getName() + " autolimit.");
         }
         statement.close();
         return autoLimit;
@@ -773,7 +772,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set channel " + channel.getName() + " autolimit."); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException("Error: could not set channel " + channel.getName() + " autolimit."); }
     }
 
     /**
@@ -798,7 +797,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + username + " id.");
+            throw new ItemNotFoundException("Could not get user " + username + " id.");
         } 
         statement.close();
         return userId;
@@ -826,7 +825,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get chan " + chan.getName() + " id.");
+            throw new ItemNotFoundException("Could not get chan " + chan.getName() + " id.");
         } 
         statement.close();
         return userId;
@@ -848,7 +847,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + userAccount.getName() + " certfp.");
+            throw new ItemNotFoundException("Could not get user " + userAccount.getName() + " certfp.");
         } 
         statement.close();
         return stringToHS(certfp);
@@ -881,7 +880,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + userAccount.getName() + " certfp.");
+            throw new ItemNotFoundException("Could not get user " + userAccount.getName() + " certfp.");
         } 
         statement.close();
     }
@@ -911,7 +910,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Could not get user " + userAccount.getName() + " certfp.");
+            throw new ItemNotFoundException("Could not get user " + userAccount.getName() + " certfp.");
         } 
         statement.close();
     }
@@ -976,7 +975,7 @@ public class SqliteDb {
 
             if (resultSet.next() == true) {
                 log.warn("SqliteDb/addUserAuth: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
-                throw new Exception("SqliteDb/addUserAuth: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
+                throw new ItemExistsException("SqliteDb/addUserAuth: cannot reauth '" + userNode.getAccount().getId() + "' with '" + userNode.getUid() + "'.");
             }
             statement.close();
 
@@ -989,7 +988,7 @@ public class SqliteDb {
             catch (Exception e) { 
                 e.printStackTrace(); 
                 log.error("SqliteDb/addUserAuth: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'.");
-                throw new Exception("SqliteDb/addUserAuth: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'."); 
+                throw new DataBaseExecException("SqliteDb/addUserAuth: cannot map login token '" + userNode.getUid() + "' -> '" + userNode.getAccount().getId() + "'."); 
             }
         }
 
@@ -1000,7 +999,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not add auth for user " + userNode.getAccount() + "."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemExistsException("Error: could not add auth for user " + userNode.getAccount() + "."); }
     }
 
     public void delUserAuth(Object usernode) throws Exception {
@@ -1025,7 +1024,7 @@ public class SqliteDb {
 
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Could not unauth " + userSid + " chanlev."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Could not unauth " + userSid); }
     }
 
     public void delUserAuth(UserNode userNode, Integer deAuthType, String quitMsg) throws Exception {
@@ -1043,7 +1042,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not close auth session for user " + userNode.getAccount() + "."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Error: could not close auth session for user " + userNode.getAccount() + "."); }
     }
 
     public void delUserAccount(UserAccount userAccount) throws Exception {
@@ -1056,7 +1055,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not delete account for user " + userAccount.getName() + "."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Error: could not delete account for user " + userAccount.getName() + "."); }
     }
 
     public void updateUserAuth(UserNode userNode) throws Exception {
@@ -1077,7 +1076,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             e.printStackTrace(); 
-            throw new Exception("Error: cannot update login token/history for user '" + userNode.getUid()); 
+            throw new ItemNotFoundException("Error: cannot update login token/history for user '" + userNode.getUid()); 
         }
 
     }
@@ -1188,7 +1187,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getName() + " flags."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Error: could not set chan " + chan.getName() + " flags."); }
     }
 
     public void setWelcomeMsg(ChannelNode chan, String msg) throws Exception {
@@ -1202,7 +1201,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getName() + " welcome message."); }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException("Error: could not set chan " + chan.getName() + " welcome message."); }
     }
 
     public void setTopic(ChannelNode chan, String msg) throws Exception {
@@ -1216,7 +1215,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { e.printStackTrace(); throw new Exception("Error: could not set chan " + chan.getName() + " topic message."); }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException("Error: could not set chan " + chan.getName() + " topic message."); }
     }
 
     /**
@@ -1262,7 +1261,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { log.error(String.format("SqliteDb/openUserAuthSessionHistory: could not open auth session for account %s: ", user.getAccount().getName()), e); throw new Exception("Error: could not add auth for user " + user.getAccount().getName() + "."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/openUserAuthSessionHistory: could not open auth session for account %s: ", user.getAccount().getName()), e); throw new ItemExistsException("Error: could not add auth for user " + user.getAccount().getName() + "."); }
     }
 
     public void closeUserAuthSessionHistory(UserNode user, Integer authType, Integer deAuthType, String quitMsg) throws Exception {
@@ -1278,7 +1277,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { log.error(String.format("SqliteDb/closeUserAuthSessionHistory: could not close auth session for account %s: ", user.getAccount().getName()), e); throw new Exception("Error: could not close auth session for user " + user.getAccount().getName() + "."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/closeUserAuthSessionHistory: could not close auth session for account %s: ", user.getAccount().getName()), e); throw new ItemNotFoundException("Error: could not close auth session for user " + user.getAccount().getName() + "."); }
     }
 
     public void addSuspendHistory(Object node, String reason) throws Exception {
@@ -1301,7 +1300,7 @@ public class SqliteDb {
         }
         else {
             log.error("SqliteDb/addSuspendHistory: unknown node type: " + node.getClass());
-            throw new Exception("Suspend add history: unknown entity");
+            throw new DataBaseExecException("Suspend add history: unknown entity");
         }
 
         try { 
@@ -1310,7 +1309,7 @@ public class SqliteDb {
             statement.executeUpdate(sql);
             statement.close();
         }
-        catch (Exception e) { log.error(String.format("SqliteDb/addSuspendHistory: could not add suspend history: "), e); throw new Exception("Error: could not add suspend history line for that entity."); }
+        catch (Exception e) { log.error(String.format("SqliteDb/addSuspendHistory: could not add suspend history: "), e); throw new ItemNotFoundException("Error: could not add suspend history line for that entity."); }
     }
 
     public void addUnSuspendHistory(Object node) throws Exception {
@@ -1335,7 +1334,7 @@ public class SqliteDb {
         }
         else {
             log.error("SqliteDb/addUnSuspendHistory: unknown node type: " + node.getClass());
-            throw new Exception("UnSuspend add history: unknown entity");
+            throw new ItemNotFoundException("UnSuspend add history: unknown entity");
         }
 
         try { 
@@ -1373,7 +1372,7 @@ public class SqliteDb {
         }
         catch (Exception e) { 
             log.error(String.format("SqliteDb/getAuthHistory: could not fetch auth history for account %s: ", userAccount.getName()), e);
-            throw new Exception("Could not get auth history for account " + userAccount.getEmail() + ".");
+            throw new ItemNotFoundException("Could not get auth history for account " + userAccount.getEmail() + ".");
         }
         statement.close();
         return authHist;

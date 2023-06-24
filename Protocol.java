@@ -8,6 +8,8 @@ import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import Exceptions.ItemNotFoundException;
+
 public class Protocol extends Exception {
 
     private static Logger log = LogManager.getLogger("common-log");
@@ -104,9 +106,9 @@ public class Protocol extends Exception {
      * @param userAccountName user account name
      * @return user account object
      */
-    public UserAccount getRegUserAccount(String userAccountName) throws Exception {
+    public UserAccount getRegUserAccount(String userAccountName) throws ItemNotFoundException {
         if (userAccounts.containsKey(userAccountName) == true) return userAccounts.get(userAccountName);
-        else throw new Exception("User account " + userAccountName + " not found.");
+        else throw new ItemNotFoundException("User account " + userAccountName + " not found.");
     }
 
     /**
@@ -144,7 +146,7 @@ public class Protocol extends Exception {
         if (userNickUidLookup.containsKey(userNick)) {
             return getNickLookupTableCi(userNick);
         }
-        else return null;
+        else throw new ItemNotFoundException("Nick not on the network");
     }
 
     /**
@@ -157,6 +159,7 @@ public class Protocol extends Exception {
         this.userAccounts.forEach( (theusername, useraccount) -> {
             if (username.toLowerCase().equals(theusername.toLowerCase())) { wrapper.foundUserAccount = useraccount;}
         });
+        if (wrapper.foundUserAccount == null) throw new ItemNotFoundException("User account not found");
         return wrapper.foundUserAccount;
     }
 
@@ -180,8 +183,20 @@ public class Protocol extends Exception {
      * @param channelName channel name
      * @return channel node
      */
-    public ChannelNode getChannelNodeByName(String channelName) {
-        return channelList.get(channelName);
+    public ChannelNode getChannelNodeByNameCi(String channelName) throws ItemNotFoundException {
+
+        ChannelNode returnval = null;
+
+        for (HashMap.Entry<String, ChannelNode> entry: channelList.entrySet()) {
+            String name = entry.getKey();
+            ChannelNode chan = entry.getValue();
+
+            if (channelName.toLowerCase().equals(name.toLowerCase())) returnval = chan;
+        }
+
+        if (returnval == null) throw new ItemNotFoundException("Channel does not exist");
+        else return returnval;
+
     }
 
     /**
@@ -426,7 +441,8 @@ public class Protocol extends Exception {
             wrapperUMode.nicks = nicks.split(" ");
             for (String nick: wrapperUMode.nicks) {
                 if (nick.isEmpty() == false) {
-                    wrapperUMode.userNode = this.getUserNodeByNick(nick);
+                    try { wrapperUMode.userNode = this.getUserNodeByNick(nick); }
+                    catch (ItemNotFoundException e) { log.warn(String.format("Protocol/setMode: it seems that there was a nick that does not exist on the network included in the chanmode"), e); continue; }
                     log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change usermode: %s %s", chan.getName(), mode, nick));
                     try {
                         if (mode.startsWith("+")) wrapperUMode.userNode.addUserModeChan(chan, String.valueOf(mode.charAt(1)));
@@ -743,7 +759,8 @@ public class Protocol extends Exception {
                 else if (curMode.matches("[" + networkChanUserModes + "]")) {
 
                     strUserModes = "";
-                    userNode = this.getUserNodeByNick(strSplit[paramIndex]);
+                    try { userNode = this.getUserNodeByNick(strSplit[paramIndex]); }
+                    catch (ItemNotFoundException e) { log.error(String.format("Protocol/parseChanModes: error that should not happen, nick included in mode change is not on the network"), e); userNode = null; }
 
                     strUserModes = String.join(" ", chanUserModes.get(modeAction + curMode), userNode.getNick());
                     chanUserModes.replace(modeAction + curMode, strUserModes);
@@ -1607,7 +1624,8 @@ public class Protocol extends Exception {
                 wrapperUMode.nicks = nicks.split(" ");
                 for (String nick: wrapperUMode.nicks) {
                     if (nick.isEmpty() == false) {
-                        wrapperUMode.userNode = this.getUserNodeByNick(nick);
+                        try { wrapperUMode.userNode = this.getUserNodeByNick(nick); }
+                        catch (ItemNotFoundException e) { log.warn(String.format("Protocol/getResponse(MODE): it seems that there was a nick that does not exist on the network included in the chanmode"), e); continue; }
                         log.debug(String.format("Protocol/MODE: Channel %s: (parsed) change usermode: %s %s", chan.getName(), mode, nick));
                         try {
                             if (mode.startsWith("+")) wrapperUMode.userNode.addUserModeChan(chan, String.valueOf(mode.charAt(1)));

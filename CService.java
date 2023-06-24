@@ -648,10 +648,11 @@ public class CService {
 
             }
             else { // indirect access to account => need to lookup account name
+                UserNode usernode;
+                try { usernode = protocol.getUserNodeByNick(userNick); }
+                catch (ItemNotFoundException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound); return; }
 
-                if (protocol.getUserNodeByNick(userNick).isAuthed() == true)  {
-                    userAccount = protocol.getUserNodeByNick(userNick).getAccount();
-                }
+                if (usernode.isAuthed() == true) userAccount = usernode.getAccount();
                 else {
                     protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed);
                     return; 
@@ -668,8 +669,9 @@ public class CService {
             f.printStackTrace();
             if (userNick.startsWith("#")) protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrUserNonReg);
             else {
-                if (protocol.getUserNodeByNick(userNick) == null) protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound);
-                else if (protocol.getUserNodeByNick(userNick).isAuthed() == false) protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotAuthed);
+                try { protocol.getUserNodeByNick(userNick); }
+                catch (ItemNotFoundException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound); }
+                if (protocol.getUserNodeByNick(userNick).isAuthed() == false) protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotAuthed);
             }
             return;
         }
@@ -1212,11 +1214,11 @@ public class CService {
             }
         }
         else {
-            if (protocol.getUserNodeByNick(user) == null) {
-                protocol.sendNotice(client, myUserNode, fromNick, Messages.strErrNickNotFound);
+            try { targetUserNode = protocol.getUserNodeByNick(user); }
+            catch (ItemNotFoundException e) { 
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrNickNotFound);
                 return;
             }
-            else { targetUserNode = protocol.getUserNodeByNick(user);  }
 
             if (targetUserNode.isAuthed() == true) {
                 targetUserAccount = targetUserNode.getAccount();
@@ -1321,7 +1323,11 @@ public class CService {
 
         try {
             channel = (str.split(" "))[1];
-            chanNode = protocol.getChannelNodeByName(channel);
+            chanNode = protocol.getChannelNodeByNameCi(channel);
+        }
+        catch (ItemNotFoundException e) {
+            protocol.sendNotice(myUserNode, user, Messages.strErrChanNonExist); 
+            return;
         }
         catch (Exception e) {
             protocol.sendNotice(client, myUserNode, user, Messages.strErrChanNonExist); 
