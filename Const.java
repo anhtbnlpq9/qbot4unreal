@@ -25,25 +25,27 @@ public abstract class Const {
     public static final Integer      DEAUTH_TYPE_MANUAL      = 0x0024;
     public static final Integer      DEAUTH_TYPE_EXPIRE      = 0x0025;
     public static final Integer      DEAUTH_TYPE_DROP        = 0x0026;
+    public static final Integer      DEAUTH_TYPE_SUSPEND     = 0x0027;
     /* Reserved values
-    public static final Integer      DEAUTH_TYPE_xxx    = 0x0027;
+    public static final Integer      DEAUTH_TYPE_xxx    = 0x0028;
     ...
     public static final Integer      DEAUTH_TYPE_xxx    = 0x002f; // 0x003f ?
     */
 
     private static final Map<String, Integer> constStrToInt = Map.ofEntries(
-        entry("Plain",            AUTH_TYPE_PLAIN),
-        entry("Reauth",           AUTH_TYPE_REAUTH),
-        entry("CertFP",           AUTH_TYPE_CERTFP),
-        entry("SASL-PLAIN",       AUTH_TYPE_SASL_PLAIN),
-        entry("SASL-EXTERNAL",    AUTH_TYPE_SASL_EXT),
-        entry("Quit",             DEAUTH_TYPE_QUIT),
-        entry("Squit",            DEAUTH_TYPE_SQUIT),
-        entry("Kill",             DEAUTH_TYPE_KILL),
-        entry("Gline",            DEAUTH_TYPE_GLINE),
-        entry("Logout",           DEAUTH_TYPE_MANUAL),
-        entry("Expire",           DEAUTH_TYPE_EXPIRE),
-        entry("Account dropped",  DEAUTH_TYPE_DROP)
+        entry("Plain",              AUTH_TYPE_PLAIN),
+        entry("Reauth",             AUTH_TYPE_REAUTH),
+        entry("CertFP",             AUTH_TYPE_CERTFP),
+        entry("SASL-PLAIN",         AUTH_TYPE_SASL_PLAIN),
+        entry("SASL-EXTERNAL",      AUTH_TYPE_SASL_EXT),
+        entry("Quit",               DEAUTH_TYPE_QUIT),
+        entry("Squit",              DEAUTH_TYPE_SQUIT),
+        entry("Kill",               DEAUTH_TYPE_KILL),
+        entry("Gline",              DEAUTH_TYPE_GLINE),
+        entry("Logout",             DEAUTH_TYPE_MANUAL),
+        entry("Expire",             DEAUTH_TYPE_EXPIRE),
+        entry("Account dropped",    DEAUTH_TYPE_DROP),
+        entry("Account suspended",  DEAUTH_TYPE_SUSPEND)
     );
 
     private static final Map<Integer, String> constIntToStr = dictionaryRev(constStrToInt);
