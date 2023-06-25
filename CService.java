@@ -216,6 +216,7 @@ public class CService {
             case "OP":            cServeOp(fromNick, str); break;
             case "HALFOP":        cServeHalfOp(fromNick, str); break;
             case "VOICE":         cServeVoice(fromNick, str); break;
+            case "NEWPASS":       cServeNewPass(fromNick, str); break;
             case "CRASH":         { protocol.sendNotice(myUserNode, fromNick, "Ok, crashing.");  throw new Exception("Catch me if you can"); }
             case "DIE": 
                 if (fromNick.isAuthed() == true && Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
@@ -1451,7 +1452,7 @@ public class CService {
             protocol.sendNotice(myUserNode, userNode, Messages.strHelloErrEmailInvalid);
             return;
         }
-        if (password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{" + config.getCServiceAccountMinPassLength() + "," + config.getCServiceAccountMaxPassLength() + "}$")==false) {
+        if (checkPassComplex(password) == false) {
             protocol.sendNotice(myUserNode, userNode, String.format(Messages.strHelloErrTooEasy, config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
             return;
         }
@@ -2834,4 +2835,70 @@ public class CService {
         
         protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess);
     }
+
+
+    private void cServeNewPass(UserNode fromNick, String str) { // NEWPASS <password>
+
+        UserAccount userAccount = null;
+        String[] strSplit = str.split(" ");
+        String newPass = "";
+
+        if (fromNick.isAuthed() == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); return; }
+
+        userAccount = fromNick.getAccount();
+
+        try { newPass = strSplit[1]; }
+        catch (Exception e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); return; }
+
+        /* if there is a user un 2nd position, check fromNick privilege */
+        try { userAccount = protocol.getUserAccount(strSplit[2]); }
+        catch (ItemNotFoundException e) {
+            if (Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg);
+                return;
+            }
+            else {
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax);
+                return;
+            }
+        }
+        catch (ArrayIndexOutOfBoundsException e) { userAccount = fromNick.getAccount(); }
+
+        if (userAccount != fromNick.getAccount()) {
+            if (Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == false) {
+                protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax);
+                return;
+            }
+        }
+
+        if (checkPassComplex(newPass) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strHelloErrTooEasy, config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
+            return;
+        }
+
+        String salt = Argon2Hash.generateSalt();
+        Argon2Hash pwGen = new Argon2Hash(salt);
+
+        String hashedPass = pwGen.generateHash(salt, newPass);
+
+        try { sqliteDb.updateUserPassword(userAccount, hashedPass, salt); }
+        catch (Exception e) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strNewPassErrUpdate);
+            log.error(String.format("error updating the password in the database for user %s", userAccount.getName()));
+            return;
+        }
+
+        if (userAccount != fromNick.getAccount()) protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strNewPassSucOtherUser, userAccount.getName())); 
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess); 
+
+
+        
+
+    }
+
+    private Boolean checkPassComplex(String pass) {
+        if (pass.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{" + config.getCServiceAccountMinPassLength() + "," + config.getCServiceAccountMaxPassLength() + "}$") == false) return false;
+        return true;
+    }
+
 }

@@ -163,10 +163,12 @@ public class Messages {
     static String strDropUserConfirmMessage1    = "Destructive operation: dropping of account %s requested. Please note that all the data, history... will be deleted. This action cannot be undone, even by the staff.";
     static String strDropUserConfirmMessage2    = "To confirm, please send the command: DROPUSER #%s %s";
     static String strDropUserConfirmMessage3    = "Please enter the confirmation code as: DROPUSER #%s %s";
-
     static String strDropUserSuccess            = "User successfully dropped.";
-
     static String strDropUserDeAuth             = "You have been deauthed because your account is being dropped.";
+
+    /* NEWPASS */
+    static String strNewPassErrUpdate           = "Problem during password update.";
+    static String strNewPassSucOtherUser        = "Changing password for user account %s";
 
 
     

@@ -155,7 +155,7 @@ public class Protocol extends Exception {
      * @param username user name
      * @return user account
      */
-    public UserAccount getUserAccount(String username) {
+    public UserAccount getUserAccount(String username) throws ItemNotFoundException {
         var wrapper = new Object(){ UserAccount foundUserAccount = null; };
         this.userAccounts.forEach( (theUserName, theUserAccount) -> {
             if (username.toLowerCase().equals(theUserName.toLowerCase())) { wrapper.foundUserAccount = theUserAccount;}

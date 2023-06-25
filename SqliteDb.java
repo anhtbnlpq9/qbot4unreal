@@ -226,6 +226,32 @@ public class SqliteDb {
         }
         catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException(String.format("Error registering the user %s", username));}
     }
+
+    public void updateUserPassword(UserAccount user, String passwordHash, String salt) throws Exception {
+        Statement statement = null;
+        String sql = null;
+        ResultSet resultSet = null;
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = "SELECT name FROM users WHERE lower(name)='" + user.getName().toLowerCase() + "'";
+            resultSet = statement.executeQuery(sql);
+            resultSet.next();
+        }
+        catch (Exception e) { e.printStackTrace(); throw new ItemNotFoundException(String.format("User %s does not exist in the database", user.getName())); }
+        statement.close();
+
+        try { 
+            statement = connection.createStatement();
+            
+            sql = String.format("UPDATE users SET password='%s', salt='%s' WHERE lower(name)='%s';", passwordHash, salt, user.getName().toLowerCase());
+            statement.executeUpdate(sql);
+            statement.close();
+            
+        }
+        catch (Exception e) { e.printStackTrace(); throw new DataBaseExecException(String.format("Cannot update user %s password", user.getName())); }
+    }
     
     /**
      * Returns an user as a Map<String, String> of field:value
