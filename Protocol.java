@@ -220,15 +220,6 @@ public class Protocol extends Exception {
     }
 
     /**
-     * Returns an user node given his nickname (cs)
-     * @param nick
-     * @return
-     */
-    private UserNode getNickLookupTable(String nick) {
-        return userNickUidLookup.get(nick);
-    }
-
-    /**
      * Returns an user node given his nickname (ci)
      * @param nick user nick
      * @return user node
@@ -1950,7 +1941,5 @@ public class Protocol extends Exception {
             traverseTree(nodes, child);
 
         }
-    } 
-
-    
+    }     
 }
