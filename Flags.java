@@ -152,7 +152,7 @@ abstract class Flags {
         entry(UFLAG_WELCOME,        "w"),
         entry(UFLAG_SUSPENDED,      "z"),
         entry(UFLAG_DELETED,        "D"),
-        entry(UFLAG_DELETED,        "d")
+        entry(UFLAG_DEVGOD,         "d")
     );
 
     /* 
