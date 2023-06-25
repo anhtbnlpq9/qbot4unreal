@@ -43,6 +43,7 @@ HELP               Displays help on a specific command.
 //000!REQUESTPASSWORD    Requests the current password by email. 
 //000!RESET              Restores the old details on an account after a change. 
 050!SETTOPIC           Changes the topic on a channel.
+200!SETUSERPASSWORD*   Changes an user's password.
 100!SERVERLIST*        List of the current connected servers on the network.
 SHOWCOMMANDS       Lists available commands.
 150!SUSPENDCHAN*       Suspends a channel.

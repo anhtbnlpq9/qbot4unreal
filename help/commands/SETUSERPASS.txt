@@ -1,0 +1,5 @@
+Usage: SETUSERPASSWORD <#user> <password>
+Updates the user password.
+ * user     - user to act on.
+ * password - new password.
+End of help.
