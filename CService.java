@@ -2850,26 +2850,40 @@ public class CService {
         try { newPass = strSplit[1]; }
         catch (Exception e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); return; }
 
-        /* if there is a user un 2nd position, check fromNick privilege */
-        try { userAccount = protocol.getUserAccount(strSplit[2]); }
-        catch (ItemNotFoundException e) {
-            if (Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
-                protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg);
-                return;
-            }
-            else {
-                protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax);
-                return;
-            }
+        if (checkPassComplex(newPass) == false) {
+            protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strHelloErrTooEasy, config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
+            return;
         }
-        catch (ArrayIndexOutOfBoundsException e) { userAccount = fromNick.getAccount(); }
 
-        if (userAccount != fromNick.getAccount()) {
-            if (Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == false) {
-                protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax);
-                return;
-            }
+        String salt = Argon2Hash.generateSalt();
+        Argon2Hash pwGen = new Argon2Hash(salt);
+
+        String hashedPass = pwGen.generateHash(salt, newPass);
+
+        try { sqliteDb.updateUserPassword(userAccount, hashedPass, salt); }
+        catch (Exception e) {
+            protocol.sendNotice(myUserNode, fromNick, Messages.strNewPassErrUpdate);
+            log.error(String.format("error updating the password in the database for user %s", userAccount.getName()));
+            return;
         }
+        protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess); 
+    }
+
+    private void cServeSetUserPass(UserNode fromNick, String str) {
+
+        UserAccount userAccount = null;
+        String[] strSplit = str.split(" ");
+        String newPass = "";
+
+        if (fromNick.isAuthed() == false) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); return; }
+        if (Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); return;  }
+
+        try { userAccount = protocol.getUserAccount(strSplit[1].replaceFirst("#", "")); }
+        catch (ItemNotFoundException e)          { protocol.sendNotice(myUserNode, fromNick, Messages.strErrUserNonReg); return; }
+        catch (ArrayIndexOutOfBoundsException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); return; }
+
+        try { newPass = strSplit[2]; }
+        catch (ArrayIndexOutOfBoundsException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); return; }
 
         if (checkPassComplex(newPass) == false) {
             protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strHelloErrTooEasy, config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
@@ -2888,12 +2902,8 @@ public class CService {
             return;
         }
 
-        if (userAccount != fromNick.getAccount()) protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strNewPassSucOtherUser, userAccount.getName())); 
+        protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strNewPassSucOtherUser, userAccount.getName())); 
         protocol.sendNotice(myUserNode, fromNick, Messages.strSuccess); 
-
-
-        
-
     }
 
     private Boolean checkPassComplex(String pass) {
