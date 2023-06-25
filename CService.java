@@ -38,7 +38,7 @@ public class CService {
     private String chanJoinModes    = "";
     private String userChanJoinMode = "";
 
-    interface Whois {
+    private interface Whois {
         /**
          * Displays the whois of an user
          * @param whoisUserAccount user account
@@ -46,11 +46,11 @@ public class CService {
         void displayW(UserAccount whoisUserAccount);
     }
 
-    interface ChanlevList {
+    private interface ChanlevList {
         void displayCL(UserNode fromNick, ChannelNode chanNode, UserAccount userAccount);
     }
 
-    interface SuspendHistory {
+    private interface SuspendHistory {
         void displaySH(UserNode fromNick, ChannelNode chanNode, UserAccount userAccount);
     }
 
@@ -68,25 +68,21 @@ public class CService {
         Long unixTime;
 
         this.dispatcher = new Dispatcher(config, sqliteDb, protocol);
-
         this.config = config;
         this.myUniq = config.getServerId()+config.getCServeUniq();
-
-        this.chanJoinModes = config.getCserveChanDefaultModes();
-
+        chanJoinModes = config.getCserveChanDefaultModes();
         unixTime = Instant.now().getEpochSecond();
 
         this.myUserNode = new UserNode(myUniq);
-
-        myUserNode.setNick(config.getCServeNick());
-        myUserNode.setIdent(config.getCServeIdent());
-        myUserNode.setHost(config.getCServeHost());
-        myUserNode.setRealHost(config.getCServeHost());
-        myUserNode.setRealName(config.getCServeRealName());
-        myUserNode.setUserTS(unixTime);
-        myUserNode.setModes(config.getCServeModes());
-        myUserNode.setIpAddress("fwAAAQ=="); /* IP address = 127.0.0.1 */
-        myUserNode.setServer(protocol.getServerList().get(config.getServerId()));
+        this.myUserNode.setNick(config.getCServeNick());
+        this.myUserNode.setIdent(config.getCServeIdent());
+        this.myUserNode.setHost(config.getCServeHost());
+        this.myUserNode.setRealHost(config.getCServeHost());
+        this.myUserNode.setRealName(config.getCServeRealName());
+        this.myUserNode.setUserTS(unixTime);
+        this.myUserNode.setModes(config.getCServeModes());
+        this.myUserNode.setIpAddress("fwAAAQ=="); /* IP address = 127.0.0.1 */
+        this.myUserNode.setServer(protocol.getServerList().get(config.getServerId()));
 
         protocol.sendUid(myUserNode);
 
@@ -121,9 +117,7 @@ public class CService {
                         return;
                     }
                     useraccount.getUserLogins().forEach( (usernode) -> {
-                        if (usernode.getChanList().containsKey(regChannelNode)) {
-                            this.handleJoin(usernode, regChannelNode);
-                        }
+                        if (usernode.getChanList().containsKey(regChannelNode)) { this.handleJoin(usernode, regChannelNode); }
                     });
                 });
             }
@@ -166,9 +160,7 @@ public class CService {
         }
         catch (ArrayIndexOutOfBoundsException e) { cServeShowcommands(fromNick); return; }
 
-        switch (commandName) {
-
-            case "SHOWCOMMANDS":  cServeShowcommands(fromNick); break;
+        switch (commandName) { // XXX: to clean a bit
             case "HELP": 
                 String[] helpCommandNameSplit = str.toUpperCase().split(" ", 3);
                 String helpCommandName;
@@ -179,45 +171,48 @@ public class CService {
                     cServeHelp(fromNick, helpCommandName);
                 }
                 break;
-            case "USERLIST":      cServeUserlist(fromNick, str); break;
-            case "SERVERLIST":    cServeServerlist(fromNick, str); break;
-            case "CHANLIST":      cServeChanlist(fromNick, str); break;
-            case "WHOAMI":        cServeWhois(fromNickRaw, fromNickRaw.getNick(), str); break;
-            case "WHOIS": 
-                String nick = (str.split(" ", 2))[1];
-                cServeWhois(fromNickRaw, nick, str);
-                break;
-            case "WHOIS2":        cServeWhois2(fromNickRaw, str); break;
-            case "AUTH":          cServeAuth(fromNickRaw, str); break;
-            case "LOGOUT":        cServeLogout(fromNick); break;
-            case "VERSION":       cServeVersion(fromNick); break;
-            case "REQUESTBOT":    cServeRequestbot(fromNick, str, false); break;
-            case "ADDCHAN":       cServeRequestbot(fromNick, str, true); break;
-            case "DROPCHAN":      cServeDropChan(fromNickRaw, str); break;
-            case "DROPUSER":      cServeDropUser(fromNickRaw, str); break;
-            case "CHANLEV":       cServeChanlev(fromNickRaw, str); break;
-            case "USERFLAGS":     cServeUserflags(fromNickRaw, str); break;
-            case "CHANFLAGS":     cServeChanflags(fromNickRaw, str); break;
-            case "AUTOLIMIT":     cServeAutoLimit(fromNickRaw, str); break;
-            case "AUTHHISTORY":   cServeAuthHistory(fromNickRaw, str); break;
-            case "WELCOME":       cServeWelcome(fromNickRaw, str); break;
-            case "SETTOPIC":      cServeSetTopic(fromNickRaw, str); break;
-            case "REJOIN":        cServeRejoin(fromNickRaw, str); break;
-            case "CERTFPADD":     cServeCertfpAdd(fromNickRaw, str); break;
-            case "CERTFPDEL":     cServeCertfpDel(fromNickRaw, str); break;
-            case "SUSPENDCHAN":   cServeSuspendChan(fromNick, str); break;
-            case "UNSUSPENDCHAN": cServeUnSuspendChan(fromNick, str); break;
-            case "SUSPENDUSER":   cServeSuspendUser(fromNick, str); break;
-            case "UNSUSPENDUSER": cServeUnSuspendUser(fromNick, str); break;
-            case "CLEARTOPIC":    cServeClearTopic(fromNick, str); break;
-            case "HELLO":         cServeHello(fromNick, str); break;
-            case "OWNER":         cServeOwner(fromNick, str); break;
-            case "ADMIN":         cServeAdmin(fromNick, str); break;
-            case "OP":            cServeOp(fromNick, str); break;
-            case "HALFOP":        cServeHalfOp(fromNick, str); break;
-            case "VOICE":         cServeVoice(fromNick, str); break;
-            case "NEWPASS":       cServeNewPass(fromNick, str); break;
-            case "CRASH":         { protocol.sendNotice(myUserNode, fromNick, "Ok, crashing.");  throw new Exception("Catch me if you can"); }
+            case "WHOIS":             cServeWhois(fromNickRaw, str); break;
+            case "SHOWCOMMANDS":      cServeShowcommands(fromNick); break;
+            case "USERLIST":          cServeUserlist(fromNick, str); break;
+            case "SERVERLIST":        cServeServerlist(fromNick, str); break;
+            case "CHANLIST":          cServeChanlist(fromNick, str); break;
+            case "WHOAMI":            cServeWhois(fromNickRaw, "xxx " + fromNickRaw.getNick()); break;
+            case "WHOIS2":            cServeWhois2(fromNickRaw, str); break;
+            case "AUTH":              cServeAuth(fromNickRaw, str); break;
+            case "LOGOUT":            cServeLogout(fromNick); break;
+            case "VERSION":           cServeVersion(fromNick); break;
+            case "REQUESTBOT":        cServeRequestbot(fromNick, str, false); break;
+            case "ADDCHAN":           cServeRequestbot(fromNick, str, true); break;
+            case "DROPCHAN":          cServeDropChan(fromNickRaw, str); break;
+            case "DROPUSER":          cServeDropUser(fromNickRaw, str); break;
+            case "CHANLEV":           cServeChanlev(fromNickRaw, str); break;
+            case "USERFLAGS":         cServeUserflags(fromNickRaw, str); break;
+            case "CHANFLAGS":         cServeChanflags(fromNickRaw, str); break;
+            case "AUTOLIMIT":         cServeAutoLimit(fromNickRaw, str); break;
+            case "AUTHHISTORY":       cServeAuthHistory(fromNickRaw, str); break;
+            case "WELCOME":           cServeWelcome(fromNickRaw, str); break;
+            case "SETTOPIC":          cServeSetTopic(fromNickRaw, str); break;
+            case "REJOIN":            cServeRejoin(fromNickRaw, str); break;
+            case "CERTFPADD":         cServeCertfpAdd(fromNickRaw, str); break;
+            case "CERTFPDEL":         cServeCertfpDel(fromNickRaw, str); break;
+            case "SUSPENDCHAN":       cServeSuspendChan(fromNick, str); break;
+            case "SUSPENDUSER":       cServeSuspendUser(fromNick, str); break;
+            case "UNSUSPENDCHAN":     cServeUnSuspendChan(fromNick, str); break;
+            case "UNSUSPENDUSER":     cServeUnSuspendUser(fromNick, str); break;
+            case "CLEARTOPIC":        cServeClearTopic(fromNick, str); break;
+            case "HELLO":             cServeHello(fromNick, str); break;
+            case "OWNER":             cServeOwner(fromNick, str); break;
+            case "ADMIN":             cServeAdmin(fromNick, str); break;
+            case "OP":                cServeOp(fromNick, str); break;
+            case "HALFOP":            cServeHalfOp(fromNick, str); break;
+            case "VOICE":             cServeVoice(fromNick, str); break;
+            case "NEWPASS":           cServeNewPass(fromNick, str); break;
+            case "SETUSERPASSWORD":   cServeSetUserPass(fromNick, str); break;
+
+            case "CRASH": 
+                protocol.sendNotice(myUserNode, fromNick, "Ok, crashing.");
+                throw new Exception("Catch me if you can"); 
+
             case "DIE": 
                 if (fromNick.isAuthed() == true && Flags.hasUserAdminPriv(fromNick.getAccount().getFlags()) == true) {
                     log.fatal(String.format("Received DIE command from %s (account %s), exiting.", fromNick.getNick(), fromNick.getAccount().getName()));
@@ -419,7 +414,7 @@ public class CService {
      * @param nick requested nick or account
      * @param str command string
      */
-    private void cServeWhois(UserNode fromNick, String nick, String str) {
+    private void cServeWhois(UserNode fromNick, String str) {
         Whois whois = (whoisUserAccount) -> {
 
             String spaceFill = " ";
@@ -456,7 +451,7 @@ public class CService {
                 Date dateRegTS = new Date((whoisUserAccount.getRegTS())*1000L);
                 String accountCreationTS = jdf.format(dateRegTS);
 
-                Date dateAuthTS = new Date((whoisUserAccount.getLastAuthTS()*1000L));
+                Date dateAuthTS = new Date((whoisUserAccount.getAuthLastTS()*1000L));
                 String accountLastAuthTS = jdf.format(dateAuthTS);
 
                 protocol.sendNotice(myUserNode, fromNick, String.format(Messages.strWhoisContentUserCreated, accountCreationTS));
@@ -490,10 +485,15 @@ public class CService {
             }
         };
 
+        String nick;
+
         if (fromNick.isAuthed() == false) {
             protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandUnknown); 
             return;
         }
+
+        try { nick = (str.split(" ", 2))[1]; }
+        catch (ArrayIndexOutOfBoundsException e) { protocol.sendNotice(myUserNode, fromNick, Messages.strErrCommandSyntax); return; }
 
         if (nick.startsWith("#")) { // lookup user in database
 

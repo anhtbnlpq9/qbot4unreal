@@ -57,19 +57,21 @@
 ## Commands
 
 ### Chan related
-- [X] ADDCHAN
-- [ ] ADDUSER
-- [X] AUTOLIMIT
-- [ ] BANCLEAR
-- [ ] BANDEL
-- [ ] BANLIST
-- [ ] BANTIMER
+- [X] ADDCHAN => register new chan for a third party
+- [ ] ADDUSER => add user(s) in chanlev given flags
+- [X] AUTOLIMIT => sets autolimit delta
+- [ ] BANCLEAR => 
+- [ ] BANDEL =>
+- [ ] BANLIST => list effective bans to be set by the bot
+- [ ] EXCEPTLIST =>
+- [ ] INVEXLIST => 
+- [ ] BANTIMER 
 - [X] CHANFLAGS
 - [X] CHANLEV
 - [ ] CHANLEVHISTORY
 - [ ] CHANMODE
-- [ ] CHANNELCOMMENT
-- [ ] CHANOPHISTORY
+- [ ] CHANNELCOMMENT => manage comments about registered channels
+- [ ] CHANOPHISTORY 
 - [ ] CHANSTAT
 - [ ] CLEARCHAN
 - [X] CLEARTOPIC

@@ -26,9 +26,9 @@ public class UserAccount {
     private HashSet<String> certFp; /* Set of the certfp associated with the account */
 
     private Long registeredTS  = 0L;
-    private Long lastAuthTS    = 0L;
-    private Long lastEmailTS   = 0L;
-    private Long lastPassTS    = 0L;
+    private Long authLastTS    = 0L;
+    private Long emailLastTS   = 0L;
+    private Long passLastTS    = 0L;
 
     private UUID confirmationCode = null;
 
@@ -68,9 +68,7 @@ public class UserAccount {
         this.certFp  = userAccountCertFP;
         this.registeredTS   = userAccountRegTS;
 
-        try {
-            this.userChanlev = sqliteDb.getUserChanlev(this); 
-        }
+        try { this.userChanlev = sqliteDb.getUserChanlev(this); }
         catch (Exception e) { log.error(String.format("UserAccount/constructor: error fetching account chanlev for %s: ", this.getName()) , e); }
     }
 
@@ -205,12 +203,12 @@ public class UserAccount {
         this.registeredTS = ts;
     }
 
-    public Long getLastAuthTS() {
-        return this.lastAuthTS;
+    public Long getAuthLastTS() {
+        return this.authLastTS;
     }
 
-    public void setLastAuthTS(Long ts) {
-        this.lastAuthTS = ts;
+    public void setAuthLastTS(Long ts) {
+        this.authLastTS = ts;
     }
 
     /**
@@ -363,5 +361,13 @@ public class UserAccount {
 
     public UUID getConfirmationCode() {
         return this.confirmationCode;
+    }
+
+    public Long getEmailLastTS() {
+        return this.emailLastTS;
+    }
+
+    public Long getPassLastTS() {
+        return this.passLastTS;
     }
 }
