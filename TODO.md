@@ -104,34 +104,34 @@
 - [X] ADMIN
 - [X] OWNER
 - [ ] MLOCK
-- [ ] CHANBAN -> implement channel "gline"
+- [ ] CHANBAN => implement channel "gline"
 
 ### User related
-- [ ] ACCOUNTHISTORY
-- [X] AUTH
-- [X] AUTHHISTORY
-- [X] DROPUSER
-- [ ] EMAIL
-- [X] HELLO
-- [X] NEWPASS
-- [ ] RECOVER
-- [ ] SUSPENDHISTORY
-- [X] SUSPENDUSER
-- [ ] SUSPENDUSERLIST
-- [X] UNSUSPENDUSER
-- [ ] USERCOMMENT
-- [X] USERFLAGS
+- [ ] ACCOUNTHISTORY => list action history for user account
+- [X] AUTH => auth on the bots
+- [X] AUTHHISTORY => list account auth history
+- [X] DROPUSER => drop an user account
+- [ ] EMAIL => change self email
+- [X] HELLO => create a new account
+- [X] NEWPASS => change self or one's password
+- [ ] RECOVER => see GHOST
+- [ ] SUSPENDHISTORY => list of global/targeted suspension list
+- [X] SUSPENDUSER => add account suspension
+- [ ] SUSPENDUSERLIST => list if suspended users
+- [X] UNSUSPENDUSER => remove account suspension
+- [ ] USERCOMMENT => manage comments about registered users
+- [X] USERFLAGS => manage self user flags
 - [ ] USERS
-- [X] WHOAMI
-- [X] WHOIS
-- [X] DROP
-- [ ] GHOST
-- [X] LOGOUT
+- [X] WHOAMI => = WHOIS me
+- [X] WHOIS => information about an user
+- [ ] GHOST => kills a nick (if nick is owned and taken)
+- [X] LOGOUT => logout of user account
+- [ ] LOGOUTALL => logout all sessions linked to an user account
 - [ ] USERLIST => lookup registered users and not all users
-- [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
-- [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
-- [X] CERTFPADD
-- [X] CERTFPDEL
+- [ ] SETUSERFLAGS -> maybe rename to SAFLAGS or SETFLAGS => set user flags for a third party
+- [X] SETUSERPASSWORD -> maybe rename to SAPASSWORD or SETPASSWORD => set user password for a third party
+- [X] CERTFPADD => add a certfp to self account
+- [X] CERTFPDEL => remove a certfp from self account
 
 ### Misc
 - [X] HELP
