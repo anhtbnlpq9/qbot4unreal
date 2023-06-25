@@ -1,11 +1,6 @@
-import java.security.spec.KeySpec;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -288,21 +283,14 @@ public class UserAccount {
         
         AuthPassCheck checkPass = (userparam, inputpass) -> {
 
-            String pwHash = null;
-
             try { 
-                Base64.Decoder dec = Base64.getDecoder();
-                KeySpec spec = new PBEKeySpec(inputpass.toCharArray(), dec.decode(userparam.get("salt")), 65536, 128);
-                SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-                byte[] hash = f.generateSecret(spec).getEncoded();
-                Base64.Encoder enc = Base64.getEncoder();
+                Argon2Hash pwCheck = new Argon2Hash(userparam.get("salt"));
 
-                pwHash = enc.encodeToString(hash);
+                if (pwCheck.checkHash(userparam.get("password"), inputpass) == true) return true;
+                else return false;
             }
-            catch (Exception e) { log.error(String.format("UserAccount/auth: error with password check: "), e); }
+            catch (Exception e) { log.error(String.format("UserAccount/auth: error with password check: "), e); return false; }
 
-            if (userparam.get("password").equals(pwHash)) return true;
-            else return false;
         };
 
         AuthCertfpCheck checkCert = (userparam, inputcert) -> {

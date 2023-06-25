@@ -42,7 +42,7 @@
 - [X] SASL EXTERNAL
 - [X] user auto vhost on auth
 - [X] certfp authentication
-- [ ] implement argon2 for password hashing
+- [X] replace bcrypt with argon2 for password hashing
 
 
 ### Channels
