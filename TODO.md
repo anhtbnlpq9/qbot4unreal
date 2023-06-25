@@ -54,13 +54,11 @@
 - [ ] user gline
 - [ ] channel gline
 
+## Commands
 
-## Original Q bot commands
-- [ ] ACCOUNTHISTORY
+### Chan related
 - [X] ADDCHAN
 - [ ] ADDUSER
-- [X] AUTH
-- [X] AUTHHISTORY
 - [X] AUTOLIMIT
 - [ ] BANCLEAR
 - [ ] BANDEL
@@ -78,66 +76,72 @@
 - [X] DELCHAN => DROPCHAN
 - [ ] DEOPALL
 - [ ] DEVOICEALL
-- [X] DROPUSER
-- [ ] EMAIL
 - [ ] GIVEOWNER
-- [X] HELLO
-- [X] HELP
 - [ ] INVITE
-- [ ] JUPE  => operservice?
-- [ ] LISTFLAGS
-- [ ] NEWPASS
 - [X] OP
 - [ ] PERMBAN
-- [ ] RECOVER
 - [X] REJOIN
 - [ ] RENCHAN
-- [ ] REMOVEUSER
 - [ ] REQUESTOWNER
 - [X] SETTOPIC
-- [X] SHOWCOMMANDS
 - [X] SUSPENDCHAN
 - [ ] SUSPENDCHANLIST
 - [ ] SUSPENDHISTORY
-- [X] SUSPENDUSER
-- [ ] SUSPENDUSERLIST
 - [ ] TEMPBAN
 - [ ] UNBANALL
 - [ ] UNBANMASK
 - [ ] UNBANME
 - [X] UNSUSPENDCHAN
+- [X] VOICE
+- [X] WELCOME
+- [ ] CHANINFO
+- [ ] CHANORPHANS
+- [ ] CHANLIST => lookup registered chans and not all chans
+- [X] REQUESTBOT
+- [X] HALFOP
+- [X] ADMIN
+- [X] OWNER
+- [ ] MLOCK
+- [ ] CHANBAN -> implement channel "gline"
+
+### User related
+- [ ] ACCOUNTHISTORY
+- [X] AUTH
+- [X] AUTHHISTORY
+- [X] DROPUSER
+- [ ] EMAIL
+- [X] HELLO
+- [ ] NEWPASS
+- [ ] RECOVER
+- [ ] SUSPENDHISTORY
+- [X] SUSPENDUSER
+- [ ] SUSPENDUSERLIST
 - [X] UNSUSPENDUSER
 - [ ] USERCOMMENT
 - [X] USERFLAGS
 - [ ] USERS
-- [X] VERSION
-- [X] VOICE
-- [X] WELCOME
 - [X] WHOAMI
 - [X] WHOIS
-
-## Added commands
-- [ ] CHANINFO
-- [ ] CHANORPHANS
-- [ ] CHANLIST => lookup registered chans and not all chans
-- [X] DIE
 - [X] DROP
 - [ ] GHOST
 - [X] LOGOUT
-- [ ] REHASH
-- [X] REQUESTBOT
-- [ ] RESTART
-- [X] SERVERLIST
 - [ ] USERLIST => lookup registered users and not all users
-- [X] HALFOP
-- [X] ADMIN
-- [X] OWNER
 - [ ] SETUSERFLAGS => maybe rename to SAFLAGS or SETFLAGS
 - [ ] SETUSERPASSWORD => maybe rename to SAPASSWORD or SETPASSWORD
 - [X] CERTFPADD
 - [X] CERTFPDEL
-- [ ] MLOCK
-- [ ] CHANBAN -> implement channel "gline"
+
+### Misc
+- [X] HELP
+- [ ] JUPE  => operservice?
+- [ ] LISTFLAGS
+- [X] SHOWCOMMANDS
+- [X] VERSION
+- [X] DIE
+- [ ] REHASH
+- [ ] RESTART
+- [X] SERVERLIST
+
 
 ## Interesting commands/features
 - [ ] user modes setting on auth
