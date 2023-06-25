@@ -1,0 +1,5 @@
+Usage: NEWPASS <password> [user]
+Updates the user password.
+ * password - new password.
+ * user     - user to act on.
+End of help.

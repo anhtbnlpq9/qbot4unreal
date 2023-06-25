@@ -32,7 +32,7 @@ For more information on a specific command, type HELP <command>:
 HELP               Displays help on a specific command. 
 //050!INVITE             Invites you to a channel or channels.
 050!LOGOUT             Deauthenticates yourself from the bot.
-//050!NEWPASS            Change your password.
+050!NEWPASS            Changes your password.
 050!OP                 Ops you or other users on channel(s).
 050!OWNER              Owners you or other users on channel(s).
 //050!PERMBAN            Permanently bans a hostmask on a channel.
