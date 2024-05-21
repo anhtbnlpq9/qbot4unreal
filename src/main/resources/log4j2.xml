@@ -1,0 +1,56 @@
+<Configuration status="info" name="qbot">
+    <Appenders>
+        <Console name="stdout" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %m%n"/>
+        </Console>
+        
+        <Console name="jsonstdout" target="SYSTEM_OUT">
+            <!-- <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %m%n"/> -->
+            <JsonTemplateLayout eventTemplateUri="classpath:JsonLayoutQ.json" />
+
+            <JSONLayout compact="true" complete="false" eventEol="true" objectMessageAsJsonObject="true"/>
+            
+        </Console>
+        
+        <File name="fout" fileName="logs/qbot.log" append="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %m%n"/>
+            <!--<PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+            </PatternLayout>-->
+        </File>
+        <File name="trafficLog" fileName="logs/traffic.log" append="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %m%n"/>
+            <!--<PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+            </PatternLayout>-->
+        </File>
+        <File name="jsonLog" fileName="logs/json.log" append="true">
+            <!-- <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %m%n"/> -->
+            <JsonTemplateLayout eventTemplateUri="classpath:JsonLayoutQ.json" />
+
+            <!-- <JSONLayout compact="true" complete="false" eventEol="true" objectMessageAsJsonObject="true" /> -->
+
+            <!--<PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+            </PatternLayout>-->
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="trafficLog">
+            <AppenderRef ref="trafficLog" level="debug" />
+        </Logger>
+
+        <Logger name="common-log" level="DEBUG">
+            <AppenderRef ref="stdout" />
+            <AppenderRef ref="fout" />
+        </Logger>
+        
+        <Logger name="common-json-log" level="DEBUG">
+            <AppenderRef ref="jsonLog" />
+            <AppenderRef ref="jsonstdout" />
+        </Logger>
+
+        <Root level="DEBUG">
+        </Root>
+    </Loggers>
+</Configuration>
