@@ -1664,7 +1664,7 @@ public class SqliteDb implements Database {
         catch (SQLException e) { log.error(String.format("SqliteDb/addChanBei: could not precheck mask %s to channel %s list %s: %s", m, c, type, e)); throw new Exception("Error during check"); }
 
         try (Statement statement = connection.createStatement()) {
-            sql = String.format("INSERT INTO chanBeiList (channelId, type, mask, userId, reason, toTS, fromTS) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s');",
+            sql = String.format("INSERT INTO chanBeiList (channelId, type, mask, userId, reason, toTS, fromTS, expired) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '0');",
             c.getcServeId(), String.valueOf(type), m.getString(), u.getId(), r, toTS.toString(), fromTS.toString());
             statement.executeUpdate(sql);
         }
