@@ -165,7 +165,7 @@ public class CService extends Service {
             protocol.setTopic(fromNick, channel, savedTopic);
         }
 
-        /* 3c. apply channel properties: BEI lists */
+        /* 3c. apply channel properties: BEI lists */ // FIXME: expired list items still will be applied
         channel.getcServeBanList().forEach(    (mask, map) -> { protocol.setMode(fromNick, channel, "+b", mask.getString()); });
         channel.getcServeExceptList().forEach( (mask, map) -> { protocol.setMode(fromNick, channel, "+e", mask.getString()); });
         channel.getcServeInviteList().forEach( (mask, map) -> { protocol.setMode(fromNick, channel, "+I", mask.getString()); });
@@ -1850,6 +1850,7 @@ public class CService extends Service {
     }
 
     private void cServeCertfp(CSCommand csCommand) {
+
         UserAccount userAccount = null;
 
         Map<String, Set<String>> certfpList;

@@ -75,11 +75,12 @@ public class Qbot {
         log.log(ALWAYS, "  | |_  _  /  \\  |__) _ |_  (_ _  _  /  \\ _  _ _ _ |||__)/   _| ");
         log.log(ALWAYS, "  | | )(-  \\_\\/  |__)(_)|_  | (_)|   \\__/| )| (-(_|||| \\ \\__(_| ");
         log.log(ALWAYS, " ");
+        log.log(ALWAYS, "* Starting the Q Bot for UnrealIRCd v" + Const.QBOT_VERSION_NUMBER);
 
         if (configFileName.isEmpty() == false) configFile = configFileName;
         else configFile = CONFIG_FILE;
 
-        log.info("Loading configuration file: " + configFile);
+        log.info("* Loading configuration file: " + configFile);
 
         try { config = Config.getInstance(configFile); }
         catch (ConfigFileErrorException e) { log.fatal(String.format("Configuration file errors detected (likely missing blocks). Dying.")); System.exit(0); }
@@ -96,7 +97,7 @@ public class Qbot {
         System.setProperty("javax.net.ssl.keyStore",            config.getKeyStorePath());
         System.setProperty("javax.net.ssl.keyStorePassword",    config.getKeyStorePassword());
 
-        log.info("Opening database");
+        log.info("* Opening database");
 
         if (config.getDbType().equals("sqlite3")) { database = SqliteDb.getInstance(config); }
         //else if (config.getDbType().equals("elastic")) { database = ElasticDb.getInstance(config); }

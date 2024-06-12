@@ -12,9 +12,9 @@ import java.util.StringJoiner;
 public abstract class StringTools {
 
     /**
-     * Separates items in a list containing '+item1, +item2, -item3, +item4, ...' into separate maps
-     * @param argv
-     * @param argc
+     * Separates items in a list containing '+item1 +item2 -item3 +item4 ...' into separate maps
+     * @param argv arguments as a List
+     * @param argc maximum of items to get
      * @return
      */
     public static final Map<String, Set<String>> addRemoveString(List<String> argv, int argc) {

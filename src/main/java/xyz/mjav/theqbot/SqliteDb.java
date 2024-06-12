@@ -1567,10 +1567,10 @@ public class SqliteDb implements Database {
 
         List<Timestamp> suspendTS           = new ArrayList<>();
         List<Timestamp> unsuspendTS         = new ArrayList<>();
-        List<Integer> suspendById       = new ArrayList<>();
-        List<Integer> unsuspendById     = new ArrayList<>();
-        List<String> suspendByName       = new ArrayList<>();
-        List<String> unsuspendByName     = new ArrayList<>();
+        List<Integer> suspendById           = new ArrayList<>();
+        List<Integer> unsuspendById         = new ArrayList<>();
+        List<String> suspendByName          = new ArrayList<>();
+        List<String> unsuspendByName        = new ArrayList<>();
         List<String> suspendReason          = new ArrayList<>();
         List<Channel> suspendChan           = new ArrayList<>();
         List<UserAccount> suspendUser       = new ArrayList<>();

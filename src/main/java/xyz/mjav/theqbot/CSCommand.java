@@ -28,7 +28,7 @@ public final class CSCommand {
     //private static Logger jsonLog = LogManager.getLogger("common-json-log");
 
     private final String commandName;
-    //private final String direction;
+    //private final String direction; // Like inbound or outbound
     private final List<String> args;
     private final Nick fromNick;
     private final boolean isNickAuthed;

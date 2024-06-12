@@ -575,6 +575,11 @@ public class UnrealIRCd extends Exception implements Protocol {
     }
 
     private void sendSvsLogin(Nick user, UserAccount account, Boolean isAuth) {
+
+        /*
+         * :SID SVSLOGIN destServerSID UID :account name
+         */
+
         String str;
         String toServerSid = "";
         String accountNameToAuth = "0";

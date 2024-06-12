@@ -31,7 +31,7 @@ public abstract class Const {
     public static final int      AUTH_TYPE_REAUTH_SASL          = 0x0008; /* re-authentication of previously sasl-authed user */
     /* Reserved values
     public static final int      AUTH_TYPE_xxx                  = 0x0009;
-    ...
+        ...
     public static final int      AUTH_TYPE_xxx                  = 0x001f;
     */
 
@@ -45,7 +45,7 @@ public abstract class Const {
     public static final int      DEAUTH_TYPE_SUSPEND     = 0x0027;
     /* Reserved values
     public static final int      DEAUTH_TYPE_xxx         = 0x0028;
-    ...
+        ...
     public static final int      DEAUTH_TYPE_xxx         = 0x003f;
     */
 
@@ -139,12 +139,12 @@ public abstract class Const {
 
 
     /* Column widths */
-    public static final int COLUMN_ID_WIDTH           = 4;
-    public static final int COLUMN_DATE_WIDTH         = 25;
-    public static final int COLUMN_NICK_WIDTH         = 15;
-    public static final int COLUMN_CHAN_WIDTH         = 30;
-    public static final int COLUMN_MASK_WIDTH         = 40;
-    public static final int COLUMN_MESSAGE_WIDTH      = 60;
+    public static final int COLUMN_ID_WIDTH           =   4;
+    public static final int COLUMN_DATE_WIDTH         =  25;
+    public static final int COLUMN_NICK_WIDTH         =  15;
+    public static final int COLUMN_CHAN_WIDTH         =  30;
+    public static final int COLUMN_MASK_WIDTH         =  40;
+    public static final int COLUMN_MESSAGE_WIDTH      =  60;
 
 
 
