@@ -18,7 +18,7 @@ public abstract class Const {
     public static final String UNREAL_VERSION_FULLTEXT = "qbot4unreal";
 
     /* Password pattern to use */
-    public static final String   PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{" + config.getCServiceAccountMinPassLength() + "," + config.getCServiceAccountMaxPassLength() + "}$";
+    public static final String   PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()-[{}]:;',?/*~$^+=<>]).{" + config.getCServiceAccountMinPassLength() + "," + config.getCServiceAccountMaxPassLength() + "}$";
 
     /* List of AUTH/DEAUTH types */
     public static final int      AUTH_TYPE_PLAIN                = 0x0001; /* login/pass AUTH-command auth */
