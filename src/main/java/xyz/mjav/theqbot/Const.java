@@ -149,5 +149,5 @@ public abstract class Const {
 
 
     /* User account prefix character */
-    public static final String USER_ACCOUNT_PREFIX      = "#";
+    public static final String USER_ACCOUNT_PREFIX      = "!";
 }
