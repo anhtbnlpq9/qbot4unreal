@@ -101,13 +101,13 @@ public class Channel extends Account implements Comparable<Channel> {
     private String cServeWelcomeMsg;
 
     /** Chanserv persistent ban list */
-    private Map<Bei, Map<String, Object>> cServeBanList;
+    private BeiList cServeBanList;
 
     /** Chanserv persistent except list */
-    private Map<Bei, Map<String, Object>> cServeExceptList;
+    private BeiList cServeExceptList;
 
     /** Chanserv persistent invite list */
-    private Map<Bei, Map<String, Object>> cServeInviteList;
+    private BeiList cServeInviteList;
 
     /**
      * Adds an channel to the memory channel list
@@ -272,9 +272,9 @@ public class Channel extends Account implements Comparable<Channel> {
         private Set<Bei> exceptList = new LinkedHashSet<>();
         private Set<Bei> inviteList = new LinkedHashSet<>();
 
-        private Map<Bei, Map<String, Object>> cServeBanList    = new LinkedHashMap<>();
-        private Map<Bei, Map<String, Object>> cServeExceptList = new LinkedHashMap<>();
-        private Map<Bei, Map<String, Object>> cServeInviteList = new LinkedHashMap<>();
+        private BeiList cServeBanList    = new BeiList();
+        private BeiList cServeExceptList = new BeiList();
+        private BeiList cServeInviteList = new BeiList();
 
         public Builder userCount(Integer val) {
             this.userCount = val;
@@ -346,17 +346,17 @@ public class Channel extends Account implements Comparable<Channel> {
             return this;
         }
 
-        public Builder cServeBanList(Map<Bei, Map<String, Object>> s) {
+        public Builder cServeBanList(BeiList s) {
             cServeBanList = s;
             return this;
         }
 
-        public Builder cServeExceptList(Map<Bei, Map<String, Object>> s) {
+        public Builder cServeExceptList(BeiList s) {
             cServeExceptList = s;
             return this;
         }
 
-        public Builder cServeInviteList(Map<Bei, Map<String, Object>> s) {
+        public Builder cServeInviteList(BeiList s) {
             cServeInviteList = s;
             return this;
         }
@@ -762,59 +762,65 @@ public class Channel extends Account implements Comparable<Channel> {
         return modeParam;
     }*/
 
-    public Map<Bei, Map<String, Object>> getcServeBanList() {
+    public BeiList getcServeBanList() {
         return this.cServeBanList;
     }
 
-    public Map<Bei, Map<String, Object>> getcServeExceptList() {
+    public BeiList getcServeExceptList() {
         return this.cServeExceptList;
     }
 
-    public Map<Bei, Map<String, Object>> getcServeInviteList() {
+    public BeiList getcServeInviteList() {
         return this.cServeInviteList;
     }
 
-    public Map<String, Object> getcServeBanList(Bei m) {
+    public BeiProperty getcServeBanList(Bei m) {
         return this.cServeBanList.get(m);
     }
 
-    public Map<String, Object> getcServeExceptList(Bei m) {
+    public BeiProperty getcServeExceptList(Bei m) {
         return this.cServeExceptList.get(m);
     }
 
-    public Map<String, Object> getcServeInviteList(Bei m) {
+    public BeiProperty getcServeInviteList(Bei m) {
         return this.cServeInviteList.get(m);
     }
 
     public synchronized void addCServeBanList(Bei m, UserAccount u, String r, Timestamp fromTS, Timestamp toTS) {
         Map<String, Object> uMaskProperties = new HashMap<>();
+        BeiProperty beiProp = new BeiProperty.Builder().author(u.getId()).fromTS(fromTS).toTS(toTS).reason(r).build();
 
         uMaskProperties.put("author", u.getId());
         uMaskProperties.put("fromTS", fromTS);
         uMaskProperties.put("toTS", toTS);
         uMaskProperties.put("reason", r);
-        this.cServeBanList.put(m, uMaskProperties);
+        //this.cServeBanList.put(m, uMaskProperties);
+        this.cServeBanList.put(m, beiProp);
 
     }
 
     public synchronized void addCServeExceptList(Bei m, UserAccount u, String r, Timestamp fromTS, Timestamp toTS) {
         Map<String, Object> uMaskProperties = new HashMap<>();
+        BeiProperty beiProp = new BeiProperty.Builder().author(u.getId()).fromTS(fromTS).toTS(toTS).reason(r).build();
 
         uMaskProperties.put("author", u.getId());
         uMaskProperties.put("fromTS", fromTS);
         uMaskProperties.put("toTS", toTS);
         uMaskProperties.put("reason", r);
-        this.cServeExceptList.put(m, uMaskProperties);
+        //this.cServeExceptList.put(m, uMaskProperties);
+        this.cServeBanList.put(m, beiProp);
     }
 
     public synchronized void addCServeInviteList(Bei m, UserAccount u, String r, Timestamp fromTS, Timestamp toTS) {
         Map<String, Object> uMaskProperties = new HashMap<>();
+        BeiProperty beiProp = new BeiProperty.Builder().author(u.getId()).fromTS(fromTS).toTS(toTS).reason(r).build();
 
         uMaskProperties.put("author", u.getId());
         uMaskProperties.put("fromTS", fromTS);
         uMaskProperties.put("toTS", toTS);
         uMaskProperties.put("reason", r);
-        this.cServeInviteList.put(m, uMaskProperties);
+        //this.cServeInviteList.put(m, uMaskProperties);
+        this.cServeBanList.put(m, beiProp);
     }
 
     public void removeCServeBanList(Bei m) {
@@ -829,15 +835,15 @@ public class Channel extends Account implements Comparable<Channel> {
         this.cServeInviteList.remove(m);
     }
 
-    public void setCServeBanList(Map<Bei, Map<String, Object>> list) {
+    public void setCServeBanList(BeiList list) {
         this.cServeBanList = list;
     }
 
-    public void setCServeExceptList(Map<Bei, Map<String, Object>> list) {
+    public void setCServeExceptList(BeiList list) {
         this.cServeExceptList = list;
     }
 
-    public void setCServeInviteList(Map<Bei, Map<String, Object>> list) {
+    public void setCServeInviteList(BeiList list) {
         this.cServeInviteList = list;
     }
 

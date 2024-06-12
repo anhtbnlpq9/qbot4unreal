@@ -278,7 +278,8 @@ public interface Database {
     void renameChannel(Channel oldChan, Channel newChan) throws ChannelNotFoundException;
 
     void addChanBei(int type, Channel c, Bei m, UserAccount u, Timestamp from, Timestamp to, String r) throws ItemExistsException, Exception;
-    Map<Bei, Map<String, Object>> getChanBei(int type, Channel channel) throws Exception;
+    //Map<Bei, Map<String, Object>> getChanBeiList(int type, Channel channel) throws Exception;
+    BeiList getChanBeiList(int type, Channel channel) throws Exception;
     void removeChanBei(int type, Channel channel, Bei mask) throws Exception;
     void setChanMlock(Channel c, String mLock) throws ItemExistsException, Exception;
     String getChanMlock(Channel c) throws ItemExistsException, Exception;

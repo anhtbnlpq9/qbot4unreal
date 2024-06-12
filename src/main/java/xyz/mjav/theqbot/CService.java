@@ -3948,10 +3948,10 @@ public class CService extends Service {
                     /* Check if the item is channel or cServe */
                     if (channel.getcServeBanList(um) != null) {
                         chanBei = false;
-                        reason  = (String) channel.getcServeBanList(um).get("reason");
-                        author  = UserAccount.getUser( (Integer) channel.getcServeBanList(um).get("author"));
-                        fromTS  = (Timestamp) channel.getcServeBanList(um).get("fromTS");
-                        toTS    = (Timestamp) channel.getcServeBanList(um).get("toTS");
+                        reason  = (String) channel.getcServeBanList(um).getReason();
+                        author  = UserAccount.getUser( (Integer) channel.getcServeBanList(um).getAuthor());
+                        fromTS  = (Timestamp) channel.getcServeBanList(um).getFromTS();
+                        toTS    = (Timestamp) channel.getcServeBanList(um).getToTS();
                     }
                 break;
 
@@ -3959,10 +3959,10 @@ public class CService extends Service {
                     /* Check if the item is channel or cServe */
                     if (channel.getcServeExceptList(um) != null) {
                         chanBei = false;
-                        reason  = (String) channel.getcServeExceptList(um).get("reason");
-                        author  = UserAccount.getUser( (Integer) channel.getcServeExceptList(um).get("author"));
-                        fromTS  = (Timestamp) channel.getcServeExceptList(um).get("fromTS");
-                        toTS    = (Timestamp) channel.getcServeExceptList(um).get("toTS");
+                        reason  = (String) channel.getcServeExceptList(um).getReason();
+                        author  = UserAccount.getUser( (Integer) channel.getcServeExceptList(um).getAuthor());
+                        fromTS  = (Timestamp) channel.getcServeExceptList(um).getFromTS();
+                        toTS    = (Timestamp) channel.getcServeExceptList(um).getToTS();
                     }
                 break;
 
@@ -3970,10 +3970,10 @@ public class CService extends Service {
                     /* Check if the item is channel or cServe */
                     if (channel.getcServeInviteList(um) != null) {
                         chanBei = false;
-                        reason  = (String) channel.getcServeInviteList(um).get("reason");
-                        author  = UserAccount.getUser( (Integer) channel.getcServeInviteList(um).get("author"));
-                        fromTS  = (Timestamp) channel.getcServeInviteList(um).get("fromTS");
-                        toTS    = (Timestamp) channel.getcServeInviteList(um).get("toTS");
+                        reason  = (String) channel.getcServeInviteList(um).getReason();
+                        author  = UserAccount.getUser( (Integer) channel.getcServeInviteList(um).getAuthor());
+                        fromTS  = (Timestamp) channel.getcServeInviteList(um).getFromTS();
+                        toTS    = (Timestamp) channel.getcServeInviteList(um).getToTS();
                     }
                 break;
             }

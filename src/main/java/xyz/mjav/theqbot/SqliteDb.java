@@ -109,9 +109,9 @@ public class SqliteDb implements Database {
                 newChan.setSuspendCount(getSuspendCount(Const.ENTITY_CHANNEL, chanId));
                 newChan.setSuspendMessage(getSuspendMessage(Const.ENTITY_CHANNEL, chanId));
 
-                newChan.setCServeBanList(getChanBei(Const.CHANBEI_BANS, newChan));
-                newChan.setCServeExceptList(getChanBei(Const.CHANBEI_EXCEPTS, newChan));
-                newChan.setCServeInviteList(getChanBei(Const.CHANBEI_INVITES, newChan));
+                newChan.setCServeBanList(getChanBeiList(Const.CHANBEI_BANS, newChan));
+                newChan.setCServeExceptList(getChanBeiList(Const.CHANBEI_EXCEPTS, newChan));
+                newChan.setCServeInviteList(getChanBeiList(Const.CHANBEI_INVITES, newChan));
 
                 regChannels.add(newChan);
             }
@@ -161,9 +161,9 @@ public class SqliteDb implements Database {
                 newChan.setSuspendCount(getSuspendCount(Const.ENTITY_CHANNEL, chanId));
                 newChan.setSuspendMessage(getSuspendMessage(Const.ENTITY_CHANNEL, chanId));
 
-                newChan.setCServeBanList(getChanBei(Const.CHANBEI_BANS, newChan));
-                newChan.setCServeExceptList(getChanBei(Const.CHANBEI_EXCEPTS, newChan));
-                newChan.setCServeInviteList(getChanBei(Const.CHANBEI_INVITES, newChan));
+                newChan.setCServeBanList(getChanBeiList(Const.CHANBEI_BANS, newChan));
+                newChan.setCServeExceptList(getChanBeiList(Const.CHANBEI_EXCEPTS, newChan));
+                newChan.setCServeInviteList(getChanBeiList(Const.CHANBEI_INVITES, newChan));
 
                 regChannels.add(newChan);
             }
@@ -1669,7 +1669,8 @@ public class SqliteDb implements Database {
         catch (SQLException e) { log.error(String.format("SqliteDb/addChanBei: could not add mask %s to channel %s list %s: %s", m, c, type, e)); throw new Exception("Error during insertion"); }
     }
 
-    @Override public Map<Bei, Map<String, Object>> getChanBei(int type, Channel channel) throws Exception {
+    //@Override public Map<Bei, Map<String, Object>> getChanBeiList(int type, Channel channel) throws Exception {
+    @Override public BeiList getChanBeiList(int type, Channel channel) throws Exception {
         String sql               = null;
         ResultSet resultSet      = null;
 
@@ -1682,6 +1683,10 @@ public class SqliteDb implements Database {
 
         Map<String, Object> uMaskProperties;
         Map<Bei, Map<String, Object>> userMasks = new LinkedHashMap<>();
+
+
+        // XXX: new implementation for BeiList
+        BeiList beiList = new BeiList();
 
         try (Statement statement = connection.createStatement()) {
             sql = String.format("SELECT mask, reason, userId, fromTS, toTS FROM chanBeiList WHERE channelId='%s' AND type='%s' ORDER BY fromTS ASC;", channel.getcServeId(), String.valueOf(type));
@@ -1705,11 +1710,17 @@ public class SqliteDb implements Database {
                 uMaskProperties.put("reason", reason);
                 userMasks.put(usermask, uMaskProperties);
 
+
+                // XXX: new implementation for BeiList
+                BeiProperty beiProp = new BeiProperty.Builder().author(userId).reason(reason).fromTS(fromTS).toTS(toTS).build();
+                beiList.put(usermask, beiProp);
+
             }
         }
         catch (SQLException e) { log.error(String.format("SqliteDb/addChanBei: could not get masks for channel %s list %s: %s", channel, type, e)); throw new Exception("Error during fetch"); }
 
-        return userMasks;
+        //return userMasks;
+        return beiList;
     }
 
     @Override public void removeChanBei(int type, Channel channel, Bei mask) throws Exception {
