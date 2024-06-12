@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sqlite.SQLiteException;
 
+import xyz.mjav.theqbot.exceptions.AccountNotFoundException;
 import xyz.mjav.theqbot.exceptions.ChannelNotFoundException;
 import xyz.mjav.theqbot.exceptions.DataBaseExecException;
 import xyz.mjav.theqbot.exceptions.ItemErrorException;
@@ -1271,6 +1272,7 @@ public class SqliteDb implements Database {
         }
         catch (Exception e) {
            // e.printStackTrace();
+           throw new AccountNotFoundException("SqliteDb::getUserLoginToken: No account found in database.");
         }
         return account;
     }
