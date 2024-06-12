@@ -132,7 +132,7 @@ public class CService extends Service {
         protocol.setCService(this);
 
         /* Starting thread for channel auto limit */
-        ChanAutoLimit chanAutoLimit = ChanAutoLimit.create();
+        ChanAutoLimitTask chanAutoLimit = ChanAutoLimitTask.create();
         Thread chanAutoLimitThread = new Thread(chanAutoLimit);
         chanAutoLimitThread.start();
     }
