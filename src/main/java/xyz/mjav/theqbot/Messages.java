@@ -141,6 +141,8 @@ public class Messages {
     public static final String strWhoisContentUserLevStaff           = "Staff member";
     public static final String strWhoisContentSublistItem            = "   > %s";
 
+    /* CERTFP */
+    public static final String strCertFpTitle        = "Associated certfp: %s";
     /* CHANINFO */
     public static final String strChanInfoHeader                    = "-Information for channel %s:"; /* only known */
     public static final String strChanInfoCServeNotRegistered       = "Channel is not registered.";

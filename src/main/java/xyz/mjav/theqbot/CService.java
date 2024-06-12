@@ -1874,7 +1874,7 @@ public class CService extends Service {
 
         /* Display registered certfp */
         if (certfpToAdd.size() + certfpToRemove.size() == 0) {
-            sendReply(csCommand.getFromNick(), Messages.strWhoisContentUserCertFpTitle);
+            sendReply(csCommand.getFromNick(), String.format(Messages.strCertFpTitle, userAccount.getCertFP().size()));
             for(String s: userAccount.getCertFP()) {
                 sendReply(csCommand.getFromNick(), String.format(Messages.strWhoisContentUserCertfpRowFormat, s));
             }
