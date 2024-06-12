@@ -101,15 +101,16 @@ public final class CSCommand {
     public void log() {
 
         String accountName;
+        List<String> args = new ArrayList<>(this.args);
 
         /* Need to remove potential sensitive data from AUTH command (such as passwords, emails) */
         switch (this.commandName.toUpperCase()) {
             case "AUTH": /* AUTH [args: username password] */
-                try { this.args.set(1, "<password masked>"); }
+                try { args.set(1, "<password masked>"); }
                 catch (IndexOutOfBoundsException e) { }
                 break;
             case "HELLO": /* HELLO [args password email] */
-                try { this.args.set(1, "<password masked>"); this.args.set(0, "<email masked>"); }
+                try { args.set(1, "<password masked>"); args.set(0, "<email masked>"); }
                 catch (IndexOutOfBoundsException e) { }
                 break;
         }
@@ -120,7 +121,7 @@ public final class CSCommand {
         log.debug(String.format("CSCommand::CSCommand: parsed CService command:"));
         log.debug(String.format("CSCommand::CSCommand:   | from   : %s", this.fromNick));
         log.debug(String.format("CSCommand::CSCommand:   | command: %s", this.commandName));
-        log.debug(String.format("CSCommand::CSCommand:   |    args: %s", String.valueOf(this.args)));
+        log.debug(String.format("CSCommand::CSCommand:   |    args: %s", String.valueOf(args)));
         log.debug(String.format("CSCommand::CSCommand:   |  authed: %s", this.isNickAuthed));
         log.debug(String.format("CSCommand::CSCommand:   | account: %s", this.fromNickAccount));
         log.debug(String.format("CSCommand::CSCommand:   |  result: %s", resultString));
