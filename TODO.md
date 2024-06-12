@@ -4,7 +4,7 @@
 
 ### General
 - [ ] conf REHASH
-- [ ] logging to a database
+- [x] logging to a database
 - [ ] i18n
 - [ ] actions log
 
