@@ -150,4 +150,11 @@ public abstract class Const {
 
     /* User account prefix character */
     public static final String USER_ACCOUNT_PREFIX      = "!";
+
+
+
+    /* CService CERTFP command */
+    public static final int       CS_CERTFP_MAX_INPUT    = 1; /* limit to only one certfp per request */
+    public static final int       CS_CERTFP_MAX_SIZE     = 128;
+    public static final String    CS_CERTFP_FP_REGEX     = "^[A-Fa-f0-9]+";
 }

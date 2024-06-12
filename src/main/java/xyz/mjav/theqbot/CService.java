@@ -1861,7 +1861,7 @@ public class CService extends Service {
         Set<String> certFpRemoved = new TreeSet<>();
 
         CheckCertFp checkCertFp = (certfp) -> {
-            if (certfp.matches("^[A-Fa-f0-9]+") == false && certfp.length() <= 128) return false;
+            if (certfp.matches(Const.CS_CERTFP_FP_REGEX) == false && certfp.length() <= Const.CS_CERTFP_MAX_SIZE) return false;
             return true;
         };
 
