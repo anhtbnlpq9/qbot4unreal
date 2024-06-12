@@ -688,6 +688,16 @@ public final class Config {
     }
 
     /**
+     * Returns if debug loggin is enabled in any direction
+     * @param source steam direction
+     * @return logging status
+     */
+    public Boolean hasDbgLogging() {
+        if (this.hasLogDebugIn == false && this.hasLogDebugOut == false) return false;
+        return true;
+    }
+
+    /**
      * Returns the key store path
      * @return path
      */
