@@ -143,6 +143,32 @@ public class Messages {
 
     /* CERTFP */
     public static final String strCertFpTitle        = "Associated certfp: %s";
+
+    /* CONFIGREPORT */
+    public static final String strConfigInfoHeader                  = "-Configuration information";
+    public static final String strConfigInfoNetworkHeader           = "Network section";
+    public static final String strConfigInfoNetwork                 = " o network name: '%s', protocol: '%s'";
+    public static final String strConfigInfoServerHeader            = "Server section";
+    public static final String strConfigInfoServerInfo              = " o name: '%s', SID: '%s', description: '%s'";
+    public static final String strConfigInfoServerProtoVersion      = " o protocol version: '%s', version flags: '%s', full version text: '%s'";
+    public static final String strConfigInfoServerVersionString     = " o server version string: '%s'";
+    public static final String strConfigInfoLinkHeader              = "Link section";
+    public static final String strConfigInfoLinkPeer                = " o peer: '%s', host: '%s', port: '%s'";
+    public static final String strConfigInfoCSHeader                = "CService section";
+    public static final String strConfigInfoCSBotNick               = " o nick: '%s', UID: '%s', ident: '%s', host: '%s', realname: '%s', modes: '%s'";
+    public static final String strConfigInfoCSVHost                 = " o VHost prefix: '%s', suffix: '%s'";
+    public static final String strConfigInfoCSChannel               = " o channel default modes: '%s', ban time: '%s', autolimit: '%s', autolimit freq: '%s', max chanlev: '%s'";
+    public static final String strConfigInfoCSAccount               = " o account max certfp: '%s', min pass: '%s', max pass: '%s', wrong cred wait: '%s', max chans: '%s', max auth histo: '%s'";
+    public static final String strConfigInfoFeaturesHeader          = "Features section";
+    public static final String strConfigInfoFeaturesNetwork         = " o network sasl: '%s', svslogin: '%s', chghost: '%s', deny auth on plain text: '%s'";
+    public static final String strConfigInfoFeaturesCS              = " o CS random account name: '%s' (%s chars), temporary account pass: '%s' (%s chars)";
+    public static final String strConfigInfoLoggingHeader           = "Logging section";
+    public static final String strConfigInfoLogging                 = " o debug logging: '%s', logging to ES: '%s'";
+    public static final String strConfigInfoDatabaseHeader          = "Database section";
+    public static final String strConfigInfoDatabase                = " o type: '%s'";
+    public static final String strConfigInfoSchedulerHeader         = "Scheduler section";
+    public static final String strConfigInfoScheduler               = " o database freq: '%s'";
+
     /* CHANINFO */
     public static final String strChanInfoHeader                    = "-Information for channel %s:"; /* only known */
     public static final String strChanInfoCServeNotRegistered       = "Channel is not registered.";
