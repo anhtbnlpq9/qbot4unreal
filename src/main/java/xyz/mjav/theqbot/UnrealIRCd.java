@@ -2839,7 +2839,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         //var w = new Object(){ String rawStripped; };
         //w.rawStripped = rawStripped;
 
-        System.out.println(String.format(">>> command[1] = '%s' // from + ircmsg.getCommand() = '%s + %s'", command[1], ircMsg.getFrom(), ircMsg.getCommand()));
+        //System.out.println(String.format(">>> command[1] = '%s' // from + ircmsg.getCommand() = '%s + %s'", command[1], ircMsg.getFrom(), ircMsg.getCommand()));
         switch(command[1].toUpperCase()) {
             //case "PRIVMSG":        handlePrivmsg(rawStripped); return;
             case "PRIVMSG":
