@@ -1302,7 +1302,7 @@ public class UnrealIRCd extends Exception implements Protocol {
             channel.setTopic(topic);
 
             try { cservice.handleTopic(channel); }
-            catch (Exception e) { /* CServe not yet connected */ }
+            catch (Exception e) { /* CServe not yet connected */ return; }
 
             log.debug(String.format("UnrealIRCd::handleTopicNotBursting: updated topic for %s", channelName));
         }
