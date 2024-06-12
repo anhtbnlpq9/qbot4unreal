@@ -37,6 +37,7 @@ public class Help {
         entry("BANDEL", "BEIDEL"),
         entry("BANLIST", "BEILIST"),
         entry("BANTIMER", "BANTIMER"),
+        entry("CERTFP", "CERTFP"),
         entry("CERTFPADD", "CERTFPADD"),
         entry("CERTFPDEL", "CERTFPADD"),
         entry("CHANFLAGS", "CHANFLAGS"),
