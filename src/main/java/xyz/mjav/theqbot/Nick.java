@@ -52,6 +52,7 @@ public class Nick {
     private Boolean isAuthed;
     private Boolean isNickRegistered;
     private Boolean isConnPlainText;
+    private Boolean isAccountPending;
 
     private Server userServer;
 
@@ -96,6 +97,7 @@ public class Nick {
         private Boolean isAuthed                     = false;
         private Boolean isNickRegistered             = false;
         private Boolean isConnPlainText              = false;
+        private Boolean isAccountPending             = false;
 
         private byte[] ipAddress                     = base64ToByteArray("AAAAAA=="); /* Base64 0.0.0.0 -- % echo "00000000" | xxd -r -p | base64 */
 
@@ -430,6 +432,7 @@ public class Nick {
         this.operClass             = builder.operClass;
         this.country               = builder.country;
         this.securityGroups        = builder.securityGroups;
+        this.isAccountPending      = builder.isAccountPending;
 
         try { addUser(this); }
         catch (ItemExistsException e) {
@@ -1118,6 +1121,14 @@ public class Nick {
 
         this.nickHistory = history;
 
+    }
+
+    public Boolean isAccountPending() {
+        return this.isAccountPending;
+    }
+
+    public void setAccountPending(Boolean b) {
+        this.isAccountPending = b;
     }
 
     public UserMask getUserMask() {

@@ -74,6 +74,7 @@ public class Messages {
     public static final String strHelloErrAlreadyAuth        = "HELLO is not available once you have authed.";
     public static final String strHelloErrAccountExists      = "An account with that name already exists.";
     public static final String strHelloNewAccountCreated     = "Your account has been created with username \"%s\" and password \"%s\" but you are not authed. You can now auth using AUTH <username> <password>";
+    public static final String strHelloThrottle              = "You can now auth using AUTH <username> <password>";
 
 
     /* CERTFP* */

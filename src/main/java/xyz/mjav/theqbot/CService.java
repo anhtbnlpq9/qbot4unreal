@@ -1698,6 +1698,8 @@ public class CService extends Service {
 
         if (userNode.isAuthed() == true) { sendReply(userNode, Messages.strHelloErrAlreadyAuth); return; }
 
+        if (userNode.isAccountPending() == true) { sendReply(userNode, Messages.strHelloThrottle); return; }
+
         try {
             email = csCommand.getArgs().get(0);
             if (config.hasFeature("tempAccountPassword") == false) {
@@ -1747,6 +1749,9 @@ public class CService extends Service {
 
         try { dispatcher.createUserAccount(newAccoutParams); }
         catch (Exception e) { sendReply(userNode, Messages.strHelloErrAccountExists); e.printStackTrace(); return; }
+
+        userNode.setAccountPending(true);
+
         sendReply(userNode, String.format(Messages.strHelloNewAccountCreated, accountName, password));
 
     }
