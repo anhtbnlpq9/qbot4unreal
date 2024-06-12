@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.time.Instant;
 
@@ -884,9 +885,30 @@ public class UnrealIRCd extends Exception implements Protocol {
          * <- :<server> 005 <dest nick> VARIABLExx=value VARIABLEyy=value ... :are supported by this server
          */
 
+        Map<String, String> featuresList = new LinkedHashMap<>();
+
         String version = Const.QBOT_VERSION_STRING;
-        String features = String.format("NETWORK=%s QSASL=%s QSVSLOGIN=%s QCHGHOST=%s", config.getNetworkName(), config.hasFeature("sasl"), config.hasFeature("svslogin"), config.hasFeature("chghost"));
+        //String features = String.format("NETWORK=%s QSASL=%s QSVSLOGIN=%s QCHGHOST=%s", config.getNetworkName(), config.hasFeature("sasl"), config.hasFeature("svslogin"), config.hasFeature("chghost"));
         String serverName;
+
+        StringJoiner features = new StringJoiner(" ");
+
+        featuresList.put("NETWORK",                 config.getNetworkName());
+        featuresList.put("QSASL",                   String.valueOf(config.hasFeature("sasl")));
+        featuresList.put("QSVSLOGIN",               String.valueOf(config.hasFeature("svslogin")));
+        featuresList.put("QCHGHOST",                String.valueOf(config.hasFeature("chghost")));
+        featuresList.put("QUSERMAXCHAN",            String.valueOf(config.getCServeAccountMaxChannels()));
+        featuresList.put("QUSERMAXCERTFP",          String.valueOf(config.getCServeAccountMaxCertFP()));
+        featuresList.put("QUSERMINMAXPASS",         String.format("%s,%s", config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
+        featuresList.put("QCHANBANTIME",            String.valueOf(config.getCserveChanBanTime()));
+        featuresList.put("QCHANAUTOLIMIT",          String.valueOf(config.getCserveChanAutoLimit()));
+        featuresList.put("QCHANAUTOLIMITFREQ",      String.valueOf(config.getCServeAutoLimitFreq()));
+        featuresList.put("QCHANMAXCHANLEVS",        String.valueOf(config.getCServeChanMaxChanlevs()));
+        featuresList.put("QCHANDEFAULTMODES",       config.getCserveChanDefaultModes());
+        featuresList.put("QUSERACCRANDOM",          String.valueOf(config.hasFeature("randomAccountName")));
+        featuresList.put("QUSERTEMPPASS",           String.valueOf(config.hasFeature("tempAccountPassword")));
+        featuresList.put("QLOGSTODEBUG",            String.valueOf(config.hasDbgLogging()));
+        featuresList.put("QLOGSTOES",               String.valueOf(config.getLoggingElasticEnabled()));
 
         try { serverName = ircMsg.getArgv().get(0); }
         catch (ArrayIndexOutOfBoundsException e) { return; }
@@ -894,8 +916,16 @@ public class UnrealIRCd extends Exception implements Protocol {
         List<String> strResponse = new ArrayList<>();
 
         strResponse.add(String.format(":%s 351 %s %s %s :%s", serverName, ircMsg.getFrom(), version, serverName, ":)"));
+
+        for (Map.Entry<String, String> e: featuresList.entrySet()) {
+                features.add(String.format("%s=%s", e.getKey(), e.getValue()));
+        }
+
         strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), features));
-        //strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "Test version"));
+
+        /*
+         * strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "Test version"));
+         */
 
         for (String s: strResponse) write(client, s);
     }
