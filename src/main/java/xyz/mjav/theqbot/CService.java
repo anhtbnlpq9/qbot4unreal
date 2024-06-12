@@ -1702,12 +1702,7 @@ public class CService extends Service {
 
         try {
             email = csCommand.getArgs().get(0);
-            if (config.hasFeature("tempAccountPassword") == false) {
-                /* Temporary account password disabled
-                 * Syntax: HELLO <email> <password>
-                 */
-                password = csCommand.getArgs().get(1);
-            }
+            if (config.hasFeature("tempAccountPassword") == false) password = csCommand.getArgs().get(1);
         }
         catch (IndexOutOfBoundsException e) { sendReply(userNode, Messages.strErrCommandSyntax); return; }
 
@@ -1872,10 +1867,10 @@ public class CService extends Service {
 
         if (csCommand.isFromNickAuthed() == false) { sendReply(csCommand.getFromNick(), Messages.strErrCommandUnknown); return; }
 
-        userAccount  = csCommand.getFromNickAccount();
-        certfpList   = StringTools.addRemoveString(csCommand.getArgs(), 1);
+        userAccount    = csCommand.getFromNickAccount();
+        certfpList     = StringTools.addRemoveString(csCommand.getArgs(), Const.CS_CERTFP_MAX_INPUT);
         certfpToAdd    = certfpList.get("+");
-        certfpToRemove    = certfpList.get("-");
+        certfpToRemove = certfpList.get("-");
 
         /* Display registered certfp */
         if (certfpToAdd.size() + certfpToRemove.size() == 0) {
