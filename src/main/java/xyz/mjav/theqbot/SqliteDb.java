@@ -1144,7 +1144,7 @@ public class SqliteDb implements Database {
             catch (Exception e) { e.printStackTrace(); }
 
             try (Statement statement = connection.createStatement()) {
-                sql = "INSERT INTO logins (userId, userSid, userTS) VALUES ('" + userNode.getAccount().getId() + "', '" + userNode.getUid() + "', '" + userNode.getUserTS().toString() + "');";
+                sql = String.format("INSERT INTO logins (userId, userSid, userTS) VALUES ('%s', '%s', '%s');", userNode.getAccount().getId(), userNode.getUid(), userNode.getUserTS().toString());
                 statement.executeUpdate(sql);
             }
             catch (Exception e) {
