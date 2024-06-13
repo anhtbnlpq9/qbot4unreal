@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
+import xyz.mjav.theqbot.exceptions.ChannelNotFoundException;
 import xyz.mjav.theqbot.exceptions.NickNotFoundException;
 import xyz.mjav.theqbot.exceptions.ServerNotFoundException;
 
@@ -18,14 +19,14 @@ public class IrcMessage {
     public static final IrcMessage create(String str) {
 
         String fromTxt = "";
-        //String targetTxt;
+        String targetTxt = "";
         String commandStartTxt = "";
         String ircv3Txt = "";
 
         StringJoiner commandJoiner;
 
         Object from;
-        //Object target;
+        Object target = null;
 
         List<String> argv = new ArrayList<>();
 
@@ -83,7 +84,22 @@ public class IrcMessage {
             from = Server.getPeer();
         }
 
-        IrcMessage ircMsg = new IrcMessage.Builder().from(from).ircv3Tag(ircv3Txt).command(commandStartTxt).argv(argv).build();
+        /* Check if target is a server, chan or nick */
+        try { targetTxt = argv.get(0); }
+        catch (IndexOutOfBoundsException e) { targetTxt = ""; }
+
+        if (targetTxt.isEmpty() == false) {
+            try { target = Nick.getNick(targetTxt); }
+            catch (NickNotFoundException f) {
+                try { target = Channel.getChanByNameCi(targetTxt); }
+                catch (ChannelNotFoundException g) {
+                    try { target = Server.getServer(targetTxt); }
+                    catch (ServerNotFoundException e) { target = null; }
+                }
+            }
+        }
+
+        IrcMessage ircMsg = new IrcMessage.Builder().from(from).target(target).ircv3Tag(ircv3Txt).command(commandStartTxt).argv(argv).build();
         return ircMsg;
     }
 
@@ -96,6 +112,7 @@ public class IrcMessage {
     private String targetType;
     private Nick targetNick;
     private Channel targetChan;
+    private Server targetServer;
     private List<String> argv;
     private String qMsgId;
 
@@ -109,6 +126,7 @@ public class IrcMessage {
         this.targetType     = b.targetType;
         this.targetNick     = b.targetNick;
         this.targetChan     = b.targetChan;
+        this.targetServer   = b.targetServer;
         this.argv           = b.argv;
 
         RandomString rds = new RandomString(32);
@@ -142,6 +160,16 @@ public class IrcMessage {
         return from;
     }
 
+    public Object getTarget() {
+        Object to = null;
+        if (targetNick != null) to = targetNick;
+        else if (targetServer != null) to = targetServer;
+        else if (targetChan != null) to = targetChan;
+        else to = "";
+
+        return to;
+    }
+
     public String getTargetType() {
         return this.targetType;
     }
@@ -152,6 +180,10 @@ public class IrcMessage {
 
     public Channel gettargetChan() {
         return this.targetChan;
+    }
+
+    public Server gettargetServer() {
+        return this.targetServer;
     }
 
     public String getCommand() {
@@ -182,9 +214,10 @@ public class IrcMessage {
 
         private String command;
 
-        private String targetType;
-        private Nick targetNick;
-        private Channel targetChan;
+        private String targetType = "";
+        private Nick targetNick = null;
+        private Channel targetChan = null;
+        private Server targetServer = null;
 
         private List<String> argv = new ArrayList<>();
 
@@ -210,15 +243,13 @@ public class IrcMessage {
             return this;
         }
 
-        /*private Builder targetType(String val) {
-            this.targetType = val;
-            return this;
-        }*/
+        private Builder target(Object val) {
+            if (val instanceof Server) { this.targetServer = (Server) val; this.targetType = "server"; }
+            else if (val instanceof Nick) { this.targetNick = (Nick) val; this.targetType = "nick"; }
+            else if (val instanceof Channel) { this.targetChan = (Channel) val; this.targetType = "channel"; }
 
-        /*private Builder targetNick(Nick val) {
-            this.targetNick = val;
             return this;
-        }*/
+        }
 
         private Builder argv(List<String> val) {
             this.argv = val;

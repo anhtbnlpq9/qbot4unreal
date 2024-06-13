@@ -2774,6 +2774,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         log.trace(String.format("UnrealIRCd::getResponse:   | timestamp: %s", ircMsg.getTimestamp()));
         log.trace(String.format("UnrealIRCd::getResponse:   | ircv3 tag: %s", ircMsg.getIrcv3Tag()));
         log.trace(String.format("UnrealIRCd::getResponse:   |      from: %s %s", ircMsg.getFromType(), ircMsg.getFrom()));
+        log.trace(String.format("UnrealIRCd::getResponse:   |        to: %s %s", ircMsg.getTargetType(), ircMsg.getTarget()));
         log.trace(String.format("UnrealIRCd::getResponse:   |   command: %s", ircMsg.getCommand()));
         log.trace(String.format("UnrealIRCd::getResponse:   | arguments: %s", ircMsg.getArgv()));
 

@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
  * A CService command containing the following properties:
  * - (Nick) nick from
  * - (boolean) is the nick from authed
+ * - (Nick) nick to
  * - (UserAccount) if the nick from is authed, its associated user account
  * - (String) the command name (such as CHANLEV)
  * - (List) the command arguments (such as [#channel nick +fla-gs] for a command CHANLEV #channel nick +fla-gs)
@@ -31,6 +32,7 @@ public final class CSCommand {
     //private final String direction; // Like inbound or outbound
     private final List<String> args;
     private final Nick fromNick;
+    private final Nick toNick;
     private final boolean isNickAuthed;
     private final UserAccount fromNickAccount;
     private final IrcMessage ircMsg;
@@ -38,6 +40,7 @@ public final class CSCommand {
 
     public static CSCommand create(IrcMessage ircMsg) {
         Nick fromNick = ircMsg.getFromNick();
+        Nick toNick   = ircMsg.getTargetNick();
         List<String> cmdArgs;
         List<String> cmdArgs2;
         String str = ircMsg.getArgv().get(1);
@@ -49,18 +52,19 @@ public final class CSCommand {
 
         cmdArgs2 = cmdArgs.subList(1, cmdArgs.size());
 
-        return new CSCommand(ircMsg, fromNick, commandName, cmdArgs2);
+        return new CSCommand(ircMsg, fromNick, toNick, commandName, cmdArgs2);
     }
 
-    private CSCommand(IrcMessage ircMsg, Nick nick, String command, List<String> args) {
-        this.fromNick = nick;
+    private CSCommand(IrcMessage ircMsg, Nick fNick, Nick tNick, String command, List<String> args) {
+        this.fromNick = fNick;
         this.commandName = command;
         this.args = args;
         this.ircMsg = ircMsg;
+        this.toNick = tNick;
 
-        if (nick.isAuthed() == true) {
+        if (fNick.isAuthed() == true) {
             this.isNickAuthed = true;
-            this.fromNickAccount = nick.getAccount();
+            this.fromNickAccount = fNick.getAccount();
         }
         else {
             this.isNickAuthed = false;
