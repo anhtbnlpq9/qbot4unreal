@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import xyz.mjav.theqbot.exceptions.ChannelNotFoundException;
 import xyz.mjav.theqbot.exceptions.ItemExistsException;
 import xyz.mjav.theqbot.exceptions.ItemNotFoundException;
 
@@ -166,10 +167,10 @@ public class Channel extends Account implements Comparable<Channel> {
      * Returns the channel by its name (case insensitive)
      * @param name channel name
      * @return channel
-     * @throws ItemNotFoundException when the user account is not found
+     * @throws ChannelNotFoundException when the user account is not found
      */
-    public static Channel getChanByNameCi(String name) throws ItemNotFoundException {
-        if (channelListByName.containsKey(name.toLowerCase()) == false) throw new ItemNotFoundException();
+    public static Channel getChanByNameCi(String name) throws ChannelNotFoundException {
+        if (channelListByName.containsKey(name.toLowerCase()) == false) throw new ChannelNotFoundException();
         return channelListByName.get(name.toLowerCase());
     }
 

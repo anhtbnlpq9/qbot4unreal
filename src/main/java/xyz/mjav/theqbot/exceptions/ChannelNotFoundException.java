@@ -1,6 +1,6 @@
 package xyz.mjav.theqbot.exceptions;
 
-public class ChannelNotFoundException extends Exception {
+public class ChannelNotFoundException extends ItemNotFoundException {
     public ChannelNotFoundException() {
         super();
     }
