@@ -79,6 +79,7 @@ public abstract class Const {
     public static final int      CHANBEI_BANS             = 0x0001;
     public static final int      CHANBEI_EXCEPTS          = 0x0002;
     public static final int      CHANBEI_INVITES          = 0x0003;
+    public static final int      CHANBEI_SQLINE           = 0x0004;
 
 
     public static String getAuthTypeString(Integer type) {
