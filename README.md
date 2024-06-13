@@ -20,7 +20,7 @@
 
 ## What is this
 
-This is a small personal project with the purpose to "port" the Q bot 
+This is a small personal project with the purpose to "port" the Q bot
 that can be used on QuakeNet (snircd/ircu daemon), to UnrealIRCd daemon.
 
 ## Why is that
@@ -42,7 +42,6 @@ Plan for features to be (more or less) herited from the Q bot:
 * account registration
 * account auth (password, challenge)
 * user auto vhost on auth
-* no nick ownership
 * account properties/rights (through flags)
 * straightforward channel registration (not through R, or why not)
 * channel chanlev, chanflags system
