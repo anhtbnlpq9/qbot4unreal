@@ -888,10 +888,9 @@ public class UnrealIRCd extends Exception implements Protocol {
         Map<String, String> featuresList = new LinkedHashMap<>();
 
         String version = Const.QBOT_VERSION_STRING;
-        //String features = String.format("NETWORK=%s QSASL=%s QSVSLOGIN=%s QCHGHOST=%s", config.getNetworkName(), config.hasFeature("sasl"), config.hasFeature("svslogin"), config.hasFeature("chghost"));
         String serverName;
 
-        StringJoiner features = new StringJoiner(" ");
+        StringJoiner featureString = new StringJoiner(" ");
 
         featuresList.put("NETWORK",                 config.getNetworkName());
         featuresList.put("QSASL",                   String.valueOf(config.hasFeature("sasl")));
@@ -918,7 +917,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         strResponse.add(String.format(":%s 351 %s %s %s :%s", serverName, ircMsg.getFrom(), version, serverName, ":)"));
 
         for (Map.Entry<String, String> e: featuresList.entrySet()) {
-                features.add(String.format("%s=%s", e.getKey(), e.getValue()));
+                featureString.add(String.format("%s=%s", e.getKey(), e.getValue()));
         }
 
         strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), features));

@@ -19,7 +19,11 @@ public class UserMask implements Bei {
     private final String host;
 
     /**
-     * Checks for usermask validity (can be either in the format nick!user@host or just nick)
+     * Checks for usermask validity (can be either in the format nick!user@host or just nick).
+     * Valid usermask:
+     *  o nick!user@host
+     *  o nick (will be translated to nick!*@*)
+     *
      * @param s input usermask
      * @return whether the usermask is valid of not
      */
