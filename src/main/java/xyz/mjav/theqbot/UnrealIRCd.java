@@ -916,11 +916,21 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         strResponse.add(String.format(":%s 351 %s %s %s :%s", serverName, ircMsg.getFrom(), version, serverName, ":)"));
 
+        int featureInt = 1;
         for (Map.Entry<String, String> e: featuresList.entrySet()) {
                 featureString.add(String.format("%s=%s", e.getKey(), e.getValue()));
+                featureInt++;
+
+                /* Check if we have enough arguments before finishing a batch */
+                if (featureInt >= Const.QBOT_VERSION_RESPONSE_MAX_VARIABLES) {
+                    strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), featureString));
+                    featureString = new StringJoiner(" ");
+                    featureInt = 1;
+                }
         }
 
-        strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), features));
+        /* Add the rest when the number of arguments if less than the limit*/
+        if (featureInt < Const.QBOT_VERSION_RESPONSE_MAX_VARIABLES) strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), featureString));
 
         /*
          * strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "Test version"));
