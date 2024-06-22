@@ -123,7 +123,7 @@ public final class CSCommand {
 
 
         log.debug(String.format("CSCommand::CSCommand: parsed CService command:"));
-        log.debug(String.format("CSCommand::CSCommand:   | from   : %s", this.fromNick));
+        log.debug(String.format("CSCommand::CSCommand:   |    from: %s", this.fromNick.getNick()));
         log.debug(String.format("CSCommand::CSCommand:   | command: %s", this.commandName));
         log.debug(String.format("CSCommand::CSCommand:   |    args: %s", String.valueOf(args)));
         log.debug(String.format("CSCommand::CSCommand:   |  authed: %s", this.isNickAuthed));

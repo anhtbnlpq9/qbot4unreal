@@ -513,7 +513,7 @@ public class UnrealIRCd extends Exception implements Protocol {
     @Override
     public void sendUid(Nick from) {
         String str;
-        // UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos
+        /* UID nickname hopcount timestamp username hostname uid servicestamp usermodes virtualhost cloakedhost ip :gecos */
         str = String.format(":%s UID %s 1 %s %s %s %s * %s %s * %s :%s",
                 config.getServerId(), from.getNick(), from.getUserTS(), from.getIdent(), from.getRealHost(), from.getUid(), from.getModesAsString(), from.getHost(), from.getIpAddressAsBase64(), from.getRealName()
         );
@@ -592,7 +592,7 @@ public class UnrealIRCd extends Exception implements Protocol {
             toServerSid = user.getServer().getSid();
         }
 
-        // :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay
+        /* :5PB SVSLOGIN ocelot. 5P0QVW5M3 AnhTay */
         if (isAuth == true) accountNameToAuth = account.getName();
 
         str = String.format(":%s SVSLOGIN %s %s %s", config.getServerId(), toServerSid, user.getUid(), accountNameToAuth);
@@ -1014,10 +1014,10 @@ public class UnrealIRCd extends Exception implements Protocol {
             }
 
             default: {
-                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "l (links) - Current connections information."));
-                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "m (commands) - Message usage information."));
-                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "o (operators) - Operator information."));
-                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "u (uptime) - Current uptime & highest connection count."));
+                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "l (links)      - Current connections information."));
+                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "m (commands)   - Message usage information."));
+                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "o (operators)  - Operator information."));
+                strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "u (uptime)     - Current uptime & highest connection count."));
             }
         }
 
@@ -1895,17 +1895,17 @@ public class UnrealIRCd extends Exception implements Protocol {
                 catch (InvalidFormatException e) { log.error(String.format("UnrealIRCd::setMode: beI %s has invalid format", chanListItem), e); return; }
                 log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: list %s", chan.getName(), listItem));
 
-                if (listItem.startsWith("&")) { // +b
+                if (listItem.startsWith("&")) { /* +b */
                     chan.addBanList(mask);
                     log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));
                 }
 
-                else if (listItem.startsWith("\"")) { // +e
+                else if (listItem.startsWith("\"")) { /* +e */
                     chan.addExceptList(mask);
                     log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));
                 }
 
-                else if (listItem.startsWith("'")) { // +I
+                else if (listItem.startsWith("'")) { /* +I */
                     chan.addInviteList(mask);
                     log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));
                 }
@@ -2698,7 +2698,7 @@ public class UnrealIRCd extends Exception implements Protocol {
     }
 
     private void handleSetHost(String raw) {
-        // :AAAAAAA SETHOST :newHostName
+        /* :AAAAAAA SETHOST :newHostName */
 
         log.debug("UnrealIRCd::handleSetHost: received a SETHOST message");
         if (raw.isEmpty() == true) return;
@@ -2725,7 +2725,7 @@ public class UnrealIRCd extends Exception implements Protocol {
     }
 
     private void handleUMode2(String raw) {
-        // :nick UMODE2 modes
+        /* :nick UMODE2 modes */
 
         log.debug("UnrealIRCd::handleUMode2: received a UMODE2 message");
         if (raw.isEmpty() == true) return;
@@ -2851,7 +2851,6 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         //System.out.println(String.format(">>> command[1] = '%s' // from + ircmsg.getCommand() = '%s + %s'", command[1], ircMsg.getFrom(), ircMsg.getCommand()));
         switch(command[1].toUpperCase()) {
-            //case "PRIVMSG":        handlePrivmsg(rawStripped); return;
             case "PRIVMSG":
                 CompletableFuture.runAsync(() -> {
                     try { handlePrivmsg(ircMsg); }
@@ -2882,7 +2881,7 @@ public class UnrealIRCd extends Exception implements Protocol {
             /* List of unhandled commands */
             case "SINFO":          handleSinfo(rawStripped);          return; /* Not implemented */
             case "MODULE":         handleNothing(ircMsg);             return;
-            case "STATS":          handleStats(ircMsg);               return; // TODO: to implement
+            case "STATS":          handleStats(ircMsg);               return;
             case "TKL":            handleNothing(ircMsg);             return; // TODO: to implement
             case "TIME":           handleUnknownCommand(rawStripped); return; // TODO: to implement
             case "CREDITS":        handleUnknownCommand(rawStripped); return; // TODO: to implement
@@ -2926,7 +2925,7 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         for (String ss: UnrealIRCd.protoFeatures) protoFeaturesString.add(ss);
 
-        // PROTOCTL EAUTH=my.server.name[,protocolversion[,versionflags,fullversiontext]]
+        /* PROTOCTL format: PROTOCTL EAUTH=my.server.name[,protocolversion[,versionflags,fullversiontext]] */
 
         s = String.format(":%s PASS :%s", config.getServerId(), config.getLinkPassword()); client.write(s);
         s = String.format(":%s PROTOCTL %s", config.getServerId(), protoFeaturesString.toString()); client.write(s);

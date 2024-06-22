@@ -140,7 +140,7 @@ public class CService extends Service {
     private void performJoinActions(Nick fromNick, Channel channel) {
 
         /* 1. join the chan */
-        //protocol.chanJoin(fromNick, channel);
+        //protocol.chanJoin(fromNick, channel); /* No need because it is managed in the calling method */
 
         /* 2. set bot modes: Setting the channel modes and bot mode inside the channel */
         try { protocol.setMode( channel, "+r" + chanJoinModes, fromNick.getNick()); }

@@ -93,7 +93,8 @@ public class Client implements Runnable {
 
             switch(config.getNetworkProtocol()) {
                 case "unrealircd": protocol = new UnrealIRCd(config, database, this); break;
-                //case "inspircd":   protocol = new InspIRCd(config, database); break;
+                /* case "inspircd":   protocol = new InspIRCd(config, database); break; */
+
                 default: {
                     log.fatal("Protocol is not defined! Quitting.");
                     System.exit(0);

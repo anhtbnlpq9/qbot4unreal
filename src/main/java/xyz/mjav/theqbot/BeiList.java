@@ -54,11 +54,6 @@ public class BeiList {
         return list.isEmpty();
     }
 
-    //public void forEach(BiConsumer<? super Bei, ? super BeiProperty> action) {
-    //    return list.forEach(action);
-    //}
-
-
     public void forEach(BiConsumer<? super Bei, ? super BeiProperty> action) {
       Objects.requireNonNull(action);
 
