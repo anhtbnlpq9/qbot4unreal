@@ -4,7 +4,7 @@
 
 ### General
 - [ ] conf REHASH
-- [x] logging to a database
+- [X] logging to a database
 - [ ] i18n
 - [ ] actions log
 
@@ -37,6 +37,52 @@ Nothing here
 - [ ] Implement Elastic
 - [ ] Implement MariaDB/MySQL
 
+### Flags
+
+#### User flags
+- [ ] +D deleted
+- [X] +a admin
+- [X] +d devgod
+- [ ] +g glined
+- [ ] +l no auth limit
+- [X] +m privmsg
+- [X] +o oper
+- [ ] +p protected
+- [X] +q staff
+- [X] +v auto vhost
+- [X] +w welcome
+- [X] +z suspended
+
+#### Chan flags
+- [ ] +b bitch
+- [X] +c autolimit
+- [ ] +e enforce
+- [ ] +f force topic
+- [X] +j joined
+- [ ] +k known only
+- [ ] +p protected
+- [ ] +t topic save
+- [X] +v voice all
+- [X] +w welcome
+- [ ] +y glined
+- [X] +z suspended
+
+#### Chanlev
+- [X] +a auto
+- [X] +b banned
+- [ ] +d deny op
+- [X] +h half op
+- [ ] +j auto invite
+- [X] +k known
+- [X] +m master
+- [X] +n owner
+- [X] +o op
+- [ ] +p protect
+- [ ] +t topic
+- [ ] +u deny voice
+- [X] +v voice
+- [ ] +w hide welcome
+
 
 ## Oper stuff
 - [ ] user gline
@@ -62,6 +108,7 @@ Nothing here
 - [ ] UNBANME
 - [ ] CHANORPHANS => channels with no +n
 - [ ] CHANBAN => implement channel "gline"
+
 
 ### User related
 - [ ] ACCOUNTHISTORY => list action history for user account
