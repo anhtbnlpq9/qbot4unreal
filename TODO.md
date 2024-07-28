@@ -24,11 +24,10 @@
 ### Protocol
 - [ ] security groups
 
-
 ### Accounts
 - [ ] account edit history (email, password)
 - [ ] account auth with challenge auth => maybe not necessary and can be replaced with SASL/TLS or CertFP, or implement SCRAM-SHA256
-
+- [ ] vhosts
 
 ### Channels
 Nothing here
@@ -83,6 +82,8 @@ Nothing here
 - [X] +v voice
 - [ ] +w hide welcome
 
+### Other
+- [ ] service master/slave redundancy
 
 ## Oper stuff
 - [ ] user gline
@@ -124,6 +125,7 @@ Nothing here
 - [ ] JUPE  => operservice?
 - [ ] REHASH
 - [ ] RESTART
+- [ ] NETINFO => network/protocol information
 
 
 ## Interesting commands/features
