@@ -10,7 +10,7 @@ public abstract class Const {
     private static Config config = Config.getConfig();
 
     /* Generic constants */
-    public static final String QBOT_VERSION_NUMBER                   = "1.1.2";
+    public static final String QBOT_VERSION_NUMBER                   = "1.1.3";
     public static final String QBOT_VERSION_STRING                   = String.format("TheQBot4Unreal-%s", QBOT_VERSION_NUMBER);
     public static final int    QBOT_VERSION_RESPONSE_MAX_VARIABLES   = 12;
 
