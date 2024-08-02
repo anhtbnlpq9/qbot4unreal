@@ -50,7 +50,9 @@ abstract class Flags {
      *                     - modify CHANFLAGS of any channel (except for suspended channels),
      *                     - modify USERFLAGS of any user (except +az uflag users), except personal flags,
      *                     - modify CHANLEV of any channel (except +az uflag users), except personal flags.
-     * +p PROTECT       :: TBD
+     * +p PROTECTED     :: Gives the user a protection against accidental destructive operations (such as account deletion).
+     *                     Once this flag is set, the user account cannot be deleted and its flags cannot be set or unset
+     *                     except for this flag.
      * +q STAFF         :: Gives the user the staff status on the bot.
      *                     The staff has the right to perform operator-related actions:
      *                     - access to additional WHOIS information (user CHANLEV) of any user
@@ -131,7 +133,7 @@ abstract class Flags {
     private static final int   UFLAG_PRIVMSG       = 0x00002000; /* +m */
     /*private static final int   UFLAG_SPARE_n       = 0x00001000;*/ /* +n */
     private static final int   UFLAG_OPER          = 0x00000800; /* +o */
-    private static final int   UFLAG_PROTECT       = 0x00000400; /* +p */
+    private static final int   UFLAG_PROTECTED     = 0x00000400; /* +p */
     private static final int   UFLAG_STAFF         = 0x00000200; /* +q */
     /*private static final int   UFLAG_SPARE_r       = 0x00000100;*/ /* +r */
     /*private static final int   UFLAG_SPARE_s       = 0x00000080;*/ /* +s */
@@ -149,7 +151,7 @@ abstract class Flags {
     private static final int   UFLAGS_USERCON      = (UFLAG_WELCOME | UFLAG_AUTOVHOST | UFLAG_PRIVMSG);
 
     /* Oper control */
-    private static final int   UFLAGS_OPERCON      = (UFLAG_NOAUTHLIMIT | UFLAG_PROTECT | UFLAG_STAFF);
+    private static final int   UFLAGS_OPERCON      = (UFLAG_NOAUTHLIMIT | UFLAG_PROTECTED | UFLAG_STAFF);
 
     /* Admin control */
     private static final int   UFLAGS_ADMINCON     = (UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON | UFLAG_OVERRIDE);
@@ -182,7 +184,7 @@ abstract class Flags {
         entry("l",   UFLAG_NOAUTHLIMIT),
         entry("m",   UFLAG_PRIVMSG),
         entry("o",   UFLAG_OPER),
-        entry("p",   UFLAG_PROTECT),
+        entry("p",   UFLAG_PROTECTED),
         entry("q",   UFLAG_STAFF),
         entry("v",   UFLAG_AUTOVHOST),
         entry("w",   UFLAG_WELCOME),
@@ -199,7 +201,7 @@ abstract class Flags {
         entry(UFLAG_NOAUTHLIMIT,    "l"),
         entry(UFLAG_PRIVMSG,        "m"),
         entry(UFLAG_OPER,           "o"),
-        entry(UFLAG_PROTECT,        "p"),
+        entry(UFLAG_PROTECTED,      "p"),
         entry(UFLAG_STAFF,          "q"),
         entry(UFLAG_AUTOVHOST,      "v"),
         entry(UFLAG_WELCOME,        "w"),
@@ -214,7 +216,7 @@ abstract class Flags {
         entry(UFLAG_NOAUTHLIMIT,    "l:noauthlimit"),
         entry(UFLAG_PRIVMSG,        "m:privmsg"),
         entry(UFLAG_OPER,           "o:oper"),
-        entry(UFLAG_PROTECT,        "p:protect"),
+        entry(UFLAG_PROTECTED,      "p:protected"),
         entry(UFLAG_STAFF,          "q:staff"),
         entry(UFLAG_AUTOVHOST,      "v:autovhost"),
         entry(UFLAG_WELCOME,        "w:nowelcome"),
@@ -1939,12 +1941,17 @@ abstract class Flags {
     }
 
     /**
-     * Returns if the user has user flag PROTECT
+     * Returns if the user has user flag PROTECTED
      * @param userFlags User flags
      * @return True or False
      */
-    public static Boolean isUserProtect(Integer userFlags) {
-        if ( (userFlags & UFLAG_PROTECT) == 0) {
+    public static Boolean isUserProtected(Integer userFlags) {
+        if ( (userFlags & UFLAG_PROTECTED) == 0) {
+            return false;
+        }
+        else return true;
+    }
+
     /**
      * Returns if the user has user flag OVERRIDE
      * @param userFlags User flags
@@ -2103,12 +2110,14 @@ abstract class Flags {
     }
 
     /**
-     * Sets the user flag PROTECT
+     * Sets the user flag PROTECTED
      * @param userFlags User flags
      * @return Resulting user flags
      */
-    public static Integer setUserProtect(Integer userFlags) {
-        return (userFlags | UFLAG_PROTECT);
+    public static Integer setUserProtected(Integer userFlags) {
+        return (userFlags | UFLAG_PROTECTED);
+    }
+
     /**
      * Sets the user flag OVERRIDE
      * @param userFlags User flags
@@ -2200,12 +2209,13 @@ abstract class Flags {
     }
 
     /**
-     * Clears the user flag PROTECT
+     * Clears the user flag PROTECTED
      * @param userFlags User flags
      * @return Resulting user flags
      */
-    public static Integer clearUserProtect(Integer userFlags) {
-        return (userFlags & ~UFLAG_ADMIN);
+    public static Integer clearUserProtected(Integer userFlags) {
+        return (userFlags & ~UFLAG_PROTECTED);
+    }
 
     /**
      * Clears the user flag OVERRIDE
