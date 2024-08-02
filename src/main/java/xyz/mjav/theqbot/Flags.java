@@ -167,9 +167,9 @@ abstract class Flags {
     public  static final int   UFLAG_ADMIN_PRIV    = (UFLAG_ADMIN | UFLAG_DEVGOD );
     public  static final int   UFLAG_DEVGOD_PRIV   = (UFLAG_DEVGOD);
 
-    private static final int   UFLAGS_PUBLIC       = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
     /* User flags publicly visible (from WHOAMI for example). Non-listed flags are hidden by default. */
     /* Currently not implemented. */
+    private static final int   UFLAGS_PUBLIC       = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
 
     /* Default user flags for new accounts */
     private static final int   UFLAGS_NEW_ACCOUNT  = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
