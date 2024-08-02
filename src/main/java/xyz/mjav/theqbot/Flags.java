@@ -35,6 +35,9 @@ abstract class Flags {
      *                     In addition to commands available to ADMIN flag, the user also has
      *                     access to developper/debugging commands that may usually break
      *                     things and crash the bot.
+     * +e OVERRIDE      :: Gives the user the OVERRIDE privilege that bypasses confirmation operation for destructive
+     *                     commands such as deleting an user account, deleting a channel, etc. This privilege
+     *                     does not bypass the PROTECTED flag.
      * +g GLINE         :: TBD
      * +l NOAUTHLIMIT   :: Inhibit the per-account login limit.
      * +o OPER          :: Gives the user the oper status on the bot.
@@ -117,7 +120,7 @@ abstract class Flags {
     /*private static final int   UFLAG_SPARE_b       = 0x01000000;*/ /* +b */
     /*private static final int   UFLAG_SPACE_c       = 0x00800000;*/ /* +c */
     private static final int   UFLAG_DEVGOD        = 0x00400000; /* +d */
-    /*private static final int   UFLAG_SPARE_e       = 0x00200000;*/ /* +e */
+    private static final int   UFLAG_OVERRIDE      = 0x00200000; /* +e */
     /*private static final int   UFLAG_SPARE_f       = 0x00100000;*/ /* +f */
     private static final int   UFLAG_GLINE         = 0x00080000; /* +g */
     /*private static final int   UFLAG_SPARE_h       = 0x00040000;*/ /* +h */
@@ -149,7 +152,7 @@ abstract class Flags {
     private static final int   UFLAGS_OPERCON      = (UFLAG_NOAUTHLIMIT | UFLAG_PROTECT | UFLAG_STAFF);
 
     /* Admin control */
-    private static final int   UFLAGS_ADMINCON     = (UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON);
+    private static final int   UFLAGS_ADMINCON     = (UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON | UFLAG_OVERRIDE);
 
     /* DevGod control */
     private static final int   UFLAGS_DEVGODCON    = (UFLAG_DEVGOD | UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON | UFLAGS_ADMINCON);
@@ -174,6 +177,7 @@ abstract class Flags {
      */
     private static final Map<String, Integer> userFlagCharMap = Map.ofEntries(
         entry("a",   UFLAG_ADMIN),
+        entry("e",   UFLAG_OVERRIDE),
         entry("g",   UFLAG_GLINE),
         entry("l",   UFLAG_NOAUTHLIMIT),
         entry("m",   UFLAG_PRIVMSG),
@@ -190,6 +194,7 @@ abstract class Flags {
     /** Maps user flag constant to char */
     private static final Map<Integer, String> userFlagCharRevMap = Map.ofEntries(
         entry(UFLAG_ADMIN,          "a"),
+        entry(UFLAG_OVERRIDE,       "e"),
         entry(UFLAG_GLINE,          "g"),
         entry(UFLAG_NOAUTHLIMIT,    "l"),
         entry(UFLAG_PRIVMSG,        "m"),
@@ -1940,6 +1945,13 @@ abstract class Flags {
      */
     public static Boolean isUserProtect(Integer userFlags) {
         if ( (userFlags & UFLAG_PROTECT) == 0) {
+    /**
+     * Returns if the user has user flag OVERRIDE
+     * @param userFlags User flags
+     * @return True or False
+     */
+    public static Boolean isUserOverride(Integer userFlags) {
+        if ( (userFlags & UFLAG_OVERRIDE) == 0) {
             return false;
         }
         else return true;
@@ -2097,6 +2109,13 @@ abstract class Flags {
      */
     public static Integer setUserProtect(Integer userFlags) {
         return (userFlags | UFLAG_PROTECT);
+    /**
+     * Sets the user flag OVERRIDE
+     * @param userFlags User flags
+     * @return Resulting user flags
+     */
+    public static Integer setUserOverride(Integer userFlags) {
+        return (userFlags | UFLAG_OVERRIDE);
     }
 
     /**
@@ -2187,6 +2206,14 @@ abstract class Flags {
      */
     public static Integer clearUserProtect(Integer userFlags) {
         return (userFlags & ~UFLAG_ADMIN);
+
+    /**
+     * Clears the user flag OVERRIDE
+     * @param userFlags User flags
+     * @return Resulting user flags
+     */
+    public static Integer clearUserOverride(Integer userFlags) {
+        return (userFlags & ~UFLAG_OVERRIDE);
     }
 
     /**
