@@ -202,7 +202,6 @@ public class UnrealIRCd extends Exception implements Protocol {
     private Dispatcher dispatcher = new Dispatcher(config, database, this);
 
     public static synchronized UnrealIRCd getInstance(Config config, Database database, Client client) {
-
         if (instance.equals(null) == true) instance = new UnrealIRCd(config, database, client);
         return instance;
     }
@@ -869,30 +868,20 @@ public class UnrealIRCd extends Exception implements Protocol {
         client.write(str);
     }
 
-    //private void handlePrivmsg(String raw) throws Exception {
     private void handlePrivmsg(IrcMessage ircMsg) throws Exception {
-        /* raw = :from PRIVMSG to :message */
         log.debug("UnrealIRCd::handlePrivmsg: received a PRIVMSG");
-        //if (raw.isEmpty() == true) return;
 
-        //String[] rawSplit = raw.split(" ", 4);
-
-        //String from;
         String to;
         String message;
 
         Nick fromUser;
         Nick toUser;
 
-        //try { from = rawSplit[0].replaceAll("^[:]", ""); }
-        //catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'from' field in raw %s", raw), e); return; }
-
         try {
             //to = rawSplit[2];
             to = ircMsg.getArgv().get(0);
             if (to.contains("@") == true) to = to.split("@")[0];
         }
-        //catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'to' field in raw %s", raw), e); return; }
         catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'to' field in raw %s", ircMsg), e); return; }
 
         /* If the PRIVMSG targets a channel, then we can ignore it */

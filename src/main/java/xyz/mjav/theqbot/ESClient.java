@@ -105,14 +105,13 @@ public class ESClient implements Runnable {
         try {
             esClient.index(i -> i.index(index).withJson(json)).whenComplete((response, exception) -> {
                 if (exception != null) {
-                    log.error("Failed to index", exception);
+                    log.error("ESClient::index: Failed to index", exception);
                 }
             });
 
         }
         catch (Exception e) {
-            log.error(String.format("ESClient::index: could not index the string"));
-            e.printStackTrace();
+            log.error(String.format("ESClient::index: could not index the string", e));
             return;
         }
 

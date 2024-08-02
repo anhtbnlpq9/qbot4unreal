@@ -1044,8 +1044,6 @@ public class CService extends Service {
         }
 
         try {
-            //String[] nickListTmp = command[3].split(" ", 15);
-            //nickList = nickListTmp;
             nickList = csCommand.getArgs().subList(2, csCommand.getArgs().size());
         }
         catch (Exception e) {
