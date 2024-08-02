@@ -147,16 +147,16 @@ abstract class Flags {
 
     private static final int   UFLAG_ALL           = 0xffffffff;
 
-    /* User control */
+    /* User control: flags that can be set/unset by the users */
     private static final int   UFLAGS_USERCON      = (UFLAG_WELCOME | UFLAG_AUTOVHOST | UFLAG_PRIVMSG);
 
-    /* Oper control */
+    /* Oper control: flags that can be set/unset by >= opers */
     private static final int   UFLAGS_OPERCON      = (UFLAG_NOAUTHLIMIT | UFLAG_PROTECTED | UFLAG_STAFF);
 
-    /* Admin control */
+    /* Admin control: flags that can be set/unset by >= admins */
     private static final int   UFLAGS_ADMINCON     = (UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON | UFLAG_OVERRIDE);
 
-    /* DevGod control */
+    /* DevGod control: flags that can be set/unset by >= devgod */
     private static final int   UFLAGS_DEVGODCON    = (UFLAG_DEVGOD | UFLAG_ADMIN | UFLAG_OPER | UFLAGS_OPERCON | UFLAGS_USERCON | UFLAGS_ADMINCON);
 
     private static final int   UFLAGS_ALLOWED      = (UFLAGS_USERCON | UFLAGS_OPERCON | UFLAGS_ADMINCON);
@@ -168,7 +168,10 @@ abstract class Flags {
     public  static final int   UFLAG_DEVGOD_PRIV   = (UFLAG_DEVGOD);
 
     private static final int   UFLAGS_PUBLIC       = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
+    /* User flags publicly visible (from WHOAMI for example). Non-listed flags are hidden by default. */
+    /* Currently not implemented. */
 
+    /* Default user flags for new accounts */
     private static final int   UFLAGS_NEW_ACCOUNT  = (UFLAG_AUTOVHOST | UFLAG_WELCOME);
 
     private static final int   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE | UFLAG_DELETED ); /* flags non-settable through USERFLAGS */
