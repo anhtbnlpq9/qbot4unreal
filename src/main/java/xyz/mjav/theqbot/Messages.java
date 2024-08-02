@@ -29,9 +29,6 @@ public class Messages {
     public static final String strAutoExceptReason      = "Excepted.";
     public static final String strAutoInviteReason      = "Invited.";
 
-    public static final String strYes                   = "Yes";
-    public static final String strNo                    = "No";
-
     /* AUTHHISTORY */
     public static final String strAuthHisHeadFormat         = "%" + Const.COLUMN_ID_WIDTH + "s %-" + Const.COLUMN_NICK_WIDTH + "s %-" + Const.COLUMN_DATE_WIDTH
                                                             + "s %-" + Const.COLUMN_DATE_WIDTH + "s %-" + Const.COLUMN_MESSAGE_WIDTH + "s";
@@ -69,8 +66,8 @@ public class Messages {
     public static final String strAuthSuccess            = "Auth successful.";
 
     /* HELLO */
-    public static final String strHelloErrTooEasy            = "HELLO: Password must contain at least %s (at most %s) characters with at least one of the following types: lowercase, uppercase, number, symbol.";
-    public static final String strHelloErrEmailInvalid       = "HELLO: Invalid email address.";
+    public static final String strHelloErrTooEasy            = "Password must contain at least %s (at most %s) characters with at least one of the following types: lowercase, uppercase, number, symbol.";
+    public static final String strHelloErrEmailInvalid       = "Invalid email address.";
     public static final String strHelloErrAlreadyAuth        = "HELLO is not available once you have authed.";
     public static final String strHelloErrAccountExists      = "An account with that name already exists.";
     public static final String strHelloNewAccountCreated     = "Your account has been created with username \"%s\" and password \"%s\" but you are not authed. You can now auth using AUTH <username> <password>";
@@ -98,7 +95,7 @@ public class Messages {
     public static final String strChanlevErrUnknown      = "Error setting the chanlev.";
     public static final String strChanlevDropChanLEmpty  = "Channel has been dropped because its chanlev was left empty.";
     public static final String strChanlevErrNoMod        = "Nothing changed. Your requested flag combination change was either the same as the existing flags, impossible, or you don't have enough access.";
-    public static final String strChanlevSuccessSummary  = "Chanlev set. Chanlev for user account %s is now +%s.";
+    public static final String strChanlevSuccessSummary  = "Chanlev set. Chanlev for user account %s on channel %s is now +%s.";
     public static final String strChanlevListTitle       = "Displaying CHANLEV for channel %s:";
     public static final String strChanlevListCol1        = "Account";
     public static final String strChanlevListCol2        = "Chanlev";
@@ -173,38 +170,38 @@ public class Messages {
     public static final String strChanInfoHeader                    = "-Information for channel %s:"; /* only known */
     public static final String strChanInfoCServeNotRegistered       = "Channel is not registered.";
     public static final String strChanInfoCServeHeader              = " CService:"; /* only known */
-    public static final String strChanInfoContentRegistered         = " o Registered            :: %s";
-    public static final String strChanInfoContentChanId             = " o Channel ID            :: %s";
-    public static final String strChanInfoContentChanFlags          = " o Channel flags         :: +%s [%s]";
-    public static final String strChanInfoContentChanCreated        = " o Channel registered    :: %s";
-    public static final String strChanInfoContentChanWelcome        = " o Welcome message       :: %s";
-    public static final String strChanInfoContentChanTopic          = " o Saved topic           :: %s";
-    public static final String strChanInfoContentChanBanTime        = " o Ban time              :: %s";
-    public static final String strChanInfoContentLockedModes        = " o Locked modes          :: %s";
-    public static final String strChanInfoContentChanAutoLimit      = " o Auto imit             :: %s";
-    public static final String strChanInfoContentChanOrphan         = " o Orphaned              :: %s %s"; /* only staff+ */
-    public static final String strChanInfoContentChanSuspended      = " o Suspended             :: %s (Since/Last: %s, %s times): %s"; /* only staff+ */
-    public static final String strChanInfoContentChanBanTitle       = " o Bans                  :: %s excl. channel bans, use BANLIST for more details"; /* only staff+ */
-    public static final String strChanInfoContentChanExcTitle       = " o Excepts               :: %s excl. channel excepts, use EXCEPTLIST for more details"; /* only staff+ */
-    public static final String strChanInfoContentChanInvTitle       = " o Invites               :: %s excl. channel invex, use INVITELIST for more details"; /* only staff+ */
+    public static final String strChanInfoContentRegistered         = " o Registered             :: %s";
+    public static final String strChanInfoContentChanId             = " o Channel ID             :: %s";
+    public static final String strChanInfoContentChanFlags          = " o Channel flags          :: +%s [%s]";
+    public static final String strChanInfoContentChanCreated        = " o Channel registered     :: %s";
+    public static final String strChanInfoContentChanWelcome        = " o Welcome message        :: %s";
+    public static final String strChanInfoContentChanTopic          = " o Saved topic            :: %s";
+    public static final String strChanInfoContentChanBanTime        = " o Ban time               :: %s";
+    public static final String strChanInfoContentLockedModes        = " o Locked modes           :: %s";
+    public static final String strChanInfoContentChanAutoLimit      = " o Auto imit              :: %s";
+    public static final String strChanInfoContentChanOrphan         = " o Orphaned               :: %s %s"; /* only staff+ */
+    public static final String strChanInfoContentChanSuspended      = " o Suspended              :: %s (Since/Last: %s, %s times): %s"; /* only staff+ */
+    public static final String strChanInfoContentChanBanTitle       = " o Bans                   :: %s excl. channel bans, use BANLIST for more details"; /* only staff+ */
+    public static final String strChanInfoContentChanExcTitle       = " o Excepts                :: %s excl. channel excepts, use EXCEPTLIST for more details"; /* only staff+ */
+    public static final String strChanInfoContentChanInvTitle       = " o Invites                :: %s excl. channel invex, use INVITELIST for more details"; /* only staff+ */
     public static final String strChanInfoNetworkHeader             = " Network:"; /* only known */
-    public static final String strChanInfoContentCurTimestamp       = " o Timestamp             :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurTopic           = " o Topic                 :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurModes           = " o Modes                 :: +%s"; /* only staff+ */
-    public static final String strChanInfoContentCurModesLong       = " o Modes (long)          :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurMlockPolicy     = " o MLOCK policy          :: +%s"; /* only staff+ */
+    public static final String strChanInfoContentCurTimestamp       = " o Timestamp              :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurTopic           = " o Topic                  :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurModes           = " o Modes                  :: +%s"; /* only staff+ */
+    public static final String strChanInfoContentCurModesLong       = " o Modes (long)           :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurMlockPolicy     = " o MLOCK policy           :: +%s"; /* only staff+ */
     //public static final String strChanInfoContentCounter            = " o Counters              :: users:%s, +q:%s +a:%s +o:%s +h:%s +v:%s"; /* only staff+ */
-    public static final String strChanInfoContentCounter            = " o Users                 :: %s (%sq %sa %so %sh %sv), use /NAMES for the list"; /* only staff+ */
-    public static final String strChanInfoContentCurPass            = " o Password              :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurUserLimit       = " o User limit            :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurFloodProf       = " o Flood profile         :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurFloodParam      = " o Flood params          :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurHistoParam      = " o History params        :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurChanLink        = " o Linked channel        :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurBEI             = " o Bans / excepts / invex:: %s / %s / %s"; /* only staff+ */
-    public static final String strChanInfoContentCurBanTitle        = " o Bans                  :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurExcTitle        = " o Excepts               :: %s"; /* only staff+ */
-    public static final String strChanInfoContentCurInvTitle        = " o Invites               :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCounter            = " o Users                  :: %s (q:%s a:%s o:%s h:%s v:%s), use /NAMES for the list"; /* only staff+ */
+    public static final String strChanInfoContentCurKey             = " o Key                    :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurUserLimit       = " o Users limit            :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurFloodProf       = " o Flood profile          :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurFloodParam      = " o Flood params           :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurHistoParam      = " o History params         :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurChanLink        = " o Linked channel         :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurBEI             = " o Bans / excepts / invex :: %s / %s / %s"; /* only staff+ */
+    public static final String strChanInfoContentCurBanTitle        = " o Bans (current)         :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurExcTitle        = " o Excepts (current)      :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurInvTitle        = " o Invites (current)      :: %s"; /* only staff+ */
     //public static final String strChanInfoContentCurBanTitle        = " o Bans (%s):"; /* only staff+ */
     //public static final String strChanInfoContentCurExcTitle        = " o Excepts (%s):"; /* only staff+ */
     //public static final String strChanInfoContentCurInvTitle        = " o Invites (%s):"; /* only staff+ */
@@ -224,7 +221,7 @@ public class Messages {
     public static final String strServerInfoContentSublistItem        = "   > %s - %s";
 
     /* NICKINFO */
-    public static final String strNickInfoContentNickSummary        = "-Whois for nick %s";
+    public static final String strNickInfoContentNickSummary        = "-Information for nick %s";
     public static final String strNickInfoContentUid                = " o UID                       :: %s";
     public static final String strNickInfoContentIdent              = " o Ident                     :: %s";
     public static final String strNickInfoContentRealname           = " o Realname                  :: %s";
@@ -234,6 +231,7 @@ public class Messages {
     public static final String strNickInfoContentUserMasks          = " o User masks                :: %s";
     public static final String strNickInfoContentUserModes          = " o Modes                     :: +%s";
     public static final String strNickInfoContentUserModesLong      = " o Modes (long)              :: %s";
+    public static final String strNickInfoContentSecureConnection   = " o Secure connection         :: %s";
     public static final String strNickInfoContentServerName         = " o Server                    :: %s (%s)";
     public static final String strNickInfoContentSignOnTS           = " o Signed on                 :: %s";
     public static final String strNickInfoContentAuthAccount        = " o User account              :: %s";
@@ -241,7 +239,7 @@ public class Messages {
     public static final String strNickInfoContentUserSecGroup       = " o Security group            :: %s";
     public static final String strNickInfoContentUserCertFP         = " o Certificate fingerprint   :: %s";
     public static final String strNickInfoContentUserCountry        = " o Country                   :: %s (%s)";
-    public static final String strNickInfoContentChanListTitle      = "Present on the following channels (modes)";
+    public static final String strNickInfoContentChanListTitle      = "Present on the following channels (modes):";
     public static final String strNickInfoContentChanListLine       = " o %s (+%s%s)";
 
     /* NICKHISTORY */
@@ -334,17 +332,40 @@ public class Messages {
     /* REGUSERLIST */
     public static final String strUserlistHeader      = "List of registered users:";
     public static final String strUserlistHeader2     = "Legend: B:Account banned, O:Orphan, P:Protected, S:Suspended, -:N/A";
-    public static final String strUserlistEntry       = "o [] %s - %s";
+    public static final String strUserlistEntry       = " o [] %s - %s";
 
     /* REGCHANLIST */
     public static final String strChanlistHeader      = "List of registered channels:";
     public static final String strChanlistHeader2     = "Legend: G:Chan banned, O:Orphan, P:Protected, S:Suspended, -:N/A";
-    public static final String strChanlistEntry       = "o [%s] %s - %s";
+    public static final String strChanlistEntry       = " o [%s] %s - %s";
 
     /* CHANMODE (MLOCK) */
     public static final String strMlockModeList         = "Current modes for channel %s: %s, locked modes: %s";
     public static final String strMlockModeSet          = "Locking modes for channel %s: %s";
     public static final String strMlockModeClear        = "Cleared locked modes for channel %s";
+
+    /*
+     * OperService
+     */
+
+    /* NETINFO */
+    public static final String strOSNetInfoHeader           = "-Network and Protocol information";
+    public static final String strOSNetInfoNetName          = " o Network name                      :: %s";
+    public static final String strOSNetInfoLongLines        = " o Network long lines support        :: %s";
+    public static final String strOSNetInfoUserModes        = " o User modes                        :: %s";
+    public static final String strOSNetInfoChanModes        = " o Channel modes                     :: %s";
+    public static final String strOSNetInfoChanOwner        = " o Channel OWNER prefix              :: %s";
+    public static final String strOSNetInfoChanAdmin        = " o Channel ADMIN prefix              :: %s";
+    public static final String strOSNetInfoChanOp           = " o Channel OP prefix                 :: %s";
+    public static final String strOSNetInfoChanHalfOp       = " o Channel HALF-OP prefix            :: %s";
+    public static final String strOSNetInfoChanVoice        = " o Channel VOICE prefix              :: %s";
+    public static final String strOSNetInfoChanMlock        = " o Channel MLOCK support             :: %s";
+
+
+
+    /*
+     * Misc
+     */
 
     /* Channel part messages */
     public static final String strChanPartRejoin        = "Be right back.";
@@ -358,5 +379,12 @@ public class Messages {
 
     /* Misc strings */
     public static final String strMiscTheCakeIsALie        = "The cake is a lie.";
+    public static final String strUnsupported              = "Not supported";
+    public static final String strSupported                = "Supported";
+    public static final String strYes                      = "Yes";
+    public static final String strNo                       = "No";
+    public static final String strNA                       = "N/A";
+    public static final String strNone                     = "None";
+    public static final String strUnknown                  = "Unknown";
 
 }
