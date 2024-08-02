@@ -48,6 +48,7 @@ public class Extban implements Bei {
      *  ~c / ~channel        :: b e I :: If the user is in this channel then they are unable to join.
      *                                   A prefix can also be specified (+/%/@/&/~) which means that it will only match if the user
      *                                   has that rights or higher on the specified channel. (~channel:#lamers ~channel:@#trusted)
+     *  ~A / ~asn            :: b e I :: Acts on IP AS number (~asn:12345)
      *  ~C / ~country        :: b e I :: The GEOIP module tries to map IP addresses of users to a country code, like NL and US.
      *                                   You can ban or exempt a user based on the two letter country code this way. (~country:NL)
      *  ~O / ~operclass      :: b e I :: If the user is an IRCOp and is logged in with an oper block with a matching oper::operclass name then this will match.
@@ -87,31 +88,12 @@ public class Extban implements Bei {
 
     protected static Logger log = LogManager.getLogger("common-log");
 
-    private static final Map<String, String> extBansReverse = Map.ofEntries(
-        entry("t", "time"),
-
-        entry("q", "quiet"),
-        entry("n", "nickchange"),
-        entry("j", "join"),
-        entry("m", "msgbypass"),
-        entry("f", "forward"),
-        entry("F", "flood"),
-
-        entry("a", "account"),
-        entry("c", "channel"),
-        entry("C", "country"),
-        entry("O", "operclass"),
-        entry("r", "realname"),
-        entry("G", "security-group"),
-        entry("S", "certfp"),
-
-        entry("T", "text"),
-        entry("p", "partmsg")
-    );
-
+    /** Map of correspondance extban-long-name => extban-short-name */
     private static final Map<String, String> extBans = Map.ofEntries(
+        /* group 1 */
         entry("time",           "t"),
 
+        /* group 2 */
         entry("quiet",          "q"),
         entry("nickchange",     "n"),
         entry("join",           "j"),
@@ -119,19 +101,27 @@ public class Extban implements Bei {
         entry("forward",        "f"),
         entry("flood",          "F"),
 
+        /* group 3 */
         entry("account",        "a"),
         entry("channel",        "c"),
+        entry("asn",            "A"),
         entry("country",        "C"),
         entry("operclass",      "O"),
         entry("realname",       "r"),
         entry("security-group", "G"),
         entry("certfp",         "S"),
 
+        /* group 4 */
         entry("text",           "T"),
         entry("partmsg",        "p")
     );
 
-    //private static final String  EXTBAN_REGEX = "^~[A-Za-z]+:.+";
+    /** Map of correspondance extban-short-name => extban-long-name */
+    private static final Map<String, String> extBansReverse;
+    static {
+        extBansReverse = new HashMap<>();
+        for(Map.Entry<String, String> set: extBans.entrySet()) extBansReverse.put(set.getValue(), set.getKey());
+    }
 
     private static Map<String, Extban> extBanList = new HashMap<>();
     private static Map<String, Extban> extbans64  = new HashMap<>();
@@ -340,6 +330,7 @@ public class Extban implements Bei {
                     case "operclass":
                     case "realname":
                     case "security-group":
+                    case "asn":
                     case "certfp": {
                         /* Resplit to match the correct number of arguments */
                         extBanSplit = extBanStr.split(":", 2);
