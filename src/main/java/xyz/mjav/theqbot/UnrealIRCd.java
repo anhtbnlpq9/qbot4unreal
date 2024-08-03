@@ -937,8 +937,11 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         Map<String, String> featuresList = new LinkedHashMap<>();
 
+        Nick fromNick;
+
         String version = Const.QBOT_VERSION_STRING;
         String serverName;
+        String systemString = "*";
 
         StringJoiner featureString = new StringJoiner(" ");
 
@@ -964,7 +967,19 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         List<String> strResponse = new ArrayList<>();
 
-        strResponse.add(String.format(":%s 351 %s %s %s :%s", serverName, ircMsg.getFrom(), version, serverName, ":)"));
+        try {
+            fromNick = ircMsg.getFromNick();
+            if (fromNick.isOper() == true) systemString = String.format("[%s %s %s]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
+        }
+        catch (Exception e) { throw new RuntimeException("Entity probably not a Nick"); }
+
+        strResponse.add(String.format(":%s 351 %s %s %s :%s", serverName, ircMsg.getFrom(), version, serverName, systemString));
+
+        try {
+            fromNick = ircMsg.getFromNick();
+            if (fromNick.isOper() == true) strResponse.add(String.format(":%s NOTICE %s :Java: %s %s", serverName, ircMsg.getFrom(), System.getProperty("java.runtime.name"), System.getProperty("java.version")));
+        }
+        catch (Exception e) { throw new RuntimeException("Entity probably not a Nick"); }
 
         int featureInt = 1;
         for (Map.Entry<String, String> e: featuresList.entrySet()) {
