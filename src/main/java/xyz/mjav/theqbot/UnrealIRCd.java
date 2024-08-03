@@ -872,9 +872,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         log.debug("UnrealIRCd::handlePrivmsg: received a PRIVMSG");
 
         String to;
-        String message;
 
-        Nick fromUser;
         Nick toUser;
 
         try {
@@ -887,14 +885,12 @@ public class UnrealIRCd extends Exception implements Protocol {
         /* If the PRIVMSG targets a channel, then we can ignore it */
         if (to.startsWith(Const.USER_ACCOUNT_PREFIX) == true) { log.debug("UnrealIRCd::handlePrivmsg: PRIVMSG targeted a channel => stopping treatment"); return; }
 
-        try { /*message = rawSplit[3].replaceAll("^[:]", "");*/ message = ircMsg.getArgv().get(1); }
-        //catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'message' field in raw %s", raw), e); return; }
-        catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'message' field in raw %s", ircMsg), e); return; }
+        //try { message = ircMsg.getArgv().get(1); }
+        //catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'message' field in raw %s", ircMsg), e); return; }
 
         /* UnrealIRCd uses SID with 3 symbols, UID with 9 symbols */
         //try { fromUser = Nick.getNick(from); }
         //catch (NickNotFoundException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: FROM user %s is not in the userlist", from)); return; }
-        fromUser = ircMsg.getFromNick();
 
         /* should match AAABBBBBB, user, user@server */
         try { toUser = Nick.getNick(to); }
@@ -918,7 +914,7 @@ public class UnrealIRCd extends Exception implements Protocol {
 
             log.debug(String.format("UnrealIRCd::handlePrivmsg: forwarding to OperServe"));
 
-            try { oservice.handleMessage(fromUser, message); }
+            try { oservice.handleMessage(ircMsg); }
             catch (Exception e) { throw e; } /* Exception is only for CRASH command */
         }
     }
@@ -1007,6 +1003,8 @@ public class UnrealIRCd extends Exception implements Protocol {
     private void handleStats(IrcMessage ircMsg) {
 
         log.debug("UnrealIRCd::handleStats: received a STATS");
+
+        // TODO: to finish implement
 
         /*
          * -> <UID> STATS [ <query> [ <server> ] ]
