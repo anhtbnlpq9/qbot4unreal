@@ -157,7 +157,7 @@ public class Help {
      * @param command Command name
      * @return help object
      */
-    public static Help getHelp(String command, String type) {
+    public static Help getHelp(String command, String section, String type) {
 
         Cache cache = null;
         Help help = null;

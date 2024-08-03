@@ -61,6 +61,140 @@ public class CService extends Service {
 
     private static CService instance;
 
+    private static final Map<String, String> CMD_ALWAYS = Map.ofEntries(
+        entry("HELP",                   "HELP.txt"),
+        entry("VERSION",                "VERSION.txt")
+    );
+
+    private static final Map<String, String> CMD_NOAUTH = Map.ofEntries(
+        entry("AUTH",                   "AUTH.txt"),
+        entry("HELLO",                  "HELLO.txt")
+    );
+
+    private static final Map<String, String> CMD_AUTHED = Map.ofEntries(
+        entry("ADDUSER",                "ADDUSER.txt"),
+        entry("ADMIN",                  "ADMIN.txt"),
+        entry("DEADMIN",                "ADMIN.txt"),
+        entry("AUTHHISTORY",            "AUTHHISTORY.txt"),
+        entry("AUTOLIMIT",              "AUTOLIMIT.txt"),
+        entry("BANCLEAR",               "BEICLEAR.txt"),
+        entry("BANDEL",                 "BEIDEL.txt"),
+        entry("BANLIST",                "BEILIST.txt"),
+        entry("BANTIMER",               "BANTIMER.txt"),
+        entry("CERTFP",                 "CERTFP.txt"),
+        entry("CERTFPADD",              "CERTFPADD.txt"),
+        entry("CERTFPDEL",              "CERTFPADD.txt"),
+        entry("CHANFLAGS",              "CHANFLAGS.txt"),
+        entry("CHANINFO",               "CHANINFO.txt"),
+        entry("CHANLEV",                "CHANLEV.txt"),
+        entry("CHANLEVHISTORY",         "CHANLEVHISTORY.txt"),
+        entry("CHANMODE",               "CHANMODE.txt"),
+        entry("CHANOPHISTORY",          "CHANOPHISTORY.txt"),
+        entry("CHANSTAT",               "CHANSTAT.txt"),
+        entry("CLEARCHAN",              "CLEARCHAN.txt"),
+        entry("CLEARTOPIC",             "CLEARTOPIC.txt"),
+        entry("DEADMINALL",             "DEOPALL.txt"),
+        entry("DEAUTH",                 "DEAUTH.txt"),
+        entry("DEAUTHALL",              "DEAUTH.txt"),
+        entry("DEHALFOPALL",            "DEOPALL.txt"),
+        entry("DEOPALL",                "DEOPALL.txt"),
+        entry("DEOWNERALL",             "DEOPALL.txt"),
+        entry("DEVOICEALL",             "DEOPALL.txt"),
+        entry("DROPCHAN",               "PERMBEI.txt"),
+        entry("DROPUSER",               "PERMBEI.txt"),
+        entry("EMAIL",                  "PERMBEI.txt"),
+        entry("EXCEPTCLEAR",            "BEICLEAR.txt"),
+        entry("EXCEPTDEL",              "BEIDEL.txt"),
+        entry("EXCEPTLIST",             "BEILIST.txt"),
+        entry("HALFOP",                 "HALFOP.txt"),
+        entry("DEHALFOP",               "HALFOP.txt"),
+        entry("GIVEOWNER",              "GIVEOWNER.txt"),
+        entry("INVITE",                 "INVITE.txt"),
+        entry("INVITECLEAR",            "BEICLEAR.txt"),
+        entry("INVITEDEL",              "BEIDEL.txt"),
+        entry("INVITELIST",             "BEILIST.txt"),
+        entry("NEWPASS",                ""),
+        entry("OP",                     "OP.txt"),
+        entry("DEOP",                   "OP.txt"),
+        entry("OWNER/DEOWNER",          "PERMBEI.txt"),
+        entry("PERMBAN",                "PERMBEI.txt"),
+        entry("PERMEXCEPT",             "PERMBEI.txt"),
+        entry("PERMINVITE",             "PERMBEI.txt"),
+        entry("RECOVER",                "RECOVER.txt"),
+        entry("REMOVEUSER",             "REMOVEUSER.txt"),
+        entry("REQUESTBOT",             "REQUESTBOT.txt"),
+        entry("REQUESTOWNER",           "REQUESTOWNER.txt"),
+        entry("REQUESTPASSWORD",        "REQUESTPASSWORD.txt"),
+        entry("RESET",                  "RESET.txt"),
+        entry("SETTOPIC",               "SETTOPIC.txt"),
+        entry("SHOWCOMMANDS",           "SHOWCOMMANDS.txt"),
+        entry("TEMPBAN",                "TEMPBEI.txt"),
+        entry("TEMPEXCEPT",             "TEMPBEI.txt"),
+        entry("TEMPINVITE",             "TEMPBEI.txt"),
+        entry("UNBANALL",               "UNBANALL.txt"),
+        entry("UNBANMASK",              "UNBANMASK.txt"),
+        entry("UNBANME",                "UNBANME.txt"),
+        entry("USERFLAGS",              "USERFLAGS.txt"),
+        entry("VOICE",                  "VOICE.txt"),
+        entry("DEVOICE",                "VOICE.txt"),
+        entry("WELCOME",                "WELCOME.txt"),
+        entry("WHOAMI",                 "WHOAMI.txt"),
+        entry("WHOIS",                  "WHOIS.txt")
+    );
+
+    private static final Map<String, String> CMD_STAFF = Map.ofEntries(
+        entry("NETCHANLIST",            "NETLIST.txt"),
+        entry("NETSERVERLIST",          "NETLIST.txt"),
+        entry("NETUSERLIST",            "NETLIST.txt"),
+        entry("ORPHCHANLIST",           "ORPHCHANLIST.txt"),
+        entry("REGCHANLIST",            "REGLIST.txt"),
+        entry("REGUSERLIST",            "REGLIST.txt")
+    );
+
+    private static final Map<String, String> CMD_OPER = Map.ofEntries(
+        entry("ADDCHAN",                "ADDCHAN.txt"),
+        entry("NICKHISTORY",            "NICKHISTORY.txt"),
+        entry("NICKINFO",               "NICKINFO.txt"),
+        entry("SERVERINFO",             "SERVERINFO.txt"),
+        entry("SUSPENDCHAN",            "SUSPENDCHAN.txt"),
+        entry("UNSUSPENDCHAN",          "SUSPENDCHAN.txt"),
+        entry("SUSPENDUSER",            "SUSPENDUSER.txt"),
+        entry("UNSUSPENDUSER",          "SUSPENDUSER.txt")
+    );
+
+    private static final Map<String, String> CMD_ADMIN = Map.ofEntries(
+        entry("REJOIN",                 "REJOIN.txt"),
+        entry("RENCHAN",                "RENCHAN.txt"),
+        entry("SETUSERPASSWORD",        "SETUSERPASSWORD.txt")
+    );
+
+    private static final Map<String, String> CMD_DEVGOD = Map.ofEntries(
+        entry("DIE",                    "DIE.txt"),
+        entry("LISTGHOSTNICKS",         "LISTGHOSTNICKS.txt"),
+        entry("RAW",                    "RAW.txt"),
+        entry("REJOINSYNC",             "REJOINSYNC.txt"),
+        entry("CRASH",                  "CRASH.txt"),
+        entry("OBJCOUNTER",             "OBJCOUNTER.txt"),
+        entry("SLEEP",                  "SLEEP.txt"),
+        entry("TESTEXTBAN",             "TESTEXTBAN.txt"),
+        entry("TESTMASK",               "TESTMASK.txt"),
+        entry("TESTWILDCARD",           "TESTWILDCARD.txt"),
+        entry("TESTWILDCARD2",          "TESTWILDCARD.txt")
+    );
+
+    /** List of the commands */
+    private static final Map<String, String> CMD_LIST;
+    static {
+        CMD_LIST = new HashMap<>();
+        CMD_LIST.putAll(CMD_ALWAYS);
+        CMD_LIST.putAll(CMD_NOAUTH);
+        CMD_LIST.putAll(CMD_AUTHED);
+        CMD_LIST.putAll(CMD_STAFF);
+        CMD_LIST.putAll(CMD_OPER);
+        CMD_LIST.putAll(CMD_ADMIN);
+        CMD_LIST.putAll(CMD_DEVGOD);
+    };
+
     /**
      * Class constructor
      * @param protocol reference to the protocol
@@ -2424,7 +2558,7 @@ public class CService extends Service {
         String commandNameUp;
 
         commandNameUp = commandName.toUpperCase();
-        help = Help.getHelp(commandNameUp, "command_single");
+        help = Help.getHelp(commandNameUp, "CService", "command_single");
         level = help.getMetadata().get("level");
         if (level == null || level.isEmpty() == true) level = "999";
 
@@ -2437,10 +2571,25 @@ public class CService extends Service {
 
     private void cServeHelp(CSCommand csCommand) {
         /* HELP <command> */
+
+        /** Command name to get help on */
         String helpCommandName;
 
-        try { helpCommandName = csCommand.getArgs().get(0).toUpperCase(); }
-        catch (IndexOutOfBoundsException e) { getShowcommands(csCommand, "showcommandsshort"); return; }
+        try {
+            /* Command name to UPPERCASE */
+            helpCommandName = csCommand.getArgs().get(0).toUpperCase();
+        }
+        catch (IndexOutOfBoundsException e) {
+            /* If no command name is provided, send the short help */
+            getShowcommands(csCommand, "showcommandsshort");
+            return;
+        }
+
+        /* Commands does not exist */
+        if (CMD_LIST.containsKey(helpCommandName) == false) {
+            sendReply(csCommand.getFromNick(), String.format(Messages.strErrNoAccess));
+            return;
+        }
 
         sendHelp(csCommand.getFromNick(), helpCommandName);
 
@@ -2460,6 +2609,11 @@ public class CService extends Service {
          *
          */
 
+        /* TODO: get rid of levels and work with the roles */
+        /* Role list
+         *
+         */
+
         Help help;
         List<String> helpContent;
         List<String> helpOutput;
@@ -2476,8 +2630,10 @@ public class CService extends Service {
             case "showcommandsshort": commandNameUp = "COMMANDS_LIST_SHORT"; break;
             default: commandNameUp = "COMMANDS_LIST"; break;
         }
-        help = Help.getHelp(commandNameUp, "command_list");
+        help = Help.getHelp(commandNameUp, "CService", "command_list");
         level = help.getMetadata().get("level");
+
+        /* If no command level, consider the max level */
         if (level == null || level.isEmpty() == true) level = "999";
 
         if (Flags.hasLevelPrivilege(fromNick, level) == false) { helpOutput = List.of(Messages.strErrCommandUnknown); }
