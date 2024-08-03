@@ -3013,12 +3013,12 @@ public class UnrealIRCd extends Exception implements Protocol {
     }
 
     @Override public String userModeToTxt(String s) {
-        if (usermodeTxt.containsKey(s) == true) return usermodeTxt.get(s);
+        if (userModeToTxt.containsKey(s) == true) return userModeToTxt.get(s);
         else return "unknown";
     }
 
     @Override public String chanModeToTxt(String s) {
-        if (chanmodeTxt.containsKey(s) == true) return chanmodeTxt.get(s);
+        if (chanModeToTxt.containsKey(s) == true) return chanModeToTxt.get(s);
         else return "unknown";
     }
 
