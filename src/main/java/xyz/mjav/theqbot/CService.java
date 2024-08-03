@@ -794,6 +794,8 @@ public class CService extends Service {
         Nick user;
         Nick fromNick = csCommand.getFromNick();
 
+        String secureConn = Messages.strNo;
+
         var w = new Object() {
             String bufferMode = "";
             String bModeLongTmp = "";
@@ -854,6 +856,10 @@ public class CService extends Service {
 
         /* Server */
         response.add(String.format(Messages.strNickInfoContentServerName, user.getServer(), user.getServer().getSid()));
+
+        /* Secure connection */
+        if (user.isConnPlainText() == true) secureConn = Messages.strYes;
+        response.add(String.format(Messages.strNickInfoContentSecureConnection, secureConn));
 
         /* Timestamp */
         response.add(String.format(Messages.strNickInfoContentSignOnTS, userTSdate));
