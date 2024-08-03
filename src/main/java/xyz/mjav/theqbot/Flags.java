@@ -244,7 +244,9 @@ abstract class Flags {
      * +j JOINED        :: When set, the bot will stay on the channel.
      * +k KNOWNONLY     :: Only allows users with the Known privilege (+m +n +o +h +v +k) to enter the channel. The bot
      *                     will kick unknown users.
-     * +p PROTECT       :: TBD
+     * +p PROTECTED     :: Gives the channel a protection against accidental destructive operations (such as account deletion).
+     *                     Once this flag is set, the channel cannot be deleted and its flags cannot be set or unset
+     *                     except for this flag.
      * +t TOPICSAVE     :: Save the topic when it changes. The topic can be restored with the SETTOPIC command or when the bot
      *                     reconnects.
      * +v VOICEALL      :: Automatically voices all the users that join the channel whether they are in the channel CHANLEV or not.
@@ -325,7 +327,7 @@ abstract class Flags {
     /*private static final int   CHFLAG_SPARE_m       = 0x00002000;*/ /* +m */
     /*private static final int   CHFLAG_SPARE_n       = 0x00001000;*/ /* +n */
     /*private static final int   CHFLAG_SPARE_o       = 0x00000800;*/ /* +o */
-    private static final int   CHFLAG_PROTECT       = 0x00000400; /* +p */
+    private static final int   CHFLAG_PROTECTED     = 0x00000400; /* +p */
     /*private static final int   CHFLAG_SPARE_q       = 0x00000200;*/ /* +q */
     /*private static final int   CHFLAG_SPARE_r       = 0x00000100;*/ /* +r */
     /*private static final int   CHFLAG_SPARE_s       = 0x00000080;*/ /* +s */
@@ -337,7 +339,7 @@ abstract class Flags {
     private static final int   CHFLAG_GLINED        = 0x00000002; /* +y */
     private static final int   CHFLAG_SUSPENDED     = 0x00000001; /* +z */
 
-    private static final int   CHFLAG_MASTERCONTROL  = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_PROTECT | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
+    private static final int   CHFLAG_MASTERCONTROL  = (CHFLAG_BITCH | CHFLAG_AUTOLIMIT | CHFLAG_PROTECTED | CHFLAG_ENFORCE | CHFLAG_FORCETOPIC | CHFLAG_KNOWNONLY | CHFLAG_WELCOME |
                                                            CHFLAG_TOPICSAVE | CHFLAG_VOICEALL);
 
     private static final int   CHFLAG_OWNERCONTROL   = (CHFLAG_MASTERCONTROL );
@@ -367,7 +369,7 @@ abstract class Flags {
         entry("f",   CHFLAG_FORCETOPIC),
         entry("j",   CHFLAG_JOINED),
         entry("k",   CHFLAG_KNOWNONLY),
-        entry("p",   CHFLAG_PROTECT),
+        entry("p",   CHFLAG_PROTECTED),
         entry("t",   CHFLAG_TOPICSAVE),
         entry("v",   CHFLAG_VOICEALL),
         entry("w",   CHFLAG_WELCOME),
@@ -386,7 +388,7 @@ abstract class Flags {
         entry(CHFLAG_FORCETOPIC,    "f"),
         entry(CHFLAG_JOINED,        "j"),
         entry(CHFLAG_KNOWNONLY,     "k"),
-        entry(CHFLAG_PROTECT,       "p"),
+        entry(CHFLAG_PROTECTED,     "p"),
         entry(CHFLAG_TOPICSAVE,     "t"),
         entry(CHFLAG_VOICEALL,      "v"),
         entry(CHFLAG_WELCOME,       "w"),
@@ -401,7 +403,7 @@ abstract class Flags {
         entry(CHFLAG_FORCETOPIC,    "f:forcetopic"),
         entry(CHFLAG_JOINED,        "j:joined"),
         entry(CHFLAG_KNOWNONLY,     "k:knownonly"),
-        entry(CHFLAG_PROTECT,       "p:protect"),
+        entry(CHFLAG_PROTECTED,     "p:protect"),
         entry(CHFLAG_TOPICSAVE,     "t:topicsave"),
         entry(CHFLAG_VOICEALL,      "v:voiceall"),
         entry(CHFLAG_WELCOME,       "w:welcome"),
@@ -1412,8 +1414,8 @@ abstract class Flags {
      * @param userFlags Channel flags
      * @return True or False
      */
-    public static Boolean isChanProtect(Integer chanFlags) {
-        if ( (chanFlags & CHFLAG_PROTECT) == 0) {
+    public static Boolean isChanProtected(Integer chanFlags) {
+        if ( (chanFlags & CHFLAG_PROTECTED) == 0) {
             return false;
         }
         else return true;
@@ -1536,8 +1538,8 @@ abstract class Flags {
      * @param chanFlags Chan flags
      * @return Resulting chanflag
      */
-    public static Integer setChanProtect(Integer chanFlags) {
-        return (chanFlags | CHFLAG_PROTECT);
+    public static Integer setChanProtected(Integer chanFlags) {
+        return (chanFlags | CHFLAG_PROTECTED);
     }
 
     /**
@@ -1644,8 +1646,8 @@ abstract class Flags {
      * @param chanFlags Chan flags
      * @return Resulting chanflag
      */
-    public static Integer clearChanProtect(Integer chanFlags) {
-        return (chanFlags & ~CHFLAG_PROTECT);
+    public static Integer clearChanProtected(Integer chanFlags) {
+        return (chanFlags & ~CHFLAG_PROTECTED);
     }
 
     /**
