@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import xyz.mjav.theqbot.exceptions.NickNotFoundException;
+
 /**
  * <pre>
  * A CService command containing the following properties:
@@ -86,6 +88,11 @@ public final class CSCommand {
         return this.fromNick;
     }
 
+    public Nick getToNick() throws NickNotFoundException {
+        if (this.toNick == null) throw new NickNotFoundException();
+        return this.toNick;
+    }
+
     public boolean isFromNickAuthed() {
         return this.isNickAuthed;
     }
@@ -124,6 +131,7 @@ public final class CSCommand {
 
         log.debug(String.format("CSCommand::CSCommand: parsed CService command:"));
         log.debug(String.format("CSCommand::CSCommand:   |    from: %s", this.fromNick.getNick()));
+        log.debug(String.format("CSCommand::CSCommand:   |      to: %s", this.toNick.getNick()));
         log.debug(String.format("CSCommand::CSCommand:   | command: %s", this.commandName));
         log.debug(String.format("CSCommand::CSCommand:   |    args: %s", String.valueOf(args)));
         log.debug(String.format("CSCommand::CSCommand:   |  authed: %s", this.isNickAuthed));
@@ -136,6 +144,7 @@ public final class CSCommand {
 
         Map<String, String> logMap = new TreeMap<>();
         logMap.put("from", this.fromNick.getNick());
+        logMap.put("to", this.toNick.getNick());
         logMap.put("command", this.commandName);
         logMap.put("args", String.valueOf(this.args));
         logMap.put("authed", String.valueOf(this.isNickAuthed));
