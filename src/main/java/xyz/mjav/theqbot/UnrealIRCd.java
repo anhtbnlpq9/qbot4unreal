@@ -3004,6 +3004,14 @@ public class UnrealIRCd extends Exception implements Protocol {
         return this.isNetBursting;
     }
 
+    @Override public String getChanMode(String m) {
+        return CHMODES.get(m);
+    }
+
+    @Override public String getUserMode(String m) {
+        return UMODES.get(m);
+    }
+
     @Override public String userModeToTxt(String s) {
         if (usermodeTxt.containsKey(s) == true) return usermodeTxt.get(s);
         else return "unknown";

@@ -172,4 +172,8 @@ public interface Protocol {
 
     String userModeToTxt(String s);
     String chanModeToTxt(String s);
+
+    String getChanMode(String m);
+
+    String getUserMode(String m);
 }
