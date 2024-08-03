@@ -1,5 +1,7 @@
 package xyz.mjav.theqbot;
 
+import static java.util.Map.entry;
+
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -1116,7 +1118,7 @@ public class CService extends Service {
             /* Stripping punishment flags if the requester has not chan master privilege */
             if ( Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false && Flags.hasUserStaffPriv(fromNick.getAccount().getFlags()) == false) { wrapper.chanlev = Flags.stripChanlevPunishFlags(wrapper.chanlev); }
 
-            sendReply(fromNick, String.format(Messages.strChanlevSuccessSummary, userAccountTarget.getName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
+            sendReply(fromNick, String.format(Messages.strChanlevSuccessSummary, userAccountTarget.getName(), chanNode.getName(), Flags.flagsIntToChars("chanlev", wrapper.chanlev)));
 
             userAccountTarget.getUserLogins().forEach( (usernode) -> {
                 if (usernode.getChanList().containsKey(chanNode)) this.handleJoin(usernode, chanNode);
@@ -3765,7 +3767,7 @@ public class CService extends Service {
 
                 if (channel.getcServeMLockModes().isEmpty() == false) strReply.add(String.format(Messages.strChanInfoContentLockedModes, channel.getcServeMLockModes()));
 
-
+                /* Display beI present in database */
                 if (channel.getcServeBanList().isEmpty() == false) {
                     strReply.add(String.format(Messages.strChanInfoContentChanBanTitle, channel.getcServeBanList().size()));
                     /* Don't display current beI list (can be accessed with BAN/EX/INVLIST) */
@@ -3833,7 +3835,7 @@ public class CService extends Service {
 
                 if (counterTotal > 0) strReply.add(String.format(Messages.strChanInfoContentCounter, counterTotal, w.counterModeq, w.counterModea, w.counterModeo, w.counterModeh, w.counterModev));
 
-                if (strPassword.isEmpty()      == false) strReply.add(String.format(Messages.strChanInfoContentCurPass, strPassword));
+                if (strPassword.isEmpty()      == false) strReply.add(String.format(Messages.strChanInfoContentCurKey, strPassword));
                 if (strUserLimit.isEmpty()     == false) strReply.add(String.format(Messages.strChanInfoContentCurUserLimit, strUserLimit));
                 if (strFloodProfile.isEmpty()  == false) strReply.add(String.format(Messages.strChanInfoContentCurFloodProf, strFloodProfile));
                 if (strFloodParams.isEmpty()   == false) strReply.add(String.format(Messages.strChanInfoContentCurFloodParam, strFloodParams));
