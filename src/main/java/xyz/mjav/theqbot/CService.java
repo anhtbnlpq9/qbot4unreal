@@ -1794,7 +1794,7 @@ public class CService extends Service {
 
         /* First check that the user is on the channel and opped */
         /* TODO: to move to dispatcher */
-        if (user.getModesChan(chanNode).contains("o") == true || hasOperMode == true) {
+        if (hasOperMode == true || user.getModesChan(chanNode).contains("o") == true) {
             try {
                 chanId = database.addRegChan(chanNode);
 
