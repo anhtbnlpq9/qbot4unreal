@@ -12,6 +12,7 @@ import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import xyz.mjav.theqbot.exceptions.ChannelNotFoundException;
 import xyz.mjav.theqbot.exceptions.ItemExistsException;
 import xyz.mjav.theqbot.exceptions.ItemNotFoundException;
 import xyz.mjav.theqbot.exceptions.NickNotFoundException;
@@ -629,7 +630,8 @@ public class Nick {
      * @param chan Channel name
      * @return User channel modes
      */
-    public Set<String> getModesChan(Channel chan) {
+    public Set<String> getModesChan(Channel chan) throws ChannelNotFoundException {
+        if (this.chanList.get(chan) == null) throw new ChannelNotFoundException();
         return this.chanList.get(chan);
     }
 
