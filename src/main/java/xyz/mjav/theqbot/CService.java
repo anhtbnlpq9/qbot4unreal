@@ -143,8 +143,10 @@ public class CService extends Service {
         //protocol.chanJoin(fromNick, channel); /* No need because it is managed in the calling method */
 
         /* 2. set bot modes: Setting the channel modes and bot mode inside the channel */
-        try { protocol.setMode( channel, "+r" + chanJoinModes, fromNick.getNick()); }
-        catch (Exception e) { log.error(String.format("Cannot set mode on %s: %s", channel.getName(), "+r" + chanJoinModes + " " + fromNick.getNick()), e); }
+        //try { protocol.setMode( channel, "+r" + chanJoinModes, fromNick.getNick()); }
+        //catch (Exception e) { log.error(String.format("Cannot set mode on %s: %s", channel.getName(), "+r" + chanJoinModes + " " + fromNick.getNick()), e); }
+        try { protocol.setMode( channel, String.format("+%s%s", protocol.getChanMode("registered"), chanJoinModes), fromNick.getNick()); }
+        catch (Exception e) { log.error(String.format("Cannot set mode on %s: %s", channel.getName(), String.format("+%s%s %s", protocol.getChanMode("registered"), chanJoinModes, fromNick.getNick())), e); }
 
         /* 3a. apply channel properties: modes */
         String lockedModes = "";
@@ -166,9 +168,9 @@ public class CService extends Service {
         }
 
         /* 3c. apply channel properties: BEI lists */ // FIXME: expired list items still will be applied
-        channel.getcServeBanList().forEach(    (mask, map) -> { protocol.setMode(fromNick, channel, "+b", mask.getString()); });
-        channel.getcServeExceptList().forEach( (mask, map) -> { protocol.setMode(fromNick, channel, "+e", mask.getString()); });
-        channel.getcServeInviteList().forEach( (mask, map) -> { protocol.setMode(fromNick, channel, "+I", mask.getString()); });
+        channel.getcServeBanList().forEach(    (mask, map) -> { protocol.setMode(fromNick, channel, String.format("+%s", protocol.getChanMode("banned")), mask.getString()); });
+        channel.getcServeExceptList().forEach( (mask, map) -> { protocol.setMode(fromNick, channel, String.format("+%s", protocol.getChanMode("except")), mask.getString()); });
+        channel.getcServeInviteList().forEach( (mask, map) -> { protocol.setMode(fromNick, channel, String.format("+%s", protocol.getChanMode("invex")), mask.getString()); });
 
         /* 4. apply channel properties: kick banned users */
         if (Flags.isChanEnforce(channel.getcServeFlags()) == true) {
@@ -187,7 +189,7 @@ public class CService extends Service {
                 for (Bei bannedUm: channel.getcServeBanList().keySet()) {
                     if (bannedUm.matches(usernode) == true) {
                         if (usernode == fromNick) continue;
-                        protocol.setMode(fromNick, channel, "+b", bannedUm.getString());
+                        protocol.setMode(fromNick, channel, String.format("+%s", protocol.getChanMode("banned")), bannedUm.getString());
                         protocol.chanKick(fromNick, channel, usernode, Messages.strAutoBanReason);
                         break;
                     }
@@ -349,17 +351,17 @@ public class CService extends Service {
                 userChanlev = user.getAccount().getChanlev(channel);
 
                 if (  Flags.isChanLBanned( userChanlev) == true ) {
-                    protocol.setMode( myUserNode, channel, "+b", String.format("~account:%s", user.getAccount().getName()));
+                    protocol.setMode( myUserNode, channel, String.format("+%s", protocol.getChanMode("banned")), String.format("~account:%s", user.getAccount().getName()));
                     protocol.chanKick(myUserNode, channel, user, autoBanReason);
                 }
 
                 else if (Flags.isChanLAuto(userChanlev)) { /* Sets the auto channel modes */
 
-                    if (Flags.isChanLOwner(userChanlev)       && protocol.hasFeature("chanOwner")  == true) joinMode = "+q";
-                    else if (Flags.isChanLMaster(userChanlev) && protocol.hasFeature("chanAdmin")  == true) joinMode = "+a";
-                    else if (Flags.isChanLOp(userChanlev)     && protocol.hasFeature("chanOp")     == true) joinMode = "+o";
-                    else if (Flags.isChanLHalfOp(userChanlev) && protocol.hasFeature("chanHalfop") == true) joinMode = "+h";
-                    else if (Flags.isChanLVoice(userChanlev)  && protocol.hasFeature("chanVoice")  == true) joinMode = "+v";
+                    if (Flags.isChanLOwner(userChanlev)       && protocol.hasFeature("chanOwner")  == true) joinMode = String.format("+%s", protocol.getChanMode("owner"));
+                    else if (Flags.isChanLMaster(userChanlev) && protocol.hasFeature("chanAdmin")  == true) joinMode = String.format("+%s", protocol.getChanMode("admin"));
+                    else if (Flags.isChanLOp(userChanlev)     && protocol.hasFeature("chanOp")     == true) joinMode = String.format("+%s", protocol.getChanMode("op"));
+                    else if (Flags.isChanLHalfOp(userChanlev) && protocol.hasFeature("chanHalfop") == true) joinMode = String.format("+%s", protocol.getChanMode("hafop"));
+                    else if (Flags.isChanLVoice(userChanlev)  && protocol.hasFeature("chanVoice")  == true) joinMode = String.format("+%s", protocol.getChanMode("voice"));
 
                     try { protocol.setMode( myUserNode, channel, joinMode, user.getNick()); }
                     catch (Exception e) { log.error(String.format("CService/handleJoin: error while %s nick %s on %s: ", joinMode, user.getNick(), channel.getName()), e); }
@@ -371,7 +373,7 @@ public class CService extends Service {
             for (Bei bannedUm: channel.getBanList()) {
                 if (bannedUm.matches(user) == true) {
                     if (user == myUserNode) continue;
-                    protocol.setMode(myUserNode, channel, "+b", bannedUm.getString());
+                    protocol.setMode(myUserNode, channel, String.format("+%s", protocol.getChanMode("banned")), bannedUm.getString());
                     protocol.chanKick(myUserNode, channel, user, Messages.strAutoBanReason);
                     break;
                 }
@@ -380,7 +382,7 @@ public class CService extends Service {
             for (Bei bannedUm: channel.getcServeBanList().keySet()) {
                 if (bannedUm.matches(user) == true) {
                     if (user == myUserNode) continue;
-                    protocol.setMode(myUserNode, channel, "+b", bannedUm.getString());
+                    protocol.setMode(myUserNode, channel, String.format("+%s", protocol.getChanMode("banned")), bannedUm.getString());
                     protocol.chanKick(myUserNode, channel, user, Messages.strAutoBanReason);
                     break;
                 }
