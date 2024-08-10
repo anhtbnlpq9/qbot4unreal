@@ -977,7 +977,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         }
         catch (Exception e) { throw new RuntimeException("Entity probably not a Nick"); }
 
-        int featureInt = 1;
+        int featureInt = 0;
         for (Map.Entry<String, String> e: featuresList.entrySet()) {
                 featureString.add(String.format("%s=%s", e.getKey(), e.getValue()));
                 featureInt++;
@@ -986,7 +986,7 @@ public class UnrealIRCd extends Exception implements Protocol {
                 if (featureInt >= Const.QBOT_VERSION_RESPONSE_MAX_VARIABLES) {
                     strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), featureString));
                     featureString = new StringJoiner(" ");
-                    featureInt = 1;
+                    featureInt = 0;
                 }
         }
 
