@@ -991,7 +991,10 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         int featureInt = 0;
         for (Map.Entry<String, String> e: featuresList.entrySet()) {
-                featureString.add(String.format("%s=%s", e.getKey(), e.getValue()));
+
+                if (e.getValue().isEmpty() == false) featureString.add(String.format("%s=%s", e.getKey(), e.getValue()));
+                else featureString.add(String.format("%s", e.getKey()));
+
                 featureInt++;
 
                 /* Check if we have enough arguments before finishing a batch */
