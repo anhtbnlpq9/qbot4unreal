@@ -77,4 +77,34 @@ public abstract class StringTools {
         for (Object o: list) sj.add(o.toString());
         return sj.toString();
     }
+
+    /**
+     * Breaks a string into a list of strings containing N words each
+     * @param in input string
+     * @param n max words per breaks
+     * @return breaked string every n words
+     */
+    public static List<String> strBreaker(String in, int n) {
+
+        if (in.isEmpty() == true) return new ArrayList<>();
+
+        String          separator   = " ";
+        List<String>    listOut     = new ArrayList<>();
+        String[]        arrayIn     = in.split(separator);
+        StringJoiner    strJoin     = new StringJoiner(separator);
+
+        int wc = 0;
+        for (String s: arrayIn) {
+            strJoin.add(s);
+            wc++;
+
+            if (wc >= n) {
+                listOut.add(strJoin.toString());
+                strJoin = new StringJoiner(separator);
+                wc = 0;
+            }
+        }
+
+        return listOut;
+    }
 }
