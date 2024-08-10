@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.time.Instant;
 
@@ -933,6 +934,11 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         Map<String, String> featuresList = new LinkedHashMap<>();
 
+        Set<String> protoFeatToAdd = Set.of(
+            "BIGLINES", "CHANNELCHARS", "ESVID", "EXTSWHOIS", "MLOCK", "MTAGS", "NEXTBANS", "NICKCHARS", "NICKIP", "NICKv2",
+            "NOQUIT", "SJ3", "SJOIN", "SJOIN2", "SJSBY", "TKLEXT", "TKLEXT2", "UMODE2", "VL"
+        );
+
         Nick fromNick;
 
         String version = Const.QBOT_VERSION_STRING;
@@ -941,22 +947,28 @@ public class UnrealIRCd extends Exception implements Protocol {
 
         StringJoiner featureString = new StringJoiner(" ");
 
-        featuresList.put("NETWORK",                 config.getNetworkName());
-        featuresList.put("QSASL",                   String.valueOf(config.hasFeature("sasl")));
-        featuresList.put("QSVSLOGIN",               String.valueOf(config.hasFeature("svslogin")));
-        featuresList.put("QCHGHOST",                String.valueOf(config.hasFeature("chghost")));
-        featuresList.put("QUSERMAXCHAN",            String.valueOf(config.getCServeAccountMaxChannels()));
-        featuresList.put("QUSERMAXCERTFP",          String.valueOf(config.getCServeAccountMaxCertFP()));
-        featuresList.put("QUSERMINMAXPASS",         String.format("%s,%s", config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
-        featuresList.put("QCHANBANTIME",            String.valueOf(config.getCserveChanBanTime()));
-        featuresList.put("QCHANAUTOLIMIT",          String.valueOf(config.getCserveChanAutoLimit()));
-        featuresList.put("QCHANAUTOLIMITFREQ",      String.valueOf(config.getCServeAutoLimitFreq()));
-        featuresList.put("QCHANMAXCHANLEVS",        String.valueOf(config.getCServeChanMaxChanlevs()));
-        featuresList.put("QCHANDEFAULTMODES",       config.getCserveChanDefaultModes());
-        featuresList.put("QUSERACCRANDOM",          String.valueOf(config.hasFeature("randomAccountName")));
-        featuresList.put("QUSERTEMPPASS",           String.valueOf(config.hasFeature("tempAccountPassword")));
-        featuresList.put("QLOGSTODEBUG",            String.valueOf(config.hasDbgLogging()));
-        featuresList.put("QLOGSTOES",               String.valueOf(config.getLoggingElasticEnabled()));
+        featuresList.put("NETWORK",                  config.getNetworkName());
+        featuresList.put("USERMODES",                protocolProps.get("USERMODES"));
+        featuresList.put("CHANMODES",                protocolProps.get("CHANMODES"));
+        featuresList.put("PREFIX",                   protocolProps.get("PREFIX"));
+
+        for (String p: protoFeatToAdd) if (protocolProps.containsKey(p)) featuresList.put(p, protocolProps.get(p));
+
+        featuresList.put("Q_SASL",                   String.valueOf(config.hasFeature("sasl")));
+        featuresList.put("Q_SVSLOGIN",               String.valueOf(config.hasFeature("svslogin")));
+        featuresList.put("Q_CHGHOST",                String.valueOf(config.hasFeature("chghost")));
+        featuresList.put("Q_USERMAXCHANS",           String.valueOf(config.getCServeAccountMaxChannels()));
+        featuresList.put("Q_USERMAXCERTFP",          String.valueOf(config.getCServeAccountMaxCertFP()));
+        featuresList.put("Q_USERMINMAXPASS",         String.format("%s,%s", config.getCServiceAccountMinPassLength(), config.getCServiceAccountMaxPassLength()));
+        featuresList.put("Q_CHANBANTIME",            String.valueOf(config.getCserveChanBanTime()));
+        featuresList.put("Q_CHANAUTOLIMIT",          String.valueOf(config.getCserveChanAutoLimit()));
+        featuresList.put("Q_CHANAUTOLIMITFREQ",      String.valueOf(config.getCServeAutoLimitFreq()));
+        featuresList.put("Q_CHANMAXCHANLEVS",        String.valueOf(config.getCServeChanMaxChanlevs()));
+        featuresList.put("Q_CHANDEFAULTMODES",       config.getCserveChanDefaultModes());
+        featuresList.put("Q_USERACCRANDOM",          String.valueOf(config.hasFeature("randomAccountName")));
+        featuresList.put("Q_USERTEMPPASS",           String.valueOf(config.hasFeature("tempAccountPassword")));
+        featuresList.put("Q_LOGSTODEBUG",            String.valueOf(config.hasDbgLogging()));
+        featuresList.put("Q_LOGSTODB",               String.valueOf(config.getLoggingElasticEnabled()));
 
         try { serverName = ircMsg.getArgv().get(0); }
         catch (ArrayIndexOutOfBoundsException e) { return; }
