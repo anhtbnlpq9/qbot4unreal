@@ -56,8 +56,8 @@ public abstract class StringTools {
     }
 
     /**
-     * Removes duplicate chars in a string
-     * @param s Input string
+     * Removes duplicate chars from a string
+     * @param s Input string with potentially duplicate chars
      * @return String with unique chars
      */
     public static String removeDuplicate(String s) {
