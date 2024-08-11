@@ -33,6 +33,7 @@ public class Qbot {
      * @param args no arguments
      */
     public static void main(String[] args) {
+
         String configFileName = "";
         String configFile;
 
@@ -40,7 +41,6 @@ public class Qbot {
 
         Database database;
         Config config = null;
-
 
         /* Parsing command arguments */
         for (int i = 0; i < args.length; i++) {

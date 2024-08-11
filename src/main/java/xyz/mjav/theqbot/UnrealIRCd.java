@@ -170,6 +170,7 @@ public class UnrealIRCd extends Exception implements Protocol {
     private static final Map<String, String> chanModeToTxt;
 
     static {
+        /* Create reverse maps of modes */
         userModeToTxt = new HashMap<>();
         chanModeToTxt = new HashMap<>();
         for(Map.Entry<String, String> set:  UMODES.entrySet()) userModeToTxt.put(set.getValue(), set.getValue() + ":" + set.getKey());
@@ -936,8 +937,8 @@ public class UnrealIRCd extends Exception implements Protocol {
         Map<String, String> featuresList = new LinkedHashMap<>();
 
         Set<String> protoFeatToAdd = Set.of(
-            "BIGLINES", "CHANNELCHARS", "ESVID", "EXTSWHOIS", "MLOCK", "MTAGS", "NEXTBANS", "NICKCHARS", "NICKIP", "NICKv2",
-            "NOQUIT", "SJ3", "SJOIN", "SJOIN2", "SJSBY", "TKLEXT", "TKLEXT2", "UMODE2", "VL"
+            "USERMODES", "CHANMODES", "PREFIX", "BIGLINES", "CHANNELCHARS", "ESVID", "EXTSWHOIS", "MLOCK", "MTAGS", "NEXTBANS", "NICKCHARS", "NICKIP",
+            "NICKv2", "NOQUIT", "SJ3", "SJOIN", "SJOIN2", "SJSBY", "TKLEXT", "TKLEXT2", "UMODE2", "VL"
         );
 
         Nick fromNick;
@@ -949,9 +950,6 @@ public class UnrealIRCd extends Exception implements Protocol {
         StringJoiner featureString = new StringJoiner(" ");
 
         featuresList.put("NETWORK",                  config.getNetworkName());
-        featuresList.put("USERMODES",                protocolProps.get("USERMODES"));
-        featuresList.put("CHANMODES",                protocolProps.get("CHANMODES"));
-        featuresList.put("PREFIX",                   protocolProps.get("PREFIX"));
 
         for (String p: protoFeatToAdd) if (protocolProps.containsKey(p)) featuresList.put(p, protocolProps.get(p));
 
