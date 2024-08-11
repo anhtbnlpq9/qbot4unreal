@@ -11,6 +11,10 @@ public class Timestamp {
         return new Timestamp(l);
     }
 
+    public static Timestamp value() {
+        return new Timestamp();
+    }
+
     /** Timestamp value */
     private Long timestamp = 0L;
 
