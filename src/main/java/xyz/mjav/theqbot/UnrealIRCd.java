@@ -1063,12 +1063,26 @@ public class UnrealIRCd extends Exception implements Protocol {
          *         RPL_STATSCOMMANDS (212)   <command> <count> [<byte_count> <remote_count>]
          *         RPL_STATSOLINE    (243)   O <hostmask> * <nick> [:<info>]
          *         RPL_ENDOFSTATS    (219)   <query> :<info>
+         *                           (481)   :server 481 nick :Permission Denied: Insufficient privileges
          */
+
+
 
         Server myServer;
         String serverName;
         String query;
 
+        myServer = Server.getServerBySid(config.getServerId());
+        serverName = myServer.getSid();
+
+        String permDenied;
+        Nick nickFrom = (Nick) ircMsg.getFrom();
+
+        if (nickFrom.isOper() == false) {
+            permDenied = String.format(":%s 481 %s :Permission Denied: Insufficient privileges", serverName, ircMsg.getFrom());
+            write(client, permDenied);
+            return;
+        }
 
         int uptimeDay  = 0;
         int uptimeHour = 0;
@@ -1081,8 +1095,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         try { query = ircMsg.getArgv().get(0); }
         catch (IndexOutOfBoundsException e) { return ; }
 
-        myServer = Server.getServerBySid(config.getServerId());
-        serverName = myServer.getSid();
+
 
         List<String> strResponse = new ArrayList<>();
 
