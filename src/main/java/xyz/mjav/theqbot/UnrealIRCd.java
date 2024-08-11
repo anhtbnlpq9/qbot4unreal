@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.HashMap;
@@ -1068,6 +1069,15 @@ public class UnrealIRCd extends Exception implements Protocol {
         String serverName;
         String query;
 
+
+        int uptimeDay  = 0;
+        int uptimeHour = 0;
+        int uptimeMin  = 0;
+        int uptimeSec  = 0;
+
+        long now    = Timestamp.value().getValue();
+        long uptime = now - Qbot.BOOT_TIME;
+
         try { query = ircMsg.getArgv().get(0); }
         catch (IndexOutOfBoundsException e) { return ; }
 
@@ -1079,7 +1089,12 @@ public class UnrealIRCd extends Exception implements Protocol {
         switch (query) {
 
             case "u", "uptime": {
-                strResponse.add(String.format(":%s 242 %s :Server Up 17 days, 4:06:18 %s", serverName, ircMsg.getFrom(), "..."));
+                uptimeDay = (int) TimeUnit.SECONDS.toDays(uptime);
+                uptimeHour = (int) TimeUnit.SECONDS.toHours(uptime) - (uptimeDay *24);
+                uptimeMin = (int) (TimeUnit.SECONDS.toMinutes(uptime) - (TimeUnit.SECONDS.toHours(uptime)* 60));
+                uptimeSec = (int) (TimeUnit.SECONDS.toSeconds(uptime) - (TimeUnit.SECONDS.toMinutes(uptime) *60));
+
+                strResponse.add(String.format(":%s 242 %s :Server Up %s days, %s:%s:%s", serverName, ircMsg.getFrom(), uptimeDay, uptimeHour, uptimeMin, uptimeSec));
                 strResponse.add(String.format(":%s 250 %s :Highest connection count: %s", serverName, ircMsg.getFrom(), myServer.getLocalUsers().size()));
                 break;
             }
