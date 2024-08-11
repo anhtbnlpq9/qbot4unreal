@@ -76,8 +76,8 @@ public class Qbot {
         log.log(ALWAYS, " ___        __    __         _                        __  __  ");
         log.log(ALWAYS, "  | |_  _  /  \\  |__) _ |_  (_ _  _  /  \\ _  _ _ _ |||__)/   _| ");
         log.log(ALWAYS, "  | | )(-  \\_\\/  |__)(_)|_  | (_)|   \\__/| )| (-(_|||| \\ \\__(_| ");
-        log.log(ALWAYS, " ");
-        log.log(ALWAYS, "* Starting the Q Bot for UnrealIRCd v" + Const.QBOT_VERSION_NUMBER);
+        log.log(ALWAYS, "                           version v" + Const.QBOT_VERSION_NUMBER);
+        log.log(ALWAYS, "* Starting the Q Bot for UnrealIRCd");
 
         if (configFileName.isEmpty() == false) configFile = configFileName;
         else configFile = CONFIG_FILE;
