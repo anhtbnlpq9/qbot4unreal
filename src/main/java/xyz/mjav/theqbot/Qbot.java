@@ -13,6 +13,8 @@ import xyz.mjav.theqbot.exceptions.ConfigFileErrorException;
  */
 public class Qbot {
 
+    public static final long BOOT_TIME = Timestamp.value().getValue();
+
     /**
      * Default configuration file path if none provided on the command line
      */
