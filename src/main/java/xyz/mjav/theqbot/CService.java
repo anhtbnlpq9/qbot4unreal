@@ -250,6 +250,8 @@ public class CService extends Service {
 
         this.myServerNode = Server.getServerBySid(config.getServerId());
 
+        this.myServerNode.addLocalUser(this.myUserNode);
+
         protocol.sendUid(myUserNode);
         protocol.sendSetHost(myUserNode, myUserNode.getHost()); // XXX: maybe a bug there. Vhost is sent through UID but not read by the ircd
 

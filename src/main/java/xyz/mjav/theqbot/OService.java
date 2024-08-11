@@ -86,7 +86,7 @@ public class OService extends Service {
             myModes.put(c.toString(), "");
         }
 
-        this.myUserNode = new Nick.Builder()
+        this.myUserNode =  new Nick.Builder()
                             .uid(myUniq)
                             .nick(config.getOServeNick())
                             .ident(config.getOServeIdent())
@@ -98,6 +98,10 @@ public class OService extends Service {
                             .userTS(unixTime)
                             .ip("fwAAAQ==") /* IP address = 127.0.0.1 */
                             .build();
+
+
+        this.myServerNode = Server.getServerBySid(config.getServerId());
+        this.myServerNode.addLocalUser(this.myUserNode);
 
         protocol.sendUid(myUserNode);
 
