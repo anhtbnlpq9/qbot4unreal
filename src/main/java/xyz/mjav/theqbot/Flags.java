@@ -176,26 +176,6 @@ abstract class Flags {
 
     private static final int   UFLAGS_READONLY     = ( UFLAG_SUSPENDED | UFLAG_GLINE | UFLAG_DELETED ); /* flags non-settable through USERFLAGS */
 
-
-    /**
-     * Maps user flag char to constant
-     */
-    private static final Map<String, Integer> userFlagCharMap = Map.ofEntries(
-        entry("a",   UFLAG_ADMIN),
-        entry("e",   UFLAG_OVERRIDE),
-        entry("g",   UFLAG_GLINE),
-        entry("l",   UFLAG_NOAUTHLIMIT),
-        entry("m",   UFLAG_PRIVMSG),
-        entry("o",   UFLAG_OPER),
-        entry("p",   UFLAG_PROTECTED),
-        entry("q",   UFLAG_STAFF),
-        entry("v",   UFLAG_AUTOVHOST),
-        entry("w",   UFLAG_WELCOME),
-        entry("z",   UFLAG_SUSPENDED),
-        entry("D",   UFLAG_DELETED),
-        entry("d",   UFLAG_DEVGOD)
-    );
-
     /** Maps user flag constant to char */
     private static final Map<Integer, String> userFlagCharRevMap = Map.ofEntries(
         entry(UFLAG_ADMIN,          "a"),
@@ -227,6 +207,13 @@ abstract class Flags {
         entry(UFLAG_DELETED,        "D:deleted"),
         entry(UFLAG_DEVGOD,         "d:devgod")
     );
+
+    private static final Map<String, Integer> userFlagCharMap;
+    static {
+        /* Create reverse maps */
+        userFlagCharMap = new HashMap<>();
+        for(Map.Entry<Integer, String> set:  userFlagCharRevMap.entrySet()) userFlagCharMap.put(set.getValue(), set.getKey());
+    }
 
     /*
      * Channel flags
@@ -360,25 +347,6 @@ abstract class Flags {
 
 
     /**
-     * Maps chan flag char to constant
-     */
-    private static final Map<String, Integer> chanFlagCharMap = Map.ofEntries(
-        entry("b",   CHFLAG_BITCH),
-        entry("c",   CHFLAG_AUTOLIMIT),
-        entry("e",   CHFLAG_ENFORCE),
-        entry("f",   CHFLAG_FORCETOPIC),
-        entry("j",   CHFLAG_JOINED),
-        entry("k",   CHFLAG_KNOWNONLY),
-        entry("p",   CHFLAG_PROTECTED),
-        entry("t",   CHFLAG_TOPICSAVE),
-        entry("v",   CHFLAG_VOICEALL),
-        entry("w",   CHFLAG_WELCOME),
-        entry("y",   CHFLAG_GLINED),
-        entry("z",   CHFLAG_SUSPENDED)
-    );
-
-
-    /**
      * Maps chan flag constant to char
      */
     private static final Map<Integer, String> chanFlagCharRevMap = Map.ofEntries(
@@ -410,6 +378,13 @@ abstract class Flags {
         entry(CHFLAG_GLINED,        "y:glined"),
         entry(CHFLAG_SUSPENDED,     "z:suspended")
     );
+
+    private static final Map<String, Integer> chanFlagCharMap;
+    static {
+        /* Create reverse maps */
+        chanFlagCharMap = new HashMap<>();
+        for(Map.Entry<Integer, String> set:  chanFlagCharRevMap.entrySet()) chanFlagCharMap.put(set.getValue(), set.getKey());
+    }
 
 
     /*
@@ -565,28 +540,6 @@ abstract class Flags {
     /** Contains all possible editable flags */
     private static final int   CLFLAGS_ALLOWED      = ( CLFLAGS_PUBLIC | CLFLAGS_PUNISH | CLFLAGS_PERSONAL );
 
-
-    /**
-     * Maps chanlev flag char to constant
-     */
-    private static final Map<String, Integer> chanlevFlagCharMap = Map.ofEntries(
-        entry("a",   CLFLAG_AUTO),
-        entry("b",   CLFLAG_BANNED),
-        entry("d",   CLFLAG_DENYOP),
-        entry("h",   CLFLAG_HALFOP),
-        entry("j",   CLFLAG_AUTOINVITE),
-        entry("k",   CLFLAG_KNOWN),
-        entry("m",   CLFLAG_MASTER),
-        entry("n",   CLFLAG_OWNER),
-        entry("o",   CLFLAG_OP),
-        entry("p",   CLFLAG_PROTECT),
-        entry("t",   CLFLAG_TOPIC),
-        entry("u",   CLFLAG_DENYVOICE),
-        entry("v",   CLFLAG_VOICE),
-        entry("w",   CLFLAG_HIDEWELCOME)
-    );
-
-
     /**
      * Maps chanlev flag constant to char
      */
@@ -624,6 +577,13 @@ abstract class Flags {
         entry(CLFLAG_VOICE,          "v:voice"),
         entry(CLFLAG_HIDEWELCOME,    "w:hidewelcome")
     );
+
+    private static final Map<String, Integer> chanlevFlagCharMap;
+    static {
+        /* Create reverse maps */
+        chanlevFlagCharMap = new HashMap<>();
+        for(Map.Entry<Integer, String> set:  chanlevFlagCharRevMap.entrySet()) chanlevFlagCharMap.put(set.getValue(), set.getKey());
+    }
 
     /* Other static attributes for the class */
     private static String flagText  = "";
