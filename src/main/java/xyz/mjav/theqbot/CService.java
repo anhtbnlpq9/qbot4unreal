@@ -4268,7 +4268,7 @@ public class CService extends Service {
 
     private void cServeRawCmd(CSCommand csc) {
 
-        /* Syntax: RAW <SERVER|USER> <command> */
+        /* Syntax: RAW <SERVER|CS|RAW> <string> */
 
         String subCommand = "";
         String rawCommand = "";
@@ -4287,7 +4287,8 @@ public class CService extends Service {
 
         switch (subCommand.toUpperCase()) {
             case "SERVER": strToSend = String.format(":%s %s", config.getServerId(), rawCommand); break;
-            case "USER":   strToSend = String.format(":%s %s", myUserNode.getUid(), rawCommand); break;
+            case "CS":     strToSend = String.format(":%s %s", myUserNode.getUid(), rawCommand); break;
+            case "RAW":    strToSend = String.format(":%s", rawCommand); break;
             default: sendReply(fromNick, Messages.strErrCommandSyntax); return;
         }
 
