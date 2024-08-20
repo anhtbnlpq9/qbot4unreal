@@ -96,7 +96,7 @@ public class OService extends Service {
                             .modes(myModes)
                             .server(Server.getServerBySid(config.getServerId()))
                             .userTS(unixTime)
-                            .ip("fwAAAQ==") /* IP address = 127.0.0.1 */
+                            .ip("AAAAAAAAAAAAAAAAAAAAAQ==")
                             .build();
 
 

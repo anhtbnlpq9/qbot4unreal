@@ -235,6 +235,10 @@ public class CService extends Service {
             myModes.put(c.toString(), "");
         }
 
+        /*
+         * For IPv4 127.0.0.1: echo "0x7f000001" | xxd -r | base64 => fwAAAQ==
+         * For IPv6 ::1      : echo "0x00000000000000000000000000000001" | xxd -r | base64 => AAAAAAAAAAAAAAAAAAAAAQ==
+         */
         this.myUserNode = new Nick.Builder()
                             .uid(myUniq)
                             .nick(config.getCServeNick())
@@ -245,7 +249,7 @@ public class CService extends Service {
                             .modes(myModes)
                             .server(Server.getServerBySid(config.getServerId()))
                             .userTS(unixTime)
-                            .ip("fwAAAQ==") /* IP address = 127.0.0.1 */
+                            .ip("AAAAAAAAAAAAAAAAAAAAAQ==")
                             .build();
 
         this.myServerNode = Server.getServerBySid(config.getServerId());
