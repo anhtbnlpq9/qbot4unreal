@@ -143,4 +143,6 @@ Nothing here
 - [ ] issues during auth in certain conditions
 - [ ] issues during reauth (after netjoin or service restart)
 - [ ] auth may not be managed the same way if it is made from SASL or AUTH command
+- [ ] mlock isn't sent when starting qbot
+- [ ] mlock isn't sent when a new server connects
 
