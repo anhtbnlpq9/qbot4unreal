@@ -592,19 +592,19 @@ abstract class Flags {
     public static final boolean hasLevelPrivilege(Nick nick, String level) {
 
         switch (level) {
-            case "NOAUTH", "001": if (nick.isAuthed() == false) return true; break;
+            case "UNAUTHED_PRIV", "NOAUTH_PRIV", "NOAUTH", "001": if (nick.isAuthed() == false) return true; break;
 
-            case "AUTH", "00AUTH", "050": if (nick.isAuthed() == true) return true; break;
+            case "AUTH_PRIV", "AUTH", "00AUTH", "050": if (nick.isAuthed() == true) return true; break;
 
-            case "STAFF", "0STAFF", "100": if (nick.isAuthed() == true && Flags.hasUserStaffPriv(nick.getAccount().getFlags())) return true; break;
+            case "STAFF_PRIV", "STAFF", "0STAFF", "100": if (nick.isAuthed() == true && Flags.hasUserStaffPriv(nick.getAccount().getFlags())) return true; break;
 
-            case "OPER", "00OPER", "150": if (nick.isAuthed() == true && Flags.hasUserOperPriv(nick.getAccount().getFlags())) return true; break;
+            case "OPER_PRIV", "OPER", "00OPER", "150": if (nick.isAuthed() == true && Flags.hasUserOperPriv(nick.getAccount().getFlags())) return true; break;
 
-            case "ADMIN", "0ADMIN", "200": if (nick.isAuthed() == true && Flags.hasUserAdminPriv(nick.getAccount().getFlags())) return true; break;
+            case "ADMIN_PRIV", "ADMIN", "0ADMIN", "200": if (nick.isAuthed() == true && Flags.hasUserAdminPriv(nick.getAccount().getFlags())) return true; break;
 
-            case "DEVGOD", "900": if (nick.isAuthed() == true && Flags.hasUserDevGodPriv(nick.getAccount().getFlags())) return true; break;
+            case "DEVGOD_PRIV", "DEVGOD", "900": if (nick.isAuthed() == true && Flags.hasUserDevGodPriv(nick.getAccount().getFlags())) return true; break;
 
-            case "ALWAYS", "000": return true;
+            case "ALWAYS_PRIV", "ALWAYS", "000": return true;
 
             //default:    return true;
         }

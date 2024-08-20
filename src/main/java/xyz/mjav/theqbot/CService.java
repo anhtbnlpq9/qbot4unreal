@@ -185,7 +185,7 @@ public class CService extends Service {
     );
 
     /** List of the commands */
-    private static final Map<String, String> CMD_LIST;
+    /*private static final Map<String, String> CMD_LIST;
     static {
         CMD_LIST = new HashMap<>();
         CMD_LIST.putAll(CMD_ALWAYS);
@@ -195,7 +195,7 @@ public class CService extends Service {
         CMD_LIST.putAll(CMD_OPER);
         CMD_LIST.putAll(CMD_ADMIN);
         CMD_LIST.putAll(CMD_DEVGOD);
-    };
+    };*/
 
     /**
      * Class constructor
@@ -2574,7 +2574,7 @@ public class CService extends Service {
         commandNameUp = commandName.toUpperCase();
         help = Help.getHelp(commandNameUp, "CService", "command_single");
         level = help.getMetadata().get("level");
-        if (level == null || level.isEmpty() == true) level = "999";
+        if (level == null || level.isEmpty() == true) level = "NONE_PRIV";
 
         if (Flags.hasLevelPrivilege(fromNick, level) == false) { helpContent = List.of(Messages.strErrCommandUnknown); }
         else helpContent = help.getData();
@@ -2600,7 +2600,7 @@ public class CService extends Service {
         }
 
         /* Commands does not exist */
-        if (CMD_LIST.containsKey(helpCommandName) == false) {
+        if (Help.CSERVICE_CMD_LIST.containsKey(helpCommandName) == false) {
             sendReply(csCommand.getFromNick(), String.format(Messages.strErrNoAccess));
             return;
         }
@@ -2648,7 +2648,7 @@ public class CService extends Service {
         level = help.getMetadata().get("level");
 
         /* If no command level, consider the max level */
-        if (level == null || level.isEmpty() == true) level = "999";
+        if (level == null || level.isEmpty() == true) level = "NONE_PRIV";
 
         if (Flags.hasLevelPrivilege(fromNick, level) == false) { helpOutput = List.of(Messages.strErrCommandUnknown); }
         else {
@@ -2657,10 +2657,10 @@ public class CService extends Service {
 
             for (String l: helpContent) {
                 try {
-                    lineLevel = l.split("!", 2)[0];
+                    lineLevel = l.split("!", 2)[0].replaceAll("\\s","");
                     lineString = l.split("!", 2)[1];
                 }
-                catch (IndexOutOfBoundsException e) { lineLevel = "999"; lineString = ""; }
+                catch (IndexOutOfBoundsException e) { lineLevel = "NONE_PRIV"; lineString = ""; }
 
                 if (Flags.hasLevelPrivilege(fromNick, lineLevel) == true) { helpOutput.add(lineString); }
             }
