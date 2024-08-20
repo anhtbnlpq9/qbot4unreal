@@ -2695,7 +2695,7 @@ public class CService extends Service {
 
             if (Flags.isChanAutolimit(chanNode.getcServeFlags()) == true && Flags.isChanJoined(chanNode.getcServeFlags()) == true && newLimit != curChanModeLimit) {
                 try {
-                    protocol.setMode(myUserNode, chanNode, "+l", String.valueOf(newLimit));
+                    protocol.setMode(myUserNode, chanNode, "+l", String.valueOf(newLimit)); // XXX
                     log.info("Autolimit: setting limit of " + chanName + " to " + String.valueOf(newLimit));
                 }
                 catch (Exception e) { log.error(String.format("CService/cServeSetAutolimit: cannot set autolimit for channel %s", chanNode.getName()), e); }
@@ -3207,7 +3207,8 @@ public class CService extends Service {
         parsedModesTmp = new HashSet<>(parsedModes.get("chanModes").keySet());
 
         for(String mode: parsedModesTmp) {
-            switch(mode) {
+            switch(mode) { // TODO: necessary to abstract the modes here
+
                 /* Lists: not applicable */
                 case "b", "+b", "-b":
                 case "e", "+e", "-e":

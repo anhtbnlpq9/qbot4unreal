@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.time.Instant;
 
@@ -481,12 +480,12 @@ public class UnrealIRCd extends Exception implements Protocol {
                     log.debug(String.format("UnrealIRCd::MODE: Channel %s: (parsed) change list: %s %s", chan.getName(), list, parameter));
                     try { wrapperCList.mask = Bei.create(parameter); }
                     catch (InvalidFormatException e) { log.error(String.format("UnrealIRCd::setMode: beI %s has invalid format", parameter), e); return; }
-                    if (list.equals("+b")) chan.addBanList(wrapperCList.mask);
-                    else if (list.equals("-b")) chan.delBanList(wrapperCList.mask);
-                    else if (list.equals("+e")) chan.addExceptList(wrapperCList.mask);
-                    else if (list.equals("-e")) chan.delExceptList(wrapperCList.mask);
-                    else if (list.equals("+I")) chan.addInviteList(wrapperCList.mask);
-                    else if (list.equals("-I")) chan.delInviteList(wrapperCList.mask);
+                    if (list.equals("+b")) chan.addBanList(wrapperCList.mask); // TODO: abstract chanmode
+                    else if (list.equals("-b")) chan.delBanList(wrapperCList.mask); // TODO: abstract chanmode
+                    else if (list.equals("+e")) chan.addExceptList(wrapperCList.mask); // TODO: abstract chanmode
+                    else if (list.equals("-e")) chan.delExceptList(wrapperCList.mask); // TODO: abstract chanmode
+                    else if (list.equals("+I")) chan.addInviteList(wrapperCList.mask); // TODO: abstract chanmode
+                    else if (list.equals("-I")) chan.delInviteList(wrapperCList.mask); // TODO: abstract chanmode
                 }
             }
         });
@@ -2001,17 +2000,17 @@ public class UnrealIRCd extends Exception implements Protocol {
 
                 if (listItem.startsWith("&")) { /* +b */
                     chan.addBanList(mask);
-                    log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));
+                    log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +b %s", chan.getName(), chanListItem));  // TODO: abstract chanmode
                 }
 
                 else if (listItem.startsWith("\"")) { /* +e */
                     chan.addExceptList(mask);
-                    log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));
+                    log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +e %s", chan.getName(), chanListItem));  // TODO: abstract chanmode
                 }
 
                 else if (listItem.startsWith("'")) { /* +I */
                     chan.addInviteList(mask);
-                    log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));
+                    log.debug(String.format("UnrealIRCd::SJOIN: Channel %s: (parsed) set list: +I %s", chan.getName(), chanListItem));  // TODO: abstract chanmode
                 }
 
                 /* No need to go further because list does not contains user modes */
