@@ -3304,61 +3304,61 @@ public class CService extends Service {
             case "owner":
                 if (protocol.hasFeature("chanOwner") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "+q";
+                applyMode = "+" + protocol.getChanMode("owner");
             break;
 
             case "admin":
                 if (protocol.hasFeature("chanAdmin") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "+a";
+                applyMode = "+" + protocol.getChanMode("admin");
             break;
 
             case "op":
                 if (protocol.hasFeature("chanOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "+o";
+                applyMode = "+" + protocol.getChanMode("op");
             break;
 
             case "halfop":
                 if (protocol.hasFeature("chanHalfOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "+h";
+                applyMode = "+" + protocol.getChanMode("halfop");
             break;
 
             case "voice":
                 if (protocol.hasFeature("chanVoice") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "+v";
+                applyMode = "+" + protocol.getChanMode("voice");
             break;
 
             case "deowner":
                 if (protocol.hasFeature("chanOwner") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "-q";
+                applyMode = "-" + protocol.getChanMode("owner");
             break;
 
             case "deadmin":
                 if (protocol.hasFeature("chanAdmin") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "-a";
+                applyMode = "-" + protocol.getChanMode("admin");
             break;
 
             case "deop":
                 if (protocol.hasFeature("chanOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "-o";
+                applyMode = "-" + protocol.getChanMode("op");
             break;
 
             case "dehalfop":
                 if (protocol.hasFeature("chanHalfOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "-h";
+                applyMode = "-" + protocol.getChanMode("halfop");
             break;
 
             case "devoice":
                 if (protocol.hasFeature("chanVoice") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                applyMode = "-v";
+                applyMode = "-" + protocol.getChanMode("voice");
             break;
 
             default: return;
@@ -3410,61 +3410,61 @@ public class CService extends Service {
             case "owner":
                 if (protocol.hasFeature("chanOwner") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "+q";
+                mode = "-" + protocol.getChanMode("owner");
             break;
 
             case "admin":
                 if (protocol.hasFeature("chanAdmin") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "+a";
+                mode = "-" + protocol.getChanMode("admin");
             break;
 
             case "op":
                 if (protocol.hasFeature("chanOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "+o";
+                mode = "-" + protocol.getChanMode("op");
             break;
 
             case "halfop":
                 if (protocol.hasFeature("chanHalfOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "+h";
+                mode = "-" + protocol.getChanMode("halfop");
             break;
 
             case "voice":
                 if (protocol.hasFeature("chanVoice") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "+v";
+                mode = "-" + protocol.getChanMode("voice");
             break;
 
             case "deowner":
                 if (protocol.hasFeature("chanOwner") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOwnerPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "-q";
+                mode = "-" + protocol.getChanMode("owner");
             break;
 
             case "deadmin":
                 if (protocol.hasFeature("chanAdmin") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLMasterPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "-a";
+                mode = "-" + protocol.getChanMode("admin");
             break;
 
             case "deop":
                 if (protocol.hasFeature("chanOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "-o";
+                mode = "-" + protocol.getChanMode("op");
             break;
 
             case "dehalfop":
                 if (protocol.hasFeature("chanHalfOp") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "-h";
+                mode = "-" + protocol.getChanMode("halfop");
             break;
 
             case "devoice":
                 if (protocol.hasFeature("chanVoice") == false) { sendReply(fromNick, Messages.strErrModeNotSupported); return;  }
                 if (Flags.hasChanLOpPriv(fromNick.getAccount().getChanlev(chanNode)) == false) { sendReply(fromNick, String.format(Messages.strErrNoAccess)); return; }
-                mode = "-v";
+                mode = "-" + protocol.getChanMode("voice");
             break;
 
             default:
@@ -3898,9 +3898,9 @@ public class CService extends Service {
         if (fromNick.isAuthed() == false) { sendReply(fromNick, Messages.strErrCommandUnknown);  return; }
 
         switch(type) {
-            case    Const.CHANBEI_BANS: mode = "+b"; if (reason.isEmpty() == true) { reason = "Banned."; } break;
-            case Const.CHANBEI_EXCEPTS: mode = "+e"; if (reason.isEmpty() == true) { reason = "Excepted."; } break;
-            case Const.CHANBEI_INVITES: mode = "+I"; if (reason.isEmpty() == true) { reason = "Invited."; } break;
+            case    Const.CHANBEI_BANS: mode = "+" + protocol.getChanMode("banned"); if (reason.isEmpty() == true) { reason = "Banned."; } break;
+            case Const.CHANBEI_EXCEPTS: mode = "+" + protocol.getChanMode("except"); if (reason.isEmpty() == true) { reason = "Excepted."; } break;
+            case Const.CHANBEI_INVITES: mode = "+" + protocol.getChanMode("invex");  if (reason.isEmpty() == true) { reason = "Invited."; } break;
         }
 
         dispatcher.addChanBei(type, channel, bei, fromNick.getAccount(), reason, duration);
