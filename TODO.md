@@ -1,45 +1,36 @@
 # To do list
 
-## The basic stuff
 
-### General
-- [ ] conf REHASH
-- [X] logging to a database
-- [ ] i18n
-- [ ] actions log
-
+## General
 ### Accounts
 - [ ] account editing
 - [ ] nick ownership
 - [ ] account auto expiry
+- [ ] (opt-in) certfp autologin without SASL (cons: imposes that certfp can be used in only one account)
+- [ ] account profiles (in order to assign specific privileges)
+- [ ] services-managed o:lines
+- [ ] account edit history (email, password)
+- [ ] account auth with challenge auth => maybe not necessary and can be replaced with SASL/TLS or CertFP, or implement SCRAM-SHA256
+- [ ] vhosts
 
 ### Channels
 - [ ] channel editing
 - [ ] chanlev history
 - [ ] channel auto expiry
 - [ ] handle setting multiple (user) chan modes at the same time
-
-## Advanced stuff
+- [ ] chaninfo: channel idle time
 
 ### Protocol
 - [ ] security groups
-
-### Accounts
-- [ ] account edit history (email, password)
-- [ ] account auth with challenge auth => maybe not necessary and can be replaced with SASL/TLS or CertFP, or implement SCRAM-SHA256
-- [ ] vhosts
-
-### Channels
-Nothing here
 
 ### Database
 - [ ] Implement Elastic
 - [ ] Implement MariaDB/MySQL
 
-### Flags
 
+### Flags
 #### User flags
-- [ ] +D deleted
+- [x] +D deleted
 - [X] +a admin
 - [X] +d devgod
 - [ ] +g glined
@@ -84,6 +75,10 @@ Nothing here
 
 ### Other
 - [ ] service master/slave redundancy
+- [ ] conf REHASH
+- [X] logging to a database
+- [ ] i18n
+- [ ] actions log
 
 ## Oper stuff
 - [ ] user gline
@@ -92,7 +87,7 @@ Nothing here
 ## Commands
 
 ### Chan related
-- [ ] ADDUSER => add user(s) in chanlev given flags ADDUSER #channel chanlev-flags user1 user2 user3...
+- [X] ADDUSER => add user(s) in chanlev given flags ADDUSER #channel chanlev-flags user1 user2 user3...
 - [ ] (BAN|EXCEPT|INVEX)CLEAR => clear all bans on a channel
 - [ ] BANTIMER
 - [ ] CHANLEVHISTORY
@@ -100,7 +95,6 @@ Nothing here
 - [ ] CHANOPHISTORY
 - [ ] CHANSTAT
 - [ ] CLEARCHAN
-- [ ] GIVEOWNER
 - [ ] INVITE
 - [ ] REQUESTOWNER
 - [ ] SUSPENDCHANLIST
@@ -109,7 +103,6 @@ Nothing here
 - [ ] UNBANME
 - [ ] CHANORPHANS => channels with no +n
 - [ ] CHANBAN => implement channel "gline"
-
 
 ### User related
 - [ ] ACCOUNTHISTORY => list action history for user account
@@ -137,7 +130,7 @@ Nothing here
 - [ ] searching for data (for users, for opers)
 
 # Coding
-- [ ] rework the flags/levels help/showcommands system a bit
+- [X] rework the flags/levels help/showcommands system a bit
 
 # Issues
 - [ ] issues during auth in certain conditions
