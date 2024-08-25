@@ -37,7 +37,7 @@ public class UnrealIRCd extends Exception implements Protocol {
 
     private static UnrealIRCd instance;
 
-    private static final Map<String, String> UMODES = Map.ofEntries(
+    private static final Map<String, String> USER_MODES = Map.ofEntries(
         entry("mode_a",            "a"),
         entry("mode_b",            "b"),
         entry("mode_c",            "c"),
@@ -92,7 +92,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         entry("tlsdeaf",           "Z")
     );
 
-    private static final Map<String, String> CHMODES = Map.ofEntries(
+    private static final Map<String, String> CHANNEL_MODES = Map.ofEntries(
         entry("admin",              "a"),
         entry("banned",             "b"),
         entry("blockcolor",         "c"),
@@ -172,8 +172,8 @@ public class UnrealIRCd extends Exception implements Protocol {
         /* Create reverse maps of modes */
         userModeToTxt = new HashMap<>();
         chanModeToTxt = new HashMap<>();
-        for(Map.Entry<String, String> set:  UMODES.entrySet()) userModeToTxt.put(set.getValue(), set.getValue() + ":" + set.getKey());
-        for(Map.Entry<String, String> set: CHMODES.entrySet()) chanModeToTxt.put(set.getValue(), set.getValue() + ":" + set.getKey());
+        for(Map.Entry<String, String> set:  USER_MODES.entrySet()) userModeToTxt.put(set.getValue(), set.getValue() + ":" + set.getKey());
+        for(Map.Entry<String, String> set: CHANNEL_MODES.entrySet()) chanModeToTxt.put(set.getValue(), set.getValue() + ":" + set.getKey());
     }
 
     private Client client;
@@ -872,7 +872,7 @@ public class UnrealIRCd extends Exception implements Protocol {
 
     private void handlePrivmsg(IrcMessage ircMsg) throws Exception {
         log.debug("UnrealIRCd::handlePrivmsg: received a PRIVMSG");
-
+        /* :UID PRIVMSG UID :message */
         String to;
 
         Nick toUser;
@@ -3058,11 +3058,11 @@ public class UnrealIRCd extends Exception implements Protocol {
     }
 
     @Override public String getChanMode(String m) {
-        return CHMODES.get(m);
+        return CHANNEL_MODES.get(m);
     }
 
     @Override public String getUserMode(String m) {
-        return UMODES.get(m);
+        return USER_MODES.get(m);
     }
 
     @Override public String userModeToTxt(String s) {
