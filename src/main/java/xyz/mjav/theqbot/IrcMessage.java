@@ -89,6 +89,7 @@ public class IrcMessage {
         catch (IndexOutOfBoundsException e) { targetTxt = ""; }
 
         if (targetTxt.isEmpty() == false) {
+            if (targetTxt.contains("@") == true) targetTxt = targetTxt.split("@")[0]; /* If the target contains @ such as user@server, only gets before the @ */
             try { target = Nick.getNick(targetTxt); }
             catch (NickNotFoundException f) {
                 try { target = Channel.getChanByNameCi(targetTxt); }
