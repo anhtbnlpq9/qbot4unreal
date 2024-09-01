@@ -876,6 +876,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         String to;
 
         Nick toUser;
+        Channel channel;
 
         try {
             //to = rawSplit[2];
@@ -885,7 +886,12 @@ public class UnrealIRCd extends Exception implements Protocol {
         catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'to' field in raw %s", ircMsg), e); return; }
 
         /* If the PRIVMSG targets a channel, then we can ignore it */
-        if (to.startsWith(Const.USER_ACCOUNT_PREFIX) == true) { log.debug("UnrealIRCd::handlePrivmsg: PRIVMSG targeted a channel => stopping treatment"); return; }
+        if (to.startsWith("#") == true) {
+            try { channel = Channel.getChanByNameCi(to); }
+            catch (ChannelNotFoundException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: Channel %s not found in channels list", to), e); return; }
+            channel.setLastActivity(new Timestamp());
+            log.debug("UnrealIRCd::handlePrivmsg: PRIVMSG targeted a channel => stopping treatment"); return;
+        }
 
         //try { message = ircMsg.getArgv().get(1); }
         //catch (IndexOutOfBoundsException e) { log.error(String.format("UnrealIRCd::handlePrivmsg: could not extract 'message' field in raw %s", ircMsg), e); return; }
