@@ -69,7 +69,7 @@ public class ESClient implements Runnable {
 
     @Override public void run() {
 
-        if (this.esEnabled == false) return;
+        if (this.esEnabled == false) { this.connectionReady = true; return; }
 
         log.info(String.format("ESClient::run: Starting Elasticsearch client"));
 
