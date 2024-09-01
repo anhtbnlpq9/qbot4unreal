@@ -3697,7 +3697,7 @@ public class CService extends Service {
                 strReply.add(String.format(Messages.strChanInfoContentCurModesLong, bufferModeLong));
                 if (channel.getTopic().getText().toString().isEmpty() == false) strReply.add(String.format(Messages.strChanInfoContentCurTopic, channel.getTopic().getText()));
 
-                var w = new Object(){ int counterModeq=0; int counterModea=0; int counterModeo=0; int counterModeh=0; int counterModev=0; };
+                var w = new Object(){ int counterModeq=0; int counterModea=0; int counterModeo=0; int counterModeh=0; int counterModev=0; int counterReg=0; };
                 chanUserList = channel.getUsers();
                 chanUserList.forEach(
                     (Nick n, Set<String> modes) -> {
