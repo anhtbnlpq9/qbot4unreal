@@ -21,11 +21,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import xyz.mjav.theqbot.exceptions.ChannelNotFoundException;
 import xyz.mjav.theqbot.exceptions.InvalidFormatException;
 import xyz.mjav.theqbot.exceptions.ItemExistsException;
 import xyz.mjav.theqbot.exceptions.ItemNotFoundException;
 import xyz.mjav.theqbot.exceptions.NickNotFoundException;
 import xyz.mjav.theqbot.exceptions.ParseException;
+import xyz.mjav.theqbot.exceptions.ServerNotFoundException;
 
 import static java.util.Map.entry;
 
@@ -233,9 +235,12 @@ public class UnrealIRCd extends Exception implements Protocol {
      * @return channel node
      */
     @Override
-    public Channel getChannelNodeByNameCi(String channelName) throws ItemNotFoundException {
+    public Channel getChannelNodeByNameCi(String channelName) throws ChannelNotFoundException {
 
-        Channel returnval = null;
+        try { return Channel.getChanByNameCi(channelName); }
+        catch (ChannelNotFoundException e) { throw e; }
+
+        /*Channel returnval = null;
 
         String name;
 
@@ -245,7 +250,7 @@ public class UnrealIRCd extends Exception implements Protocol {
         }
 
         if (returnval == null) throw new ItemNotFoundException("Channel does not exist");
-        else return returnval;
+        else return returnval;*/
 
     }
 
