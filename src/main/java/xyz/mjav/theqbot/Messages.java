@@ -187,6 +187,7 @@ public class Messages {
     public static final String strChanInfoNetworkHeader             = "Network:"; /* only known */
     public static final String strChanInfoContentCurTimestamp       = " o Channel Timestamp      :: %s"; /* only staff+ */
     public static final String strChanInfoContentCurTopic           = " o Topic                  :: %s"; /* only staff+ */
+    public static final String strChanInfoContentCurTopicSetBy      = " o Topic set              :: By %s on %s"; /* only staff+ */
     public static final String strChanInfoContentCurModes           = " o Modes                  :: +%s"; /* only staff+ */
     public static final String strChanInfoContentCurModesLong       = " o Modes (long)           :: %s"; /* only staff+ */
     public static final String strChanInfoContentCurMlockPolicy     = " o MLOCK policy           :: +%s"; /* only staff+ */
