@@ -946,6 +946,8 @@ public class UnrealIRCd extends Exception implements Protocol {
         String serverName;
         String systemString = "*";
 
+        Server server;
+
         StringJoiner featureString = new StringJoiner(" ");
 
         featuresList.put("NETWORK",                  config.getNetworkName());
@@ -971,6 +973,11 @@ public class UnrealIRCd extends Exception implements Protocol {
         try { serverName = ircMsg.getArgv().get(0); }
         catch (ArrayIndexOutOfBoundsException e) { return; }
 
+        try { server = Server.getServer(serverName); }
+        catch (ServerNotFoundException e) {
+            return;
+        }
+
         List<String> strResponse = new ArrayList<>();
 
         try {
@@ -979,11 +986,11 @@ public class UnrealIRCd extends Exception implements Protocol {
         }
         catch (Exception e) { throw new RuntimeException("Entity probably not a Nick"); }
 
-        strResponse.add(String.format(":%s 351 %s %s %s :%s", serverName, ircMsg.getFrom(), version, serverName, systemString));
+        strResponse.add(String.format(":%s 351 %s %s %s :%s", server.getName(), ircMsg.getFrom(), version, server.getName(), systemString));
 
         try {
             fromNick = ircMsg.getFromNick();
-            if (fromNick.isOper() == true) strResponse.add(String.format(":%s NOTICE %s :Java: %s %s", serverName, ircMsg.getFrom(), System.getProperty("java.runtime.name"), System.getProperty("java.version")));
+            if (fromNick.isOper() == true) strResponse.add(String.format(":%s NOTICE %s :Java: %s %s", server.getName(), ircMsg.getFrom(), System.getProperty("java.runtime.name"), System.getProperty("java.version")));
         }
         catch (Exception e) { throw new RuntimeException("Entity probably not a Nick"); }
 
@@ -997,14 +1004,14 @@ public class UnrealIRCd extends Exception implements Protocol {
 
                 /* Check if we have enough arguments before finishing a batch */
                 if (featureInt >= Const.QBOT_VERSION_RESPONSE_MAX_VARIABLES) {
-                    strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), featureString));
+                    strResponse.add(String.format(":%s 005 %s %s :are supported by this server", server.getName(), ircMsg.getFrom(), featureString));
                     featureString = new StringJoiner(" ");
                     featureInt = 0;
                 }
         }
 
         /* Add the rest when the number of arguments if less than the limit*/
-        if (featureInt < Const.QBOT_VERSION_RESPONSE_MAX_VARIABLES) strResponse.add(String.format(":%s 005 %s %s :are supported by this server", serverName, ircMsg.getFrom(), featureString));
+        if (featureInt < Const.QBOT_VERSION_RESPONSE_MAX_VARIABLES) strResponse.add(String.format(":%s 005 %s %s :are supported by this server", server.getName(), ircMsg.getFrom(), featureString));
 
         /*
          * strResponse.add(String.format(":%s NOTICE %s :%s", serverName, ircMsg.getFrom(), "Test version"));
