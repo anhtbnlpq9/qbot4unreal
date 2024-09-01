@@ -169,7 +169,7 @@ public class Messages {
     /* CHANINFO */
     public static final String strChanInfoHeader                    = "-Information for channel %s:"; /* only known */
     public static final String strChanInfoCServeNotRegistered       = "Channel is not registered.";
-    public static final String strChanInfoCServeHeader              = " CService:"; /* only known */
+    public static final String strChanInfoCServeHeader              = "CService parameters:"; /* only known */
     public static final String strChanInfoContentRegistered         = " o Registered             :: %s";
     public static final String strChanInfoContentChanId             = " o Channel ID             :: %s";
     public static final String strChanInfoContentChanFlags          = " o Channel flags          :: +%s [%s]";
@@ -181,11 +181,11 @@ public class Messages {
     public static final String strChanInfoContentChanAutoLimit      = " o Auto imit              :: %s";
     public static final String strChanInfoContentChanOrphan         = " o Orphaned               :: %s %s"; /* only staff+ */
     public static final String strChanInfoContentChanSuspended      = " o Suspended              :: %s (Since/Last: %s, %s times): %s"; /* only staff+ */
-    public static final String strChanInfoContentChanBanTitle       = " o Bans                   :: %s excl. channel bans, use BANLIST for more details"; /* only staff+ */
-    public static final String strChanInfoContentChanExcTitle       = " o Excepts                :: %s excl. channel excepts, use EXCEPTLIST for more details"; /* only staff+ */
-    public static final String strChanInfoContentChanInvTitle       = " o Invites                :: %s excl. channel invex, use INVITELIST for more details"; /* only staff+ */
-    public static final String strChanInfoNetworkHeader             = " Network:"; /* only known */
-    public static final String strChanInfoContentCurTimestamp       = " o Timestamp              :: %s"; /* only staff+ */
+    public static final String strChanInfoContentChanBanTitle       = " o Saved Bans             :: %s, use BANLIST for more details"; /* only staff+ */
+    public static final String strChanInfoContentChanExcTitle       = " o Saved Excepts          :: %s, use EXCEPTLIST for more details"; /* only staff+ */
+    public static final String strChanInfoContentChanInvTitle       = " o Saved Invites          :: %s, use INVITELIST for more details"; /* only staff+ */
+    public static final String strChanInfoNetworkHeader             = "Network:"; /* only known */
+    public static final String strChanInfoContentCurTimestamp       = " o Channel Timestamp      :: %s"; /* only staff+ */
     public static final String strChanInfoContentCurTopic           = " o Topic                  :: %s"; /* only staff+ */
     public static final String strChanInfoContentCurModes           = " o Modes                  :: +%s"; /* only staff+ */
     public static final String strChanInfoContentCurModesLong       = " o Modes (long)           :: %s"; /* only staff+ */
