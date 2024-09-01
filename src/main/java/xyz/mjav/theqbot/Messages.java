@@ -192,6 +192,8 @@ public class Messages {
     public static final String strChanInfoContentCurMlockPolicy     = " o MLOCK policy           :: +%s"; /* only staff+ */
     //public static final String strChanInfoContentCounter            = " o Counters              :: users:%s, +q:%s +a:%s +o:%s +h:%s +v:%s"; /* only staff+ */
     public static final String strChanInfoContentCounter            = " o Users                  :: %s (q:%s a:%s o:%s h:%s v:%s), use /NAMES for the list"; /* only staff+ */
+    public static final String strChanInfoContentIdleTime           = " o Idle for               :: %s (since %s)"; /* only opers */
+    public static final String strChanInfoContentIdleTimeStr        = "%s days, %s hours, %s minutes, %s seconds";
     public static final String strChanInfoContentCurKey             = " o Key                    :: %s"; /* only staff+ */
     public static final String strChanInfoContentCurUserLimit       = " o Users limit            :: %s"; /* only staff+ */
     public static final String strChanInfoContentCurFloodProf       = " o Flood profile          :: %s"; /* only staff+ */

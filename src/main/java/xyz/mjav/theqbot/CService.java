@@ -15,6 +15,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import xyz.mjav.theqbot.exceptions.AccountNotFoundException;
 import xyz.mjav.theqbot.exceptions.ChanlevChanNoRightException;
@@ -3613,6 +3614,16 @@ public class CService extends Service {
             String strUserLimit       = "";
             String bModeLongTmp       = "";
 
+            Timestamp chanLastActivity;
+            long chanLastActivityDelta;
+            Date chanLastActivityDate;
+            String chanLastActivityDateString = Messages.strNA;
+            String chanLastActivityString = Messages.strNA;
+            int chanLastActDays;
+            int chanLastActHours;
+            int chanLastActMins;
+            int chanLastActSecs;
+
             StringJoiner bufferModeLong;
 
             Date dateRegTS;
@@ -3704,8 +3715,25 @@ public class CService extends Service {
                 );
 
                 counterTotal = chanUserList.size();
+                w.counterReg = counterTotal - (w.counterModeq + w.counterModea + w.counterModeo + w.counterModeh + w.counterModev);
 
-                if (counterTotal > 0) strReply.add(String.format(Messages.strChanInfoContentCounter, counterTotal, w.counterModeq, w.counterModea, w.counterModeo, w.counterModeh, w.counterModev));
+                if (counterTotal > 0) strReply.add(String.format(Messages.strChanInfoContentCounter, counterTotal, w.counterModeq, w.counterModea, w.counterModeo, w.counterModeh, w.counterModev, w.counterReg));
+
+                /* Channel idle time */
+                chanLastActivity = channel.getLastActivity();
+                if (chanLastActivity.toLong().equals(0L) == false) {
+                    chanLastActivityDelta = (Timestamp.value().toLong() - chanLastActivity.toLong());
+                    chanLastActDays = (int) TimeUnit.SECONDS.toDays(chanLastActivityDelta);
+                    chanLastActHours = (int) TimeUnit.SECONDS.toHours(chanLastActivityDelta) - chanLastActDays*24;
+                    chanLastActMins = (int) TimeUnit.SECONDS.toMinutes(chanLastActivityDelta) - chanLastActHours*60;
+                    chanLastActSecs = (int) TimeUnit.SECONDS.toSeconds(chanLastActivityDelta) - chanLastActMins*60;
+
+                    chanLastActivityString = String.format(Messages.strChanInfoContentIdleTimeStr, chanLastActDays, chanLastActHours, chanLastActMins, chanLastActSecs);
+                    chanLastActivityDate = new Date(chanLastActivity.getValue()*1000L);
+                    chanLastActivityDateString = jdf.format(chanLastActivityDate);
+                }
+
+                strReply.add(String.format(Messages.strChanInfoContentIdleTime, chanLastActivityString, chanLastActivityDateString));
 
                 if (strPassword.isEmpty()      == false) strReply.add(String.format(Messages.strChanInfoContentCurKey, strPassword));
                 if (strUserLimit.isEmpty()     == false) strReply.add(String.format(Messages.strChanInfoContentCurUserLimit, strUserLimit));

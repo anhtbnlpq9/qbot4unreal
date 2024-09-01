@@ -70,6 +70,10 @@ public class Channel extends Account implements Comparable<Channel> {
     /** Channel invited users (invex) list */
     private Set<Bei> inviteList;
 
+    /** Channel last activity time */
+    protected Timestamp lastActivity;
+
+
 
     /* ** CService related ** */
 
@@ -276,6 +280,8 @@ public class Channel extends Account implements Comparable<Channel> {
         private BeiList cServeExceptList = new BeiList();
         private BeiList cServeInviteList = new BeiList();
 
+        private Timestamp lastActivity  = new Timestamp(0L);
+
         public Builder userCount(Integer val) {
             this.userCount = val;
             return this;
@@ -397,6 +403,7 @@ public class Channel extends Account implements Comparable<Channel> {
         this.cServeBanList          = builder.cServeBanList;
         this.cServeExceptList       = builder.cServeExceptList;
         this.cServeInviteList       = builder.cServeInviteList;
+        this.lastActivity           = builder.lastActivity;
     }
 
     public void addMode(String mode, String param) {
@@ -845,6 +852,14 @@ public class Channel extends Account implements Comparable<Channel> {
 
     public void setCServeInviteList(BeiList list) {
         this.cServeInviteList = list;
+    }
+
+    public void setLastActivity(Timestamp ts) {
+        this.lastActivity = ts;
+    }
+
+    public Timestamp getLastActivity() {
+        return this.lastActivity;
     }
 
     @Override public int compareTo(Channel c) {
