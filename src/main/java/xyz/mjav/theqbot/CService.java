@@ -3628,12 +3628,13 @@ public class CService extends Service {
 
             Date dateRegTS;
 
+            strReply.add(Messages.strChanInfoCServeHeader);
             if (channel.isRegistered() == true) {
                 regId = channel.getcServeId().toString();
-                strReply.add(Messages.strChanInfoCServeHeader);
                 strReply.add(String.format(Messages.strChanInfoContentRegistered, Messages.strYes));
                 strReply.add(String.format(Messages.strChanInfoContentChanId, regId));
             }
+            else strReply.add(String.format(Messages.strChanInfoContentRegistered, Messages.strNo));
 
             dateRegTS = new Date((channel.getRegistrationTS().getValue())*1000L);
             strChanRegTS = jdf.format(dateRegTS);
