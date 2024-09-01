@@ -393,7 +393,7 @@ public class Channel extends Account implements Comparable<Channel> {
         this.cServeWelcomeMsg       = builder.cServeWelcomeMsg;
         this.isCServeRegistered     = builder.isCServeRegistered;
         this.chanlev                = builder.chanlev;
-        this.mLockPolicy             = builder.mLockModes;
+        this.mLockPolicy            = builder.mLockModes;
         this.cServeMLockModes       = builder.cServeMLockModes;
         this.chanUserList           = builder.chanUserList;
         this.channelModes           = builder.channelModes;
