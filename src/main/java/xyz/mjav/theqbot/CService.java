@@ -1416,9 +1416,11 @@ public class CService extends Service {
             chanNode = protocol.getChannelNodeByNameCi(channel);
         }
         catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
             return;
         }
         catch (Exception f) {
+            f.printStackTrace();
             return;
         }
 
